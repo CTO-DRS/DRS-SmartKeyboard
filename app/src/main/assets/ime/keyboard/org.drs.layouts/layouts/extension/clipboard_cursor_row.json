@@ -1,0 +1,12 @@
+[
+  [
+    { "code": -35, "label": "select_all", "type": "enter_editing" },
+    { "code": -31, "label": "copy", "type": "enter_editing" },
+    { "code": -32, "label": "cut", "type": "enter_editing" },
+    { "code": -33, "label": "paste", "type": "enter_editing" },
+    { "code": -23, "label": "↑", "type": "navigation" },
+    { "code": -21, "label": "←", "type": "navigation" },
+    { "code": -22, "label": "→", "type": "navigation" },
+    { "code": -24, "label": "↓", "type": "navigation" }
+  ]
+]

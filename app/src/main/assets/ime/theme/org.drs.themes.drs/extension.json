@@ -1,0 +1,127 @@
+{
+  "$": "ime.extension.theme",
+  "meta": {
+    "id": "org.drs.themes.drs",
+    "version": "1.2.0",
+    "title": "سمات DRS الإضافية",
+    "description": "سمات إضافية مخصصة (نهارية وليلية) بألوان عربية أنيقة للوحة المفاتيح DRS.",
+    "maintainers": [
+      "CTO-DRS"
+    ],
+    "license": "proprietary"
+  },
+  "themes": [
+    {
+      "id": "drs_desert_day",
+      "label": "صحراء DRS • Desert Day",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": false
+    },
+    {
+      "id": "drs_ocean_day",
+      "label": "محيط DRS • Ocean Day",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": false
+    },
+    {
+      "id": "drs_emerald_day",
+      "label": "زمرد DRS • Emerald Day",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": false
+    },
+    {
+      "id": "drs_royal_day",
+      "label": "ملكي DRS • Royal Day",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": false
+    },
+    {
+      "id": "drs_midnight",
+      "label": "منتصف الليل • DRS Midnight",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": true
+    },
+    {
+      "id": "drs_rose_night",
+      "label": "ورد ليلي • DRS Rose Night",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": true
+    },
+    {
+      "id": "drs_neon_night",
+      "label": "نيون DRS • Neon Night",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": true
+    },
+    {
+      "id": "drs_amoled",
+      "label": "أسود عميق • DRS AMOLED",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": true
+    },
+    {
+      "id": "drs_lavender_day",
+      "label": "لافندر DRS • Lavender Day",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": false
+    },
+    {
+      "id": "drs_coral_day",
+      "label": "مرجان DRS • Coral Day",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": false
+    },
+    {
+      "id": "drs_galaxy_night",
+      "label": "مجرة DRS • Galaxy Night",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": true
+    },
+    {
+      "id": "drs_gold_night",
+      "label": "ذهب DRS • Gold Night",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": true
+    },
+    {
+      "id": "drs_halo_day",
+      "label": "هالو 2030 • نهاري",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": false
+    },
+    {
+      "id": "drs_halo_night",
+      "label": "هالو 2030 • ليلي",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": true
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "$": "ime.extension.theme",
+  "meta": {
+    "id": "org.drs.themes",
+    "version": "0.2.0",
+    "title": "السمات الافتراضية (DRS)",
+    "description": "السمات الافتراضية النهارية والليلية لواجهة لوحة المفاتيح DRS.",
+    "maintainers": [
+      "CTO-DRS"
+    ],
+    "license": "proprietary"
+  },
+  "themes": [
+    {
+      "id": "drs_day",
+      "label": "DRS Day",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": false
+    },
+    {
+      "id": "drs_day_borderless",
+      "label": "DRS Day Borderless",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": false
+    },
+    {
+      "id": "drs_night",
+      "label": "DRS Night",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": true
+    },
+    {
+      "id": "drs_night_borderless",
+      "label": "DRS Night Borderless",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": true
+    },
+    {
+      "id": "drs_pure_night",
+      "label": "DRS Pure Night",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": true
+    },
+    {
+      "id": "drs_pure_night_borderless",
+      "label": "DRS Pure Night Borderless",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": true
+    }
+  ]
+}

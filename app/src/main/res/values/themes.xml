@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style  name="DrsAppTheme.Splash" parent="Theme.SplashScreen.IconBackground">
+        <item name="postSplashScreenTheme">@style/DrsAppTheme</item>
+        <item name="windowSplashScreenBackground">@color/drsApp_windowBackground</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/drs_app_icon_splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/drs_app_icon_foreground</item>
+
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+    </style>
+
+    <style  name="DrsAppTheme" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:colorPrimary">@color/colorPrimary</item>
+        <item name="android:colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="android:colorAccent">@color/colorAccent</item>
+
+        <!-- IMPORTANT: the following 2 colors MUST be references and not inline colors, or older
+             versions of Android will not set the window background and thus causing weird
+             rendering glitches!! -->
+        <item name="android:windowBackground">@color/drsApp_windowBackground</item>
+        <item name="android:colorBackground">@color/drsApp_windowBackground</item>
+
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+    </style>
+
+    <style name="CrashDialogTheme" parent="android:style/Theme.Material.NoActionBar"/>
+
+    <style  name="DrsImeTheme" parent="android:Theme.Material.InputMethod">
+        <!-- Need this to prevent Xiaomi devices from messing with our beautiful UI -->
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+        <!-- FFS -->
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+
+    <style  name="DrsAppTheme.Transparent" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:colorPrimary">@android:color/transparent</item>
+        <item name="android:colorPrimaryDark">@android:color/transparent</item>
+        <item name="android:colorAccent">@android:color/transparent</item>
+
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+    </style>
+
+    <!-- DRS v1.11.0: the popup clipboard editor window. Dialog-styled
+         translucent window: the app behind stays visible, the editor card
+         floats centered, and the system keyboard opens inside (resize). -->
+    <style name="DrsAppTheme.ClipEditorPopup" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+    </style>
+
+</resources>

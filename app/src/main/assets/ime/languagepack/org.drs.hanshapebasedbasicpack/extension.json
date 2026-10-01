@@ -1,0 +1,40 @@
+{
+  "$": "ime.extension.languagepack",
+  "meta": {
+    "id": "org.drs.hanshapebasedbasicpack",
+    "version": "0.0.0",
+    "title": "الحزمة الصينية الشكلية الأساسية (DRS)",
+    "description": "الحزمة الصينية الشكلية الافتراضية المتوفرة دائماً في لوحة المفاتيح DRS.",
+    "maintainers": [
+      "CTO-DRS"
+    ],
+    "homepage": "https://github.com/CTO-DRS/DRS-SmartKeyboard/blob/main/LANGUAGEPACKS-CHINESE.md#default-barebones-chinese-shape-based-pack",
+    "license": "proprietary"
+  },
+  "items": [
+    {
+      "id": "zh_CN_zhengma",
+      "label": "中文 (中国) [郑码] / Chinese (China) [ZHENGMA]",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "hanShapeBasedKeyCode": "abcdefghijklmnopqrstuvwxyz"
+    },
+    {
+      "id": "zh_TW_boshiamy",
+      "label": "中文 (台灣) [嘸蝦米] / Chinese (Taiwan) [BOSHIAMY]",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "hanShapeBasedKeyCode": ",.'abcdefghijklmnopqrstuvwxyz[]"
+    },
+    {
+      "id": "zh_TW_cangjielarge",
+      "label": "中文 (台灣) [倉頡-大字庫] / Chinese (Taiwan) [CANGJIELARGE]",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "hanShapeBasedKeyCode": "abcdefghijklmnopqrstuvwxyz&"
+    }
+  ]
+}

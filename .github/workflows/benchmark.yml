@@ -1,0 +1,37 @@
+name: benchmark
+
+on:
+  # Weekly: the benchmarks run on self-hosted/runner devices with stable
+  # thermals — a scheduled slot keeps the numbers comparable week over week.
+  schedule:
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+jobs:
+  perf:
+    name: Macrobenchmarks + budget gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Assemble benchmark artifacts (no device needed)
+        run: |
+          ./gradlew :app:assembleBenchmark :benchmark:assembleBenchmark
+
+      - name: Budget gate self-test (both directions)
+        run: |
+          python3 ci/perf_budget_gate.py --selftest
+
+      # The run below needs a connected device / emulator with stable
+      # thermals; on a device runner, produce results.json and gate it:
+      - name: Run benchmarks + gate (device runners only)
+        if: runner.labels.contains('device')
+        run: |
+          ./gradlew :benchmark:connectedBenchmarkAndroidTest
+          python3 ci/perf_budget_gate.py --measured benchmark-results.json --budgets ci/perf_budgets.json

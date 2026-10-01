@@ -1,0 +1,29 @@
+{
+  "$": "ime.extension.languagepack",
+  "meta": {
+    "id": "org.drs.languagepack",
+    "version": "0.0.0",
+    "title": "الحزمة اللغوية الأساسية (DRS)",
+    "description": "الحزم اللغوية الافتراضية المتوفرة دائماً في لوحة المفاتيح DRS.",
+    "maintainers": [
+      "CTO-DRS"
+    ],
+    "license": "proprietary"
+  },
+  "items": [
+    {
+      "id": "de_DE_neobone",
+      "label": "Deutsch (Deutschland) [NEOBONE] / German (Germany) [NEOBONE]",
+      "authors": [
+        "CTO-DRS"
+      ]
+    },
+    {
+      "id": "ja_JP_jis",
+      "label": "日本語 (日本) [JIS] / Japanese (Japan) [JIS]",
+      "authors": [
+        "CTO-DRS"
+      ]
+    }
+  ]
+}

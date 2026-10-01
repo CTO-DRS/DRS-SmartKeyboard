@@ -1,0 +1,1167 @@
+{
+  "$": "ime.extension.keyboard",
+  "meta": {
+    "id": "org.drs.layouts",
+    "version": "0.1.0",
+    "title": "التخطيطات الأساسية (DRS)",
+    "description": "تخطيطات لوحة المفاتيح الافتراضية المتوفرة دائماً في لوحة المفاتيح DRS.",
+    "maintainers": [
+      "CTO-DRS"
+    ],
+    "license": "proprietary"
+  },
+  "layouts": {
+    "characters": [
+      {
+        "id": "arabic",
+        "label": "Arabic",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "rtl",
+        "modifier": "org.drs.layouts:arabic"
+      },
+      {
+        "id": "armenian_alt_phonetic",
+        "label": "Armenian Alt Phonetic",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr",
+        "modifier": "org.drs.layouts:armenian"
+      },
+      {
+        "id": "western_armenian",
+        "label": "Armenian (Western)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr",
+        "modifier": "org.drs.layouts:armenian"
+      },
+      {
+        "id": "eastern_armenian",
+        "label": "Armenian (Eastern)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr",
+        "modifier": "org.drs.layouts:armenian"
+      },
+      {
+        "id": "azerbaijani",
+        "label": "Azerbaijani",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "azerty",
+        "label": "AZERTY",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "bengali_unijoy",
+        "label": "Unijoy",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr",
+        "modifier": "org.drs.layouts:bengali_unijoy"
+      },
+      {
+        "id": "hindi_in",
+        "label": "हिंदी",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "bepo",
+        "label": "BÉPO",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "bone",
+        "label": "Bone",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr",
+        "modifier": "org.drs.layouts:neo2"
+      },
+      {
+        "id": "bulgarian_bds",
+        "label": "Bulgarian (BDS)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "bulgarian_phonetic",
+        "label": "Bulgarian (Phonetic)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "canadian_french",
+        "label": "Canadian French (QWERTY)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "catalan",
+        "label": "Catalan (QWERTY)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "catalan_accents",
+        "label": "Catalan (Accents)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "colemak",
+        "label": "Colemak",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "colemak_dh",
+        "label": "ColemakDH",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "colemak_dhm",
+        "label": "ColemakDHm",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "danish",
+        "label": "Danish (QWERTY)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "diktor",
+        "label": "Diktor",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr",
+        "modifier": "org.drs.layouts:diktor"
+      },
+      {
+        "id": "dvorak",
+        "label": "Dvorak",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr",
+        "modifier": "org.drs.layouts:dvorak"
+      },
+      {
+        "id": "dvorak_de",
+        "label": "Dvorak (DE)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr",
+        "modifier": "org.drs.layouts:dvorak_de"
+      },
+      {
+        "id": "dvorak_es",
+        "label": "Dvorak (ÑÇ)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr",
+        "modifier": "org.drs.layouts:dvorak"
+      },
+      {
+        "id": "dvorak_se",
+        "label": "Dvorak (SE)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr",
+        "modifier": "org.drs.layouts:dvorak_se"
+      },
+      {
+        "id": "esperanto",
+        "label": "Esperanto",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "esperanto_with_hx",
+        "label": "Esperanto with 'ĥ'",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "estonian",
+        "label": "Estonian",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "faroese",
+        "label": "Faroese (QWERTY)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "georgian_standard",
+        "label": "Georgian Standard Keyboard",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "german",
+        "label": "German (QWERTZ)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "german2",
+        "label": "German (GBoard)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "rtl"
+      },
+      {
+        "id": "greek",
+        "label": "Ελληνικά",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "halmak",
+        "label": "Halmak",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "hebrew",
+        "label": "עברית",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "rtl",
+        "modifier": "org.drs.layouts:hebrew"
+      },
+      {
+        "id": "hungarian",
+        "label": "Hungarian",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "icelandic",
+        "label": "Icelandic (QWERTY)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "igbo",
+        "label": "Igbo",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "indonesian",
+        "label": "Indonesian (QWERTY)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "ipa",
+        "label": "International Phonetic Alphabet",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "jcuken_russian",
+        "label": "Russian (ЙЦУКЕН)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "jcuken_ukrainian",
+        "label": "Ukrainian (ЙЦУКЕН)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "jis",
+        "label": "JIS",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr",
+        "modifier": "org.drs.layouts:jis"
+      },
+      {
+        "id": "korean",
+        "label": "South Korean standard",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "korean_phonetic",
+        "label": "South Korean Phonetic",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "kurdish",
+        "label": "کوردی (قوەرتی نوێ)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "rtl",
+        "modifier": "org.drs.layouts:kurdish"
+      },
+      {
+        "id": "kurdish_kurmanci",
+        "label": "Kurdî",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "kurdish_standard",
+        "label": "کوردی (ق‌ڤ‌ف‌غ)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "rtl",
+        "modifier": "org.drs.layouts:kurdish"
+      },
+      {
+        "id": "nalmy",
+        "label": "NALMY",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "neo2",
+        "label": "Neo2",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr",
+        "modifier": "org.drs.layouts:neo2"
+      },
+      {
+        "id": "norwegian",
+        "label": "Norwegian (QWERTY)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "persian",
+        "label": "Persian",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "rtl",
+        "modifier": "org.drs.layouts:persian"
+      },
+      {
+        "id": "persian2",
+        "label": "Persian2",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "rtl",
+        "modifier": "org.drs.layouts:persian2"
+      },
+      {
+        "id": "persian3",
+        "label": "Persian3",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "rtl",
+        "modifier": "org.drs.layouts:persian3"
+      },
+      {
+        "id": "qwerty",
+        "label": "QWERTY",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "qwertz",
+        "label": "QWERTZ",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "rusyn",
+        "label": "Rusyn",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "rusyn_us",
+        "label": "Rusyn (Phonetic)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "sangaline",
+        "label": "Sangaline",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "serbian_cyrillic",
+        "label": "Serbian (ЉЊЕРТЗ)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "serbian_latin",
+        "label": "Serbian (QWERTZ)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "slovenian",
+        "label": "Slovenian (QWERTZ)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "spanish",
+        "label": "Spanish (QWERTY)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "swedish_finnish",
+        "label": "Swedish/Finnish (QWERTY)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "swiss_french",
+        "label": "Swiss French (QWERTZ)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "swiss_german",
+        "label": "Swiss German (QWERTZ)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "swiss_italian",
+        "label": "Swiss Italian (QWERTZ)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "tamil",
+        "label": "Tamil",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "thai_kedmanee",
+        "label": "Thai Kedmanee",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "thai_manoonchai",
+        "label": "Thai Manoonchai",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "turkish_f",
+        "label": "Turkish-F",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "turkish_q",
+        "label": "Turkish-Q",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "udmurt_compact",
+        "label": "Udmurt (3 чур)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "udmurt_extended",
+        "label": "Udmurt (4 чур)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "urdu_phonetic",
+        "label": "Urdu Phonetic",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "rtl",
+        "modifier": "org.drs.layouts:arabic"
+      },
+      {
+        "id": "warang_citi",
+        "label": "𑢹𑣗𑣁𑣜𑣁𑣊 𑢯𑣂𑣕𑣂",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "workman",
+        "label": "Workman",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "jcuken_interslavic",
+        "label": "Interslavic (ЈЦУКЕН)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      }
+    ],
+    "charactersMod": [
+      {
+        "id": "default",
+        "label": "Default character modifier layout",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "armenian",
+        "label": "Armenian",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "arabic",
+        "label": "Arabic",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "rtl"
+      },
+      {
+        "id": "bengali_unijoy",
+        "label": "Unijoy",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "diktor",
+        "label": "Diktor",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "dvorak",
+        "label": "Dvorak",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "dvorak_de",
+        "label": "Dvorak (DE)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "dvorak_se",
+        "label": "Dvorak (SE)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "hebrew",
+        "label": "עברית",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "rtl"
+      },
+      {
+        "id": "jis",
+        "label": "JIS",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "kurdish",
+        "label": "کوردی",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "rtl"
+      },
+      {
+        "id": "neo2",
+        "label": "Neo2",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "persian",
+        "label": "Persian",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "rtl"
+      },
+      {
+        "id": "persian2",
+        "label": "Persian2",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "rtl"
+      },
+      {
+        "id": "persian3",
+        "label": "Persian3",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "rtl"
+      }
+    ],
+    "extension": [
+      {
+        "id": "clipboard_cursor_row",
+        "label": "Clipboard Cursor Row",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      }
+    ],
+    "numeric": [
+      {
+        "id": "western_arabic",
+        "label": "Western Arabic",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "western_arabic_pc",
+        "label": "Western Arabic (PC)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      }
+    ],
+    "numericAdvanced": [
+      {
+        "id": "western_arabic",
+        "label": "Western Arabic",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "western_arabic_pc",
+        "label": "Western Arabic (PC)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "bengali",
+        "label": "Bengali",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      }
+    ],
+    "numericRow": [
+      {
+        "id": "bengali",
+        "label": "Bengali",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "cjk",
+        "label": "CJK",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "czech",
+        "label": "Czech",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "devanagari",
+        "label": "Devanagari",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "eastern_arabic",
+        "label": "Eastern Arabic",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "gujarati",
+        "label": "Gujarati",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "gurmukhi",
+        "label": "Gurmukhi",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "kannada",
+        "label": "Kannada",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "malayalam",
+        "label": "Malayalam",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "neo2",
+        "label": "Neo2",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "oriya",
+        "label": "Odia",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "persian",
+        "label": "Persian",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "tamil",
+        "label": "Tamil",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "telugu",
+        "label": "Telugu",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "thai",
+        "label": "Thai",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "warang_citi",
+        "label": "Warang Citi",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "western_arabic",
+        "label": "Western Arabic",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      }
+    ],
+    "phone": [
+      {
+        "id": "telpad",
+        "label": "Simple telpad input",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      }
+    ],
+    "phone2": [
+      {
+        "id": "telpad",
+        "label": "Simple telpad input (advanced controls)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      }
+    ],
+    "symbols": [
+      {
+        "id": "armenian",
+        "label": "Armenian",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr",
+        "modifier": "org.drs.layouts:armenian"
+      },
+      {
+        "id": "cjk",
+        "label": "CJK",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr",
+        "modifier": "org.drs.layouts:cjk"
+      },
+      {
+        "id": "eastern",
+        "label": "Eastern",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "ipa",
+        "label": "International Phonetic Alphabet",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "neo2",
+        "label": "Neo2",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr",
+        "modifier": "org.drs.layouts:neo2"
+      },
+      {
+        "id": "persian",
+        "label": "Persian",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "western",
+        "label": "Western",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "western_additional_symbols",
+        "label": "Western (Additional symbols)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "western_samsung",
+        "label": "Western (Samsung)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      }
+    ],
+    "symbolsMod": [
+      {
+        "id": "default",
+        "label": "Default",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "armenian",
+        "label": "Armenian",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "cjk",
+        "label": "CJK",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "neo2",
+        "label": "Neo2",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      }
+    ],
+    "symbols2": [
+      {
+        "id": "cjk",
+        "label": "CJK",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr",
+        "modifier": "org.drs.layouts:cjk"
+      },
+      {
+        "id": "eastern",
+        "label": "Eastern",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "ipa",
+        "label": "International Phonetic Alphabet",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "persian",
+        "label": "Persian",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "western",
+        "label": "Western",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "western_samsung",
+        "label": "Western (Samsung)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      }
+    ],
+    "symbols2Mod": [
+      {
+        "id": "default",
+        "label": "Default",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      },
+      {
+        "id": "cjk",
+        "label": "CJK",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "ltr"
+      }
+    ]
+  }
+}

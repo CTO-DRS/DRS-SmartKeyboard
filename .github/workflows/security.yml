@@ -1,0 +1,96 @@
+name: DRS Security & Privacy
+
+# DRS roadmap phase 3 (privacy & trust, task 6): the automated security
+# gate — secret scanning, Java/Kotlin static analysis (CodeQL),
+# dependency graph submission (powers Dependabot alerts), and the DRS
+# privacy canary that proves the network-block claims in
+# SECURITY.md / PRIVACY_POLICY.md still hold on every push.
+#
+# Runs alongside android.yml: that workflow proves the app builds and
+# behaves; this one proves it keeps its privacy promises.
+
+on:
+  push:
+    branches:
+      - main
+      - 'roadmap/**'
+  pull_request:
+    branches:
+      - main
+  schedule:
+    # Weekly full pass, Mondays 05:20 UTC (off the weekly-beta hour).
+    - cron: '20 5 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  secret-scanning:
+    name: Secret scanning (gitleaks)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history so gitleaks can scan past commits
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          # Org license key is only required for private org repos;
+          # public repos scan for free.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  codeql:
+    name: SAST (CodeQL java-kotlin)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: java-kotlin
+          queries: security-extended
+      - name: Build for analysis
+        run: ./gradlew --no-daemon assembleDebug
+      - name: Analyze
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:java-kotlin'
+
+  dependencies:
+    name: Dependency graph (Dependabot alerts)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    # One-time repo setting required: Settings → Code security →
+    # "Dependency graph" (owner action, not doable from the workflow).
+    # Until it is flipped the submission cannot land, so this job stays
+    # advisory instead of blocking every PR on a settings checkbox.
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Submit dependency graph
+        uses: gradle/actions/dependency-submission@v4
+
+  privacy-canary:
+    name: Privacy canary (provable network block)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run privacy canary
+        run: bash ci/privacy_canary.sh

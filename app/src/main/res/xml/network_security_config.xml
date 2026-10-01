@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  DRS v1.28.0 audit hardening: an explicit network security configuration.
+  The app performs exactly two kinds of outbound traffic — the update
+  checker (api.github.com) and the package catalog/downloader
+  (raw.githubusercontent.com + github release assets) — all HTTPS. The
+  platform already forbids cleartext by default at targetSdk 28+; declaring
+  it explicitly means a future manifest-merge can never silently re-enable
+  plain-HTTP for the process.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

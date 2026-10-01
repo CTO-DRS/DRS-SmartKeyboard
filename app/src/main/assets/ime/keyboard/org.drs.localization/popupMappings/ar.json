@@ -1,0 +1,268 @@
+{
+  "all": {
+    "ا": {
+      "main": { "code": 1571, "label": "أ" },
+      "relevant": [
+        { "code": 1570, "label": "آ" },
+        { "code": 1573, "label": "إ" },
+        { "code": 1649, "label": "ٱ" },
+        { "code": 1569, "label": "ء" },
+        { "code": 1611, "label": "ً" }
+      ]
+    },
+    "و": {
+      "main": { "code": 1572, "label": "ؤ" },
+      "relevant": [
+        { "code": 1615, "label": "ُ" },
+        { "code": 1612, "label": "ٌ" }
+      ]
+    },
+    "ي": {
+      "main": { "code": 1574, "label": "ئ" },
+      "relevant": [
+        { "code": 1609, "label": "ى" },
+        { "code": 1616, "label": "ِ" },
+        { "code": 1613, "label": "ٍ" }
+      ]
+    },
+    "ه": {
+      "main": { "code": 1577, "label": "ة" },
+      "relevant": [
+        { "code": 1726, "label": "ھ" }
+      ]
+    },
+    "ل": {
+      "relevant": [
+        { "code": 65275, "label": "لا" },
+        { "code": 65273, "label": "لإ" },
+        { "code": 65271, "label": "لأ" },
+        { "code": 65269, "label": "لآ" }
+      ]
+    },
+    "ق": {
+      "relevant": [
+        { "code": 1704, "label": "ڨ" }
+      ]
+    },
+    "ف": {
+      "relevant": [
+        { "code": 1701, "label": "ڥ" },
+        { "code": 1700, "label": "ڤ" },
+        { "code": 1698, "label": "ڢ" }
+      ]
+    },
+    "ب": {
+      "relevant": [
+        { "code": 1662, "label": "پ" }
+      ]
+    },
+    "ج": {
+      "relevant": [
+        { "code": 1670, "label": "چ" }
+      ]
+    },
+    "ش": {
+      "relevant": [
+        { "code": 1692, "label": "ڜ" }
+      ]
+    },
+    "ز": {
+      "relevant": [
+        { "code": 1688, "label": "ژ" }
+      ]
+    },
+    "ك": {
+      "relevant": [
+        { "code": 1705, "label": "ک" },
+        { "code": 1711, "label": "گ" }
+      ]
+    },
+    "ى": {
+      "main": { "code": 1574, "label": "ئ" }
+    },
+    "ت": {
+      "relevant": [
+        { "code": 1614, "label": "َ" },
+        { "code": 1615, "label": "ُ" },
+        { "code": 1616, "label": "ِ" },
+        { "code": 1617, "label": "ّ" },
+        { "code": 1618, "label": "ْ" }
+      ]
+    },
+    "ث": {
+      "relevant": [
+        { "code": 1614, "label": "َ" },
+        { "code": 1615, "label": "ُ" },
+        { "code": 1616, "label": "ِ" },
+        { "code": 1617, "label": "ّ" },
+        { "code": 1618, "label": "ْ" }
+      ]
+    },
+    "ح": {
+      "relevant": [
+        { "code": 1614, "label": "َ" },
+        { "code": 1615, "label": "ُ" },
+        { "code": 1616, "label": "ِ" },
+        { "code": 1617, "label": "ّ" },
+        { "code": 1618, "label": "ْ" }
+      ]
+    },
+    "خ": {
+      "relevant": [
+        { "code": 1614, "label": "َ" },
+        { "code": 1615, "label": "ُ" },
+        { "code": 1616, "label": "ِ" },
+        { "code": 1617, "label": "ّ" },
+        { "code": 1618, "label": "ْ" }
+      ]
+    },
+    "د": {
+      "relevant": [
+        { "code": 1614, "label": "َ" },
+        { "code": 1615, "label": "ُ" },
+        { "code": 1616, "label": "ِ" },
+        { "code": 1617, "label": "ّ" },
+        { "code": 1618, "label": "ْ" }
+      ]
+    },
+    "ذ": {
+      "relevant": [
+        { "code": 1614, "label": "َ" },
+        { "code": 1615, "label": "ُ" },
+        { "code": 1616, "label": "ِ" },
+        { "code": 1617, "label": "ّ" },
+        { "code": 1618, "label": "ْ" }
+      ]
+    },
+    "ر": {
+      "relevant": [
+        { "code": 1614, "label": "َ" },
+        { "code": 1615, "label": "ُ" },
+        { "code": 1616, "label": "ِ" },
+        { "code": 1617, "label": "ّ" },
+        { "code": 1618, "label": "ْ" }
+      ]
+    },
+    "س": {
+      "relevant": [
+        { "code": 1614, "label": "َ" },
+        { "code": 1615, "label": "ُ" },
+        { "code": 1616, "label": "ِ" },
+        { "code": 1617, "label": "ّ" },
+        { "code": 1618, "label": "ْ" }
+      ]
+    },
+    "ص": {
+      "relevant": [
+        { "code": 1614, "label": "َ" },
+        { "code": 1615, "label": "ُ" },
+        { "code": 1616, "label": "ِ" },
+        { "code": 1617, "label": "ّ" },
+        { "code": 1618, "label": "ْ" }
+      ]
+    },
+    "ض": {
+      "relevant": [
+        { "code": 1614, "label": "َ" },
+        { "code": 1615, "label": "ُ" },
+        { "code": 1616, "label": "ِ" },
+        { "code": 1617, "label": "ّ" },
+        { "code": 1618, "label": "ْ" }
+      ]
+    },
+    "ط": {
+      "relevant": [
+        { "code": 1614, "label": "َ" },
+        { "code": 1615, "label": "ُ" },
+        { "code": 1616, "label": "ِ" },
+        { "code": 1617, "label": "ّ" },
+        { "code": 1618, "label": "ْ" }
+      ]
+    },
+    "ظ": {
+      "relevant": [
+        { "code": 1614, "label": "َ" },
+        { "code": 1615, "label": "ُ" },
+        { "code": 1616, "label": "ِ" },
+        { "code": 1617, "label": "ّ" },
+        { "code": 1618, "label": "ْ" }
+      ]
+    },
+    "ع": {
+      "relevant": [
+        { "code": 1614, "label": "َ" },
+        { "code": 1615, "label": "ُ" },
+        { "code": 1616, "label": "ِ" },
+        { "code": 1617, "label": "ّ" },
+        { "code": 1618, "label": "ْ" }
+      ]
+    },
+    "غ": {
+      "relevant": [
+        { "code": 1614, "label": "َ" },
+        { "code": 1615, "label": "ُ" },
+        { "code": 1616, "label": "ِ" },
+        { "code": 1617, "label": "ّ" },
+        { "code": 1618, "label": "ْ" }
+      ]
+    },
+    "م": {
+      "relevant": [
+        { "code": 1614, "label": "َ" },
+        { "code": 1615, "label": "ُ" },
+        { "code": 1616, "label": "ِ" },
+        { "code": 1617, "label": "ّ" },
+        { "code": 1618, "label": "ْ" }
+      ]
+    },
+    "ن": {
+      "relevant": [
+        { "code": 1614, "label": "َ" },
+        { "code": 1615, "label": "ُ" },
+        { "code": 1616, "label": "ِ" },
+        { "code": 1617, "label": "ّ" },
+        { "code": 1618, "label": "ْ" }
+      ]
+    },
+    "ـ": {
+      "relevant": [
+        { "code": 1614, "label": "َ" },
+        { "code": 1615, "label": "ُ" },
+        { "code": 1616, "label": "ِ" },
+        { "code": 1617, "label": "ّ" },
+        { "code": 1618, "label": "ْ" }
+      ]
+    },
+    "~right": {
+      "main": { "code": 1567, "label": "؟" },
+      "relevant": [
+        { "code": 1611, "label": "ً" },
+        { "code": 1622, "label": "ٖ" },
+        { "code": 1648, "label": "ٰ" },
+        { "code": 1619, "label": "ٓ" },
+        { "code": 1615, "label": "ُ" },
+        { "code": 1616, "label": "ِ" },
+        { "code": 1614, "label": "َ" },
+        { "code": 1600, "label": "ـ" },
+        { "code": 1621, "label": "ٕ" },
+        { "code": 1620, "label": "ٔ" },
+        { "code": 1617, "label": "ّ" },
+        { "code": 1612, "label": "ٌ" },
+        { "code": 1613, "label": "ٍ" },
+        { "code": 1618, "label": "ْ" }
+      ]
+    }
+  },
+  "uri": {
+    "~right": {
+      "main": { "code": -255, "label": ".sa" },
+      "relevant": [
+        { "code": -255, "label": ".gov" },
+        { "code": -255, "label": ".edu" },
+        { "code": -255, "label": ".com" },
+        { "code": -255, "label": ".org" },
+        { "code": -255, "label": ".net" }
+      ]
+    }
+  }
+}

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2021-2025 The DRS Smart Keyboard Project -->
+
+<!-- Original DRS artwork: ripple-enabled rounded chip background used by
+     inline autofill suggestion chips. Insets are applied in Compose. -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+        android:color="#14000000">
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/suggestions_chip_corner_radius"/>
+            <stroke android:color="#1F000000" android:width="1dp"/>
+            <solid android:color="#FFFFFFFF"/>
+        </shape>
+    </item>
+
+    <item android:id="@android:id/mask">
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/suggestions_chip_corner_radius"/>
+            <solid android:color="#14000000"/>
+        </shape>
+    </item>
+</ripple>

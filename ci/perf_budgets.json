@@ -1,0 +1,11 @@
+{
+  "$schema": "drs/perf-budgets/v1",
+  "updated": "2026-10-02",
+  "description": "DRS M0.4 — the single source of truth for every performance budget in the repo. DrsPerformanceBudgets mirrors these values (pinned by DrsM04PerformanceBudgetTest) and ci/perf_budget_gate.py fails CI when a measured run exceeds them. Changing a budget = editing this file + its mirror in the same commit, with the rationale in CHANGELOG.",
+  "budgets": {
+    "startup_warm_ms_p50": 220,
+    "startup_cold_ms_p50": 350,
+    "frame_p90_ms": 16.7,
+    "frame_p99_ms": 33.0
+  }
+}

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+      DRS M0.4 — the macrobenchmark module. The instrumentation and
+      target application are injected by the com.android.test plugin
+      (testInstrumentationRunner + targetProjectPath); nothing else to
+      declare. This module measures the real app, it never ships to users.
+    -->
+    <queries>
+        <package android:name="com.drs.smartkeyboard" />
+    </queries>
+</manifest>

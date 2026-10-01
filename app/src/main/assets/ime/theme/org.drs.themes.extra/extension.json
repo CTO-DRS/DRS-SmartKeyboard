@@ -1,0 +1,79 @@
+{
+  "$": "ime.extension.theme",
+  "meta": {
+    "id": "org.drs.themes.extra",
+    "version": "1.0.0",
+    "title": "DRS themes collection",
+    "description": "Eight handcrafted DRS themes: four bright day themes and four deep night themes.",
+    "maintainers": [
+      "DRS Smart Keyboard contributors"
+    ],
+    "license": "proprietary"
+  },
+  "themes": [
+    {
+      "id": "drs_sunset_day",
+      "label": "غروب DRS • Sunset Day",
+      "authors": [
+        "DRS Smart Keyboard contributors"
+      ],
+      "isNight": false
+    },
+    {
+      "id": "drs_lavender_day",
+      "label": "لافندر DRS • Lavender Day",
+      "authors": [
+        "DRS Smart Keyboard contributors"
+      ],
+      "isNight": false
+    },
+    {
+      "id": "drs_forest_day",
+      "label": "غابة DRS • Forest Day",
+      "authors": [
+        "DRS Smart Keyboard contributors"
+      ],
+      "isNight": false
+    },
+    {
+      "id": "drs_coral_day",
+      "label": "مرجان DRS • Coral Day",
+      "authors": [
+        "DRS Smart Keyboard contributors"
+      ],
+      "isNight": false
+    },
+    {
+      "id": "drs_gold_night",
+      "label": "ذهب ليلي DRS • Gold Night",
+      "authors": [
+        "DRS Smart Keyboard contributors"
+      ],
+      "isNight": true
+    },
+    {
+      "id": "drs_cyber_night",
+      "label": "سايبر DRS • Cyber Night",
+      "authors": [
+        "DRS Smart Keyboard contributors"
+      ],
+      "isNight": true
+    },
+    {
+      "id": "drs_berry_night",
+      "label": "توتي ليلي DRS • Berry Night",
+      "authors": [
+        "DRS Smart Keyboard contributors"
+      ],
+      "isNight": true
+    },
+    {
+      "id": "drs_evergreen_night",
+      "label": "صنوبر ليلي DRS • Evergreen Night",
+      "authors": [
+        "DRS Smart Keyboard contributors"
+      ],
+      "isNight": true
+    }
+  ]
+}

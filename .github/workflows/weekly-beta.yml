@@ -1,0 +1,110 @@
+name: Weekly Beta
+
+# DRS P1 (roadmap phase 1, task: CI/CD maturity — weekly automatic betas).
+#
+# Policy (ADR 0003 + weekly-beta design):
+#   1. Runs every Sunday 03:00 UTC (and manually, with an optional force).
+#   2. Only acts while gradle.properties carries an ACTIVE PRERELEASE track
+#      (-betaN/-rcN). On a stable version it exits quietly — no betas are
+#      invented after a stable release until a new track opens.
+#   3. Skips when zero commits exist since the newest beta tag of the same
+#      base version (no churn → no release).
+#   4. Bumps -betaN → -beta(N+1) and versionCode +1, commits, tags.
+#   5. Calls release.yml as a REUSABLE WORKFLOW (workflow_call) instead of
+#      relying on the tag push — GITHUB_TOKEN-triggered pushes do not start
+#      new workflow runs, so the reusable call is the reliable path.
+on:
+  schedule:
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Cut a beta even when no commits exist since the last beta tag'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  cut-beta:
+    name: Cut weekly beta (version bump + tag)
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.bump.outputs.tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: bump
+        name: Decide + bump version (policy-gated)
+        env:
+          FORCE: ${{ inputs.force }}
+        run: |
+          set -euo pipefail
+          VERSION=$(grep -E '^projectVersionName=' gradle.properties | cut -d= -f2)
+          echo "Current version: $VERSION"
+
+          if [[ "$VERSION" != *-beta* && "$VERSION" != *-rc* ]]; then
+            echo "::notice::version $VERSION is stable — no active beta track; skipping."
+            exit 0
+          fi
+
+          BASE="${VERSION%%-*}"
+          LAST_TAG=$(git tag --list "v${BASE}-beta*" --sort=-v:refname | head -1 || true)
+          echo "Last beta tag: ${LAST_TAG:-<none>}"
+
+          if [ -n "$LAST_TAG" ] && [ "$FORCE" != "true" ]; then
+            COUNT=$(git rev-list "${LAST_TAG}..HEAD" --count)
+            echo "Commits since ${LAST_TAG}: ${COUNT}"
+            if [ "$COUNT" -eq 0 ]; then
+              echo "::notice::no commits since ${LAST_TAG} — skipping."
+              exit 0
+            fi
+          fi
+
+          if [ -n "$LAST_TAG" ]; then
+            N=$(echo "$LAST_TAG" | sed -E "s/^v${BASE//./\\.}-beta([0-9]+)$/\1/")
+          else
+            N=$(echo "$VERSION" | sed -E "s/^${BASE//./\\.}-beta([0-9]+)$/\1/")
+          fi
+          case "$N" in
+            ''|*[!0-9]*) echo "::error::could not parse beta number from '$VERSION' / '$LAST_TAG'"; exit 1 ;;
+          esac
+          NEXT=$((N + 1))
+
+          NEW_VERSION="${BASE}-beta${NEXT}"
+          NEW_CODE=$(( $(grep -E '^projectVersionCode=' gradle.properties | cut -d= -f2) + 1 ))
+
+          sed -i "s/^projectVersionName=.*/projectVersionName=${NEW_VERSION}/" gradle.properties
+          sed -i "s/^projectVersionCode=.*/projectVersionCode=${NEW_CODE}/" gradle.properties
+
+          echo "tag=v${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "NEW_VERSION=${NEW_VERSION}" >> "$GITHUB_ENV"
+          echo "NEW_CODE=${NEW_CODE}" >> "$GITHUB_ENV"
+          echo "Bumped: $VERSION → $NEW_VERSION (versionCode $NEW_CODE)"
+
+      - name: Commit, tag and push the beta bump
+        if: env.NEW_VERSION != ''
+        run: |
+          set -euo pipefail
+          git config user.name "DRS Weekly Beta Bot"
+          git config user.email "bot@drs-smartkeyboard.dev"
+          git add gradle.properties
+          git commit -m "chore: weekly beta ${NEW_VERSION} (versionCode ${NEW_CODE})"
+          git tag "v${NEW_VERSION}"
+          BRANCH="${GITHUB_REF_NAME}"
+          git push origin "HEAD:${BRANCH}"
+          git push origin "v${NEW_VERSION}"
+
+  release:
+    name: Build & publish the signed beta
+    needs: cut-beta
+    if: needs.cut-beta.outputs.tag != ''
+    uses: ./.github/workflows/release.yml
+    with:
+      tag_name: ${{ needs.cut-beta.outputs.tag }}
+    permissions:
+      contents: write

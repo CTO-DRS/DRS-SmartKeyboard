@@ -1,0 +1,109 @@
+/*
+ * Copyright (C) 2021-2025 The DRS Smart Keyboard Project
+ */
+
+package com.drs.smartkeyboard.app.ext
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.outlined.Mail
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.drs.smartkeyboard.lib.ext.ExtensionMaintainer
+import com.drs.smartkeyboard.lib.util.launchUrl
+import org.drs.jetpref.material.ui.JetPrefAlertDialog
+import org.drs.lib.compose.DrsChip
+
+@Composable
+fun ExtensionMaintainerChip(
+    maintainer: ExtensionMaintainer,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    var showDialog by rememberSaveable { mutableStateOf(false) }
+
+    DrsChip(
+        modifier = modifier,
+        text = maintainer.name,
+        trailingIcons = when {
+            maintainer.email != null && maintainer.url != null -> listOf(
+                Icons.Outlined.Mail,
+                Icons.Default.Link,
+            )
+            maintainer.email != null -> listOf(Icons.Outlined.Mail)
+            maintainer.url != null -> listOf(Icons.Default.Link)
+            else -> listOf()
+        },
+        onClick = { showDialog = !showDialog },
+        enabled = maintainer.email != null || maintainer.url != null,
+        shape = RoundedCornerShape(4.dp),
+    )
+
+    if (showDialog) {
+        JetPrefAlertDialog(
+            title = maintainer.name,
+            onDismiss = { showDialog = false },
+        ) {
+            Column {
+                if (maintainer.email != null) {
+                    DrsChip(
+                        onClick = { context.launchUrl("mailto:${maintainer.email}") },
+                        text = maintainer.email,
+                        leadingIcons = listOf(Icons.Outlined.Mail),
+                        shape = RoundedCornerShape(4.dp),
+                    )
+                }
+                if (maintainer.url != null) {
+                    DrsChip(
+                        onClick = { context.launchUrl(maintainer.url) },
+                        text = maintainer.url,
+                        leadingIcons = listOf(Icons.Default.Link),
+                        shape = RoundedCornerShape(4.dp),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewChipNameOnly() {
+    val maintainer = ExtensionMaintainer(
+        name = "Jane Doe",
+        email = null,
+        url = null,
+    )
+    ExtensionMaintainerChip(maintainer)
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewChipNameAndEmail() {
+    val maintainer = ExtensionMaintainer(
+        name = "Jane Doe",
+        email = "jane.doe@example.com",
+        url = null,
+    )
+    ExtensionMaintainerChip(maintainer)
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewChipNameAndUrl() {
+    val maintainer = ExtensionMaintainer(
+        name = "Jane Doe",
+        email = null,
+        url = "jane-doe.example.com",
+    )
+    ExtensionMaintainerChip(maintainer)
+}

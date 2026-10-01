@@ -1,0 +1,142 @@
+{
+  "$": "ime.extension.languagepack",
+  "meta": {
+    "id": "org.drs.languagepack.arabic",
+    "version": "1.0.0",
+    "title": "الحزمة العربية (DRS)",
+    "description": "حزمة اللغة العربية الكاملة: 18 بلداً عربياً بتخطيطات وسمات ورموز مصممة للغة العربية.",
+    "maintainers": [
+      "CTO-DRS"
+    ],
+    "homepage": "https://github.com/CTO-DRS/DRS-SmartKeyboard",
+    "license": "proprietary"
+  },
+  "items": [
+    {
+      "id": "ar_EG",
+      "label": "العربية (مصر) / Arabic (Egypt)",
+      "authors": [
+        "CTO-DRS"
+      ]
+    },
+    {
+      "id": "ar_SA",
+      "label": "العربية (السعودية) / Arabic (Saudi Arabia)",
+      "authors": [
+        "CTO-DRS"
+      ]
+    },
+    {
+      "id": "ar_AE",
+      "label": "العربية (الإمارات) / Arabic (UAE)",
+      "authors": [
+        "CTO-DRS"
+      ]
+    },
+    {
+      "id": "ar_MA",
+      "label": "العربية (المغرب) / Arabic (Morocco)",
+      "authors": [
+        "CTO-DRS"
+      ]
+    },
+    {
+      "id": "ar_DZ",
+      "label": "العربية (الجزائر) / Arabic (Algeria)",
+      "authors": [
+        "CTO-DRS"
+      ]
+    },
+    {
+      "id": "ar_TN",
+      "label": "العربية (تونس) / Arabic (Tunisia)",
+      "authors": [
+        "CTO-DRS"
+      ]
+    },
+    {
+      "id": "ar_LY",
+      "label": "العربية (ليبيا) / Arabic (Libya)",
+      "authors": [
+        "CTO-DRS"
+      ]
+    },
+    {
+      "id": "ar_SD",
+      "label": "العربية (السودان) / Arabic (Sudan)",
+      "authors": [
+        "CTO-DRS"
+      ]
+    },
+    {
+      "id": "ar_IQ",
+      "label": "العربية (العراق) / Arabic (Iraq)",
+      "authors": [
+        "CTO-DRS"
+      ]
+    },
+    {
+      "id": "ar_SY",
+      "label": "العربية (سوريا) / Arabic (Syria)",
+      "authors": [
+        "CTO-DRS"
+      ]
+    },
+    {
+      "id": "ar_LB",
+      "label": "العربية (لبنان) / Arabic (Lebanon)",
+      "authors": [
+        "CTO-DRS"
+      ]
+    },
+    {
+      "id": "ar_JO",
+      "label": "العربية (الأردن) / Arabic (Jordan)",
+      "authors": [
+        "CTO-DRS"
+      ]
+    },
+    {
+      "id": "ar_PS",
+      "label": "العربية (فلسطين) / Arabic (Palestine)",
+      "authors": [
+        "CTO-DRS"
+      ]
+    },
+    {
+      "id": "ar_KW",
+      "label": "العربية (الكويت) / Arabic (Kuwait)",
+      "authors": [
+        "CTO-DRS"
+      ]
+    },
+    {
+      "id": "ar_QA",
+      "label": "العربية (قطر) / Arabic (Qatar)",
+      "authors": [
+        "CTO-DRS"
+      ]
+    },
+    {
+      "id": "ar_BH",
+      "label": "العربية (البحرين) / Arabic (Bahrain)",
+      "authors": [
+        "CTO-DRS"
+      ]
+    },
+    {
+      "id": "ar_OM",
+      "label": "العربية (عُمان) / Arabic (Oman)",
+      "authors": [
+        "CTO-DRS"
+      ]
+    },
+    {
+      "id": "ar_YE",
+      "label": "العربية (اليمن) / Arabic (Yemen)",
+      "authors": [
+        "CTO-DRS"
+      ]
+    }
+  ]
+}

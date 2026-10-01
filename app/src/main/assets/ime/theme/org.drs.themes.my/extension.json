@@ -1,0 +1,63 @@
+{
+  "$": "ime.extension.theme",
+  "meta": {
+    "id": "org.drs.themes.my",
+    "version": "0.2.0",
+    "title": "سمات Material You (DRS)",
+    "description": "سمات Material You النهارية والليلية لواجهة لوحة المفاتيح DRS.",
+    "maintainers": [
+      "CTO-DRS"
+    ],
+    "license": "proprietary"
+  },
+  "themes": [
+    {
+      "id": "drs_day_my",
+      "label": "DRS Day (Material You)",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": false
+    },
+    {
+      "id": "drs_day_my_borderless",
+      "label": "DRS Day Borderless (Material You)",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": false
+    },
+    {
+      "id": "drs_night_my",
+      "label": "DRS Night (Material You)",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": true
+    },
+    {
+      "id": "drs_night_my_borderless",
+      "label": "DRS Night Borderless (Material You)",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": true
+    },
+    {
+      "id": "drs_pure_night_my",
+      "label": "DRS Pure Night (Material You)",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": true
+    },
+    {
+      "id": "drs_pure_night_my_borderless",
+      "label": "DRS Pure Night Borderless (Material You)",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": true
+    }
+  ]
+}

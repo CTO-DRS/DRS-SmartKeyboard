@@ -1,0 +1,80 @@
+{
+  "$": "ime.extension.theme",
+  "meta": {
+    "id": "org.drs.themes.arabic",
+    "version": "1.0.0",
+    "title": "سمات DRS العربية",
+    "description": "ثماني سمات مستوحاة من الثقافة العربية: أربع سمات نهارية (الأندلس، الفيروز، الكثبان، الياسمين) وأربع سمات ليلية (بغداد الليلية، صقر الليل، جمشت الليلي، واحة الليل).",
+    "maintainers": [
+      "CTO-DRS"
+    ],
+    "homepage": "https://github.com/CTO-DRS/DRS-SmartKeyboard",
+    "license": "proprietary"
+  },
+  "themes": [
+    {
+      "id": "drs_andalus_day",
+      "label": "أندلس DRS • Andalus Day",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": false
+    },
+    {
+      "id": "drs_turquoise_day",
+      "label": "فيروز DRS • Turquoise Day",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": false
+    },
+    {
+      "id": "drs_dune_day",
+      "label": "كثبان DRS • Dune Day",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": false
+    },
+    {
+      "id": "drs_jasmine_day",
+      "label": "ياسمين DRS • Jasmine Day",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": false
+    },
+    {
+      "id": "drs_baghdad_night",
+      "label": "بغداد الليلية DRS • Baghdad Night",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": true
+    },
+    {
+      "id": "drs_falcon_night",
+      "label": "صقر الليل DRS • Falcon Night",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": true
+    },
+    {
+      "id": "drs_amethyst_night",
+      "label": "جمشت الليلي DRS • Amethyst Night",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": true
+    },
+    {
+      "id": "drs_oasis_night",
+      "label": "واحة الليل DRS • Oasis Night",
+      "authors": [
+        "CTO-DRS"
+      ],
+      "isNight": true
+    }
+  ]
+}

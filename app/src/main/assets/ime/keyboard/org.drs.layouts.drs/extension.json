@@ -1,0 +1,84 @@
+{
+  "$": "ime.extension.keyboard",
+  "meta": {
+    "id": "org.drs.layouts.drs",
+    "version": "1.1.0",
+    "title": "التخطيطات العربية المخصصة (DRS)",
+    "description": "تخطيطات عربية إضافية بتصميم مخصص: نمط الحاسوب، النمط المغاربي، وصفحة رموز عربية كاملة.",
+    "maintainers": [
+      "CTO-DRS"
+    ],
+    "homepage": "https://github.com/CTO-DRS/DRS-SmartKeyboard",
+    "license": "proprietary"
+  },
+  "layouts": {
+    "characters": [
+      {
+        "id": "arabic_pc102",
+        "label": "العربية (نمط الحاسوب) / Arabic (PC 102)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "rtl",
+        "modifier": "org.drs.layouts:arabic"
+      },
+      {
+        "id": "arabic_maghreb",
+        "label": "العربية (المغرب العربي) / Arabic (Maghreb)",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "rtl",
+        "modifier": "org.drs.layouts:arabic"
+      }
+    ],
+    "symbols": [
+      {
+        "id": "arabic",
+        "label": "رموز عربية / Arabic symbols",
+        "authors": [
+          "CTO-DRS"
+        ],
+        "direction": "rtl"
+      }
+    ]
+  },
+  "subtypePresets": [
+    {
+      "languageTag": "ar-MA",
+      "composer": "org.drs.composers:appender",
+      "currencySet": "org.drs.currencysets:moroccan_dirham",
+      "popupMapping": "org.drs.localization:ar",
+      "preferred": {
+        "characters": "org.drs.layouts.drs:arabic_maghreb",
+        "symbols": "org.drs.layouts.drs:arabic",
+        "symbols2": "org.drs.layouts.drs:arabic",
+        "numericRow": "org.drs.layouts:western_arabic"
+      }
+    },
+    {
+      "languageTag": "ar-DZ",
+      "composer": "org.drs.composers:appender",
+      "currencySet": "org.drs.currencysets:algerian_dinar",
+      "popupMapping": "org.drs.localization:ar",
+      "preferred": {
+        "characters": "org.drs.layouts.drs:arabic_maghreb",
+        "symbols": "org.drs.layouts.drs:arabic",
+        "symbols2": "org.drs.layouts.drs:arabic",
+        "numericRow": "org.drs.layouts:western_arabic"
+      }
+    },
+    {
+      "languageTag": "ar-SA",
+      "composer": "org.drs.composers:appender",
+      "currencySet": "org.drs.currencysets:saudi_riyal",
+      "popupMapping": "org.drs.localization:ar",
+      "preferred": {
+        "characters": "org.drs.layouts.drs:arabic_pc102",
+        "symbols": "org.drs.layouts.drs:arabic",
+        "symbols2": "org.drs.layouts.drs:arabic",
+        "numericRow": "org.drs.layouts:eastern_arabic"
+      }
+    }
+  ]
+}

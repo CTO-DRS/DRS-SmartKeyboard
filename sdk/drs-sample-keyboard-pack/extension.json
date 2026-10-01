@@ -1,0 +1,26 @@
+{
+  "$": "ime.extension.theme",
+  "meta": {
+    "id": "org.drs.sdk.sample",
+    "version": "1.0.0",
+    "title": "عينة SDK • Mint Sample",
+    "description": "عينة رسمية لأصحاب الحزم: ثيم نهاري/ليلي بصيغة DRS الصحيحة، جاهزة للتعديل والتوقيع.",
+    "maintainers": ["CTO-DRS"],
+    "license": "CC-BY-4.0"
+  },
+  "themes": [
+    {
+      "id": "mint_day",
+      "label": "نعناع نهاري • Mint Day",
+      "authors": ["CTO-DRS"],
+      "isNight": false,
+      "stylesheetPath": "stylesheets/mint_day.json"
+    },
+    {
+      "id": "mint_night",
+      "label": "نعناع ليلي • Mint Night",
+      "authors": ["CTO-DRS"],
+      "isNight": true
+    }
+  ]
+}

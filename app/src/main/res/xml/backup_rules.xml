@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  DRS privacy hardening (S-9): the keyboard stores typed text derivatives
+  (user dictionary, learned words, clipboard history, per-app profile data)
+  inside its private sandbox. None of that may ever leave the device via
+  the platform cloud-backup or device-transfer machinery, so cloud backup is
+  disabled in the manifest (android:allowBackup="false") and both rule files
+  are intentionally EMPTY (no include = nothing eligible, belt-and-braces).
+  See PRIVACY.md for the full data policy.
+-->
+<full-backup-content />
