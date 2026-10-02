@@ -69,6 +69,20 @@
 - Kotest (`io.kotest`) — Apache License 2.0
 - `androidx.benchmark:benchmark-macro-junit4`, `androidx.test.*`, `kotlin-test` — Apache License 2.0 / The Android Open Source Project
 
+## Bundled Data | البيانات المدمجة
+
+### Tashkeela corpus (excerpts in the vocalization lexicon — DRS v1.2.0)
+**License:** GNU General Public License v2.0 — https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+
+- `app/src/main/assets/drs/tashkeel_lexicon.txt` embeds top-frequency
+  vocalized word forms extracted from the **Tashkeela** corpus
+  (community-datasets/tashkeela on Hugging Face), in addition to the
+  project's own hand-reviewed seed entries.
+- Extraction was deterministic (frequency voting + a documented
+  pause-form policy) at development time; the runtime does no corpus
+  processing — it performs a local, offline dictionary lookup only.
+- Attribution and license preserved here per GPL-2.0 requirements.
+
 ---
 
 <div dir="rtl">
