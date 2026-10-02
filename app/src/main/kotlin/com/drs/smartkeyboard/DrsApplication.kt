@@ -150,6 +150,21 @@ class DrsApplication : Application() {
         extensionManager.value.init()
         clipboardManager.value.initializeForContext(this)
         DictionaryManager.init(this)
+        // DRS v1.2.0: the 3000-word vocalization lexicon lands on a
+        // background thread — an atomic install, no locks; the seed
+        // lexicon of DrsWordTashkeel serves until it arrives, and a
+        // failed load only means the seed keeps serving (the extended
+        // lexicon is an upgrade, never a dependency).
+        scope.launch {
+            try {
+                val lines = assets.open("drs/tashkeel_lexicon.txt")
+                    .bufferedReader().use { reader -> reader.readLines() }
+                val result = com.drs.smartkeyboard.drs.DrsTashkeelLexicon.parse(lines)
+                com.drs.smartkeyboard.drs.DrsTashkeelLexicon.install(result.entries)
+            } catch (t: Throwable) {
+                flogError(LogTopic.OTHER) { "tashkeel lexicon load failed: $t" }
+            }
+        }
     }
 
 

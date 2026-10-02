@@ -229,21 +229,31 @@ object DrsWordTashkeel {
     )
 
     /**
-     * The canonical vocalization of [word], or null when the word is not in
-     * the lexicon. Matching happens on the stripped form, so input typed
-     * with (partial or full) marks still resolves to the canonical form.
+     * The canonical vocalization of [word], or null when the word is not
+     * in the lexicon. Matching happens on the stripped form, so input
+     * typed with (partial or full) marks still resolves to the canonical
+     * form.
+     *
+     * DRS v1.2.0: the seed map answers first («البذرة تفوز» — the
+     * hand-reviewed forms are canonical), then the installed 3000-word
+     * asset lexicon ([DrsTashkeelLexicon]) — an atomic read, no locks;
+     * before the asset lands (or if it never does) the seed serves
+     * alone and unknown words still return null honestly.
      */
     fun vocalize(word: String): String? {
         val stripped = DrsHarakatWordOps.stripDiacritics(word)
         if (stripped.isEmpty()) return null
-        return LEXICON[stripped]
+        return LEXICON[stripped] ?: DrsTashkeelLexicon.vocalize(stripped)
     }
 
     /** True when [word] (stripped) is in the lexicon. */
     fun isKnown(word: String): Boolean = vocalize(word) != null
 
-    /** The lexicon size — surfaced in tests and diagnostics. */
+    /** The seed lexicon size — surfaced in tests and diagnostics. */
     val size: Int get() = LEXICON.size
+
+    /** DRS v1.2.0: the installed extended lexicon size (0 until load). */
+    val extendedSize: Int get() = DrsTashkeelLexicon.size
 }
 
 /**
