@@ -21,8 +21,9 @@ import io.kotest.matchers.shouldNotBe
  */
 class DrsPublicV140Tests : FunSpec({
 
-    private val tool = DrsTextTool.TASHKEEL_TEXT
-    private fun f(text: String) = DrsTextTools.apply(tool, text)
+    // تعريفات محلية داخل جسم المواصفة — Kotest FunSpec lambda.
+    val tool = DrsTextTool.TASHKEEL_TEXT
+    fun f(text: String) = DrsTextTools.apply(tool, text)
 
     // -------------------------------------------------------------
     // الكلمات المعروفة تُشكَّل — known words take the canonical form
