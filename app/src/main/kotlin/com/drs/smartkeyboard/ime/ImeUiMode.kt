@@ -22,7 +22,10 @@ enum class ImeUiMode(val value: Int) {
     ARABIC_LETTERS(6),
 
     /** DRS v1.2.0: the context-aware smart numbers panel (لوحة الأرقام الذكية). */
-    SMART_NUMBER(7);
+    SMART_NUMBER(7),
+
+    /** DRS v1.3.0: the deterministic smart clipboard panel (لوحة الحافظة الذكية). */
+    SMART_CLIPBOARD(8);
 
     companion object {
         fun fromInt(int: Int) = entries.firstOrNull { it.value == int } ?: TEXT

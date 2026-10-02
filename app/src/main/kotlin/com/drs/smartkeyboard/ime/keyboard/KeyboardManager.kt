@@ -1322,6 +1322,13 @@ class KeyboardManager(context: Context) : InputKeyEventReceiver {
                 activeState.imeUiMode = ImeUiMode.SMART_NUMBER
                 DrsRuntimeState.closeStripSlotEditor()
             }
+            // DRS v1.3.0: the fifth smart panel (لوحة الحافظة الذكية)
+            // opens through the same path as every other UI mode.
+            KeyCode.IME_UI_MODE_SMART_CLIPBOARD -> {
+                exitMediaSearch()
+                activeState.imeUiMode = ImeUiMode.SMART_CLIPBOARD
+                DrsRuntimeState.closeStripSlotEditor()
+            }
             in DrsTextTool.CODE_RANGE -> {
                 DrsTextTool.fromCode(data.code)?.let { editorInstance.performTextTool(it) }
             }

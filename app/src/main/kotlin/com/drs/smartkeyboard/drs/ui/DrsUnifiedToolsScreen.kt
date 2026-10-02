@@ -443,6 +443,8 @@ fun toolTitle(id: String): String = when (id) {
     "merge_keyboard" -> stringRes(R.string.drs__unified__tool_merge_keyboard)
     // DRS v1.2.0 (الإصدار العام): لوحة الأرقام الذكية
     "smart_number_panel" -> stringRes(R.string.drs__unified__tool_smart_number_panel)
+    // DRS v1.3.0 (الإصدار العام): لوحة الحافظة الذكية
+    "smart_clipboard_panel" -> stringRes(R.string.drs__unified__tool_smart_clipboard_panel)
     else -> id
 }
 
@@ -511,5 +513,7 @@ fun toolDesc(id: String): String = when (id) {
     "merge_keyboard" -> stringRes(R.string.drs__unified__tool_merge_keyboard_desc)
     // DRS v1.2.0 (الإصدار العام): لوحة الأرقام الذكية
     "smart_number_panel" -> stringRes(R.string.drs__unified__tool_smart_number_panel_desc)
+    // DRS v1.3.0 (الإصدار العام): لوحة الحافظة الذكية
+    "smart_clipboard_panel" -> stringRes(R.string.drs__unified__tool_smart_clipboard_panel_desc)
     else -> ""
 }

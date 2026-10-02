@@ -128,6 +128,11 @@ object KeyCode {
     // the unified tool catalogue with the same tail-append contract.
     const val IME_UI_MODE_SMART_NUMBER =    -229
 
+    // DRS v1.3.0: the fifth smart panel (لوحة الحافظة الذكية) — a real
+    // ImeUiMode handled in KeyboardManager + hosted in ImeWindow, joined
+    // the unified tool catalogue with the same tail-append contract.
+    const val IME_UI_MODE_SMART_CLIPBOARD = -230
+
     const val IME_SHOW_UI =                 -231
     const val IME_HIDE_UI =                 -232
     const val VOICE_INPUT =                 -233

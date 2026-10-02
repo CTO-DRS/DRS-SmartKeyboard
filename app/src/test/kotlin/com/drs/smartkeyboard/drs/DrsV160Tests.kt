@@ -114,11 +114,12 @@ class DrsV160Tests : FunSpec({
     test("v1.6.0 tools keep the tail-append order contract of the catalogue") {
         // DRS v1.7.0 appended CLIPBOARD_PIN after the v1.6.0 tail, DRS
         // v1.8.0 two more, DRS v1.15.0 three smart panels, DRS
-        // v1.19.0 the split/merge pair and the DRS v1.2.0 release the
-        // smart numbers panel, so the
-        // v1.6.0 block is now dropLast(9). The contract itself (stable
+        // v1.19.0 the split/merge pair, the DRS v1.2.0 release the
+        // smart numbers panel and the DRS v1.3.0 release the smart
+        // clipboard panel, so the
+        // v1.6.0 block is now dropLast(10). The contract itself (stable
         // positions, first tool pinned) is unchanged.
-        DrsUnifiedTools.ALL.dropLast(9).takeLast(5).map { it.id } shouldBe
+        DrsUnifiedTools.ALL.dropLast(10).takeLast(5).map { it.id } shouldBe
             listOf(
                 "clipboard_full_clear", "prev_language", "one_handed_left",
                 "one_handed_right", "next_keyboard_app",
@@ -127,9 +128,10 @@ class DrsV160Tests : FunSpec({
         // The v1.5.0 tail is still directly ahead of the new tail; DRS
         // v1.15.0 appended three smart panels after the v1.8.0 pair,
         // DRS v1.19.0 the split/merge pair after those and the
-        // DRS v1.2.0 release the smart numbers panel after that, so the
-        // combined tail after the v1.5.0 block is now 14.
-        DrsUnifiedTools.ALL.dropLast(14).takeLast(3).map { it.id } shouldBe
+        // DRS v1.2.0 release the smart numbers panel after that, and the
+        // DRS v1.3.0 release the smart clipboard panel after that, so the
+        // combined tail after the v1.5.0 block is now 15.
+        DrsUnifiedTools.ALL.dropLast(15).takeLast(3).map { it.id } shouldBe
             listOf("clipboard_history_clear", "next_language", "resize_mode")
     }
 

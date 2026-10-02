@@ -2457,6 +2457,21 @@
     <string name="panel__numbers__formats_title">تنسيقات جاهزة</string>
     <string name="drs__unified__tool_smart_number_panel">لوحة الأرقام الذكية</string>
     <string name="drs__unified__tool_smart_number_panel_desc">تفتح لوحة أرقام تكشف سياق الحقل وتعيد ترتيب نفسه، وتعرض تنسيقات جاهزة: هاتف، تاريخ ميلادي وهجري، وسبع عملات — كلها حساب محلي خالص بلا شبكة</string>
+    <!-- DRS v1.3.0: لوحة الحافظة الذكية -->
+    <string name="panel__switcher_clipboard">حافظة</string>
+    <string name="panel__clipboard__title">لوحة الحافظة الذكية</string>
+    <string name="panel__clipboard__cls_url">رابط</string>
+    <string name="panel__clipboard__cls_email">بريد</string>
+    <string name="panel__clipboard__cls_phone">هاتف</string>
+    <string name="panel__clipboard__cls_otp">رمز</string>
+    <string name="panel__clipboard__cls_amount">مبلغ</string>
+    <string name="panel__clipboard__cls_number">رقم</string>
+    <string name="panel__clipboard__cls_text">نص</string>
+    <string name="panel__clipboard__empty">الحافظة فارغة — انسخ أي نص وستظهر تنويعاته الجاهزة هنا</string>
+    <string name="panel__clipboard__hidden">في حقل كلمة سر لا تُقرأ الحافظة — خصوصية مطلقة</string>
+    <string name="panel__clipboard__no_variants">لا تنويعات حتمية لهذا المحتوى في هذه الفئة</string>
+    <string name="drs__unified__tool_smart_clipboard_panel">لوحة الحافظة الذكية</string>
+    <string name="drs__unified__tool_smart_clipboard_panel_desc">تفتح لوحة تصنف ما نسخته حتميًا: رابط يُنظف من وسائط التتبع، هاتف سعودي بثلاث صور، رمز تحقق يُستخرج، مبلغ بسبع عملات، وقلب الأرقام — كلها حساب محلي خالص بلا شبكة</string>
     <string name="pref__panels__group__label">اللوحات الذكية</string>
     <string name="pref__panels__harakat_smart_replace__label">الدمج الذكي للحركات</string>
     <string name="pref__panels__harakat_smart_replace__summary">حركة فوق حركة تستبدلها بدل أن تتراكم، والشدة تُلحق بالحركة</string>

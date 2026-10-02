@@ -741,6 +741,23 @@ object DrsUnifiedTools {
         group = DrsToolGroup.TOOLS,
     )
 
+    /**
+     * DRS v1.3.0: opens the deterministic smart clipboard panel (لوحة
+     * الحافظة الذكية) through the REAL engine action
+     * (KeyCode.IME_UI_MODE_SMART_CLIPBOARD) — the copied content is
+     * classified by explicit shape rules, and every ready variant (the
+     * clean link, the Saudi phone normalizations, the extracted code,
+     * the seven currencies, the digit flip) is a local computation.
+     */
+    val SMART_CLIPBOARD_PANEL = DrsUnifiedTool(
+        id = "smart_clipboard_panel",
+        code = KeyCode.IME_UI_MODE_SMART_CLIPBOARD,
+        type = KeyType.SYSTEM_GUI,
+        scope = DrsSettingScope.BASIC,
+        defaultView = DrsToolView.BOTH,
+        group = DrsToolGroup.TOOLS,
+    )
+
     /** The full basic/shared catalogue in default display order. */
     val ALL: List<DrsUnifiedTool> = listOf(
         EMOJI, CLIPBOARD, TEXT_TOOLS, NUMBERS, SYMBOLS, LANGUAGE,
@@ -775,6 +792,10 @@ object DrsUnifiedTools {
         // لوحة الأرقام الذكية joins last so every persisted
         // order/pin arrangement keeps its exact meaning.
         SMART_NUMBER_PANEL,
+
+        // DRS v1.3.0: لوحة الحافظة الذكية joins the tail with the same
+        // append contract — every persisted arrangement stays intact.
+        SMART_CLIPBOARD_PANEL,
     )
 
     private val BY_ID = ALL.associateBy { it.id }
