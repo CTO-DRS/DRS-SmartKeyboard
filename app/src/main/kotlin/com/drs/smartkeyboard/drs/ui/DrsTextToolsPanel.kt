@@ -557,6 +557,8 @@ fun textToolTitleRes(tool: DrsTextTool): Int = when (tool) {
     DrsTextTool.NUMBER_LINES -> R.string.drs__text_tools__tool_number_lines
     DrsTextTool.REVERSE_LINES -> R.string.drs__text_tools__tool_reverse_lines
     DrsTextTool.REMOVE_DIACRITICS -> R.string.drs__text_tools__tool_remove_diacritics
+    // DRS v1.4.0 (public): the sentence vocalization (REMOVE_DIACRITICS' counterpart).
+    DrsTextTool.TASHKEEL_TEXT -> R.string.drs__text_tools__tool_tashkeel_text
     DrsTextTool.REMOVE_TATWEEL -> R.string.drs__text_tools__tool_remove_tatweel
     DrsTextTool.TO_ARABIC_DIGITS -> R.string.drs__text_tools__tool_to_arabic_digits
     DrsTextTool.TO_WESTERN_DIGITS -> R.string.drs__text_tools__tool_to_western_digits
@@ -613,6 +615,8 @@ fun textToolDescRes(tool: DrsTextTool): Int = when (tool) {
     DrsTextTool.NUMBER_LINES -> R.string.drs__text_tools__desc_number_lines
     DrsTextTool.REVERSE_LINES -> R.string.drs__text_tools__desc_reverse_lines
     DrsTextTool.REMOVE_DIACRITICS -> R.string.drs__text_tools__desc_remove_diacritics
+    // DRS v1.4.0 (public): the sentence vocalization (REMOVE_DIACRITICS' counterpart).
+    DrsTextTool.TASHKEEL_TEXT -> R.string.drs__text_tools__desc_tashkeel_text
     DrsTextTool.REMOVE_TATWEEL -> R.string.drs__text_tools__desc_remove_tatweel
     DrsTextTool.TO_ARABIC_DIGITS -> R.string.drs__text_tools__desc_to_arabic_digits
     DrsTextTool.TO_WESTERN_DIGITS -> R.string.drs__text_tools__desc_to_western_digits

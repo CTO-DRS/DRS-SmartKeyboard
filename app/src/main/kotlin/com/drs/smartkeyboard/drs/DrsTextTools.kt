@@ -198,11 +198,19 @@ enum class DrsTextTool(
     INSERT_RLM(-654, isEditorOp = true, isInsertMark = true),
     INSERT_LRM(-655, isEditorOp = true, isInsertMark = true),
     INSERT_ZWJ(-656, isEditorOp = true, isInsertMark = true),
-    INSERT_ZWNJ(-657, isEditorOp = true, isInsertMark = true);
+    INSERT_ZWNJ(-657, isEditorOp = true, isInsertMark = true),
+
+    // DRS v1.4.0 (public): the deterministic sentence vocalization — the
+    // exact counterpart of REMOVE_DIACRITICS. Every Arabic word run is
+    // looked up in the local lexicons (the reviewed seed first, then the
+    // 3000-word asset); a known word takes its canonical vocalized form,
+    // an unknown word stays byte-identical — never an invented mark.
+    // Pure, offline, on-device: the doctrine holds.
+    TASHKEEL_TEXT(-658);
 
     companion object {
         /** Inclusive range covering every tool code, for fast dispatch. */
-        val CODE_RANGE = -657..-601
+        val CODE_RANGE = -658..-601
 
         fun fromCode(code: Int): DrsTextTool? = entries.firstOrNull { it.code == code }
     }
@@ -298,6 +306,11 @@ object DrsTextTools {
                 // blank separators and the trailing newline are kept).
                 DrsTextTool.COLLAPSE_EMPTY_LINES -> collapseEmptyLines(text)
                 DrsTextTool.REMOVE_DIACRITICS -> text.replace(ARABIC_DIACRITICS, "")
+                // DRS v1.4.0 (public): the sentence vocalization — the
+                // lexicon-based counterpart of REMOVE_DIACRITICS (see
+                // [tashkeelText]): known words vocalized, unknown words
+                // byte-identical, everything else verbatim.
+                DrsTextTool.TASHKEEL_TEXT -> tashkeelText(text)
                 // DRS v1.3.0: strip tatweel (kashida) elongation and
                 // convert digits between Western and Arabic-Indic forms.
                 // Both are per-character, lossless-for-everything-else
@@ -652,6 +665,41 @@ object DrsTextTools {
         }
         if (trailingNewline) out.append('\n')
         return out.toString()
+    }
+
+    /**
+     * DRS v1.4.0 (public) — المُشكِّل الحتمي للنص الكامل (the deterministic
+     * whole-text vocalizer). Scans [text] once: every maximal run of
+     * Arabic word characters (letters, the nine harakat, tatweel — see
+     * [DrsHarakatWordOps.isArabicWordChar]) is a word token; each token
+     * is looked up via [DrsWordTashkeel.vocalize] (seed lexicon first,
+     * then the installed 3000-word asset — both matched on the STRIPPED
+     * form, so partially-marked words still resolve to the canonical
+     * form). A known token is replaced by its canonical vocalization; an
+     * unknown token is emitted BYTE-IDENTICAL (the honest rule: the tool
+     * never invents diacritics, exactly like the word-level action).
+     * Every other character — spaces, newlines, punctuation, digits,
+     * Latin — passes through verbatim, so punctuation and line structure
+     * are preserved exactly. Idempotent by construction: applying the
+     * tool to its own output re-derives the same canonical forms.
+     */
+    private fun tashkeelText(text: String): String {
+        return buildString(text.length + 64) {
+            var i = 0
+            while (i < text.length) {
+                val c = text[i]
+                if (DrsHarakatWordOps.isArabicWordChar(c)) {
+                    var j = i + 1
+                    while (j < text.length && DrsHarakatWordOps.isArabicWordChar(text[j])) j++
+                    val word = text.substring(i, j)
+                    append(DrsWordTashkeel.vocalize(word) ?: word)
+                    i = j
+                } else {
+                    append(c)
+                    i++
+                }
+            }
+        }
     }
 
     /**

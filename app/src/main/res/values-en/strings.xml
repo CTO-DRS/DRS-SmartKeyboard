@@ -1787,6 +1787,8 @@
     <string name="drs__text_tools__desc_remove_duplicate_lines">Delete repeated lines keeping only the first occurrence</string>
     <string name="drs__text_tools__tool_remove_diacritics">Remove diacritics</string>
     <string name="drs__text_tools__desc_remove_diacritics">Strip Arabic harakat and Quranic marks from the text</string>
+    <string name="drs__text_tools__tool_tashkeel_text">Vocalize text</string>
+    <string name="drs__text_tools__desc_tashkeel_text">Add canonical harakat to every word the on-device lexicon knows — unknown words stay untouched, never guessed</string>
     <string name="drs__text_tools__tool_normalize_punctuation">Normalize punctuation</string>
     <string name="drs__text_tools__desc_normalize_punctuation">Remove spaces before punctuation and ensure one space after</string>
     <string name="drs__text_tools__tool_clean_text">Full text clean-up</string>

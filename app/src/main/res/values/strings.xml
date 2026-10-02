@@ -1705,6 +1705,8 @@
     <string name="drs__text_tools__desc_remove_duplicate_lines">حذف الأسطر المكررة مع الاحتفاظ بأول ظهور فقط</string>
     <string name="drs__text_tools__tool_remove_diacritics">إزالة التشكيل</string>
     <string name="drs__text_tools__desc_remove_diacritics">حذف الحركات والشدّة والسكون وغيرها من النص العربي</string>
+    <string name="drs__text_tools__tool_tashkeel_text">تشكيل النص</string>
+    <string name="drs__text_tools__desc_tashkeel_text">إسناد الحركات القياسية إلى كل كلمة يعرفها القاموس المحلي — والمجهولة تبقى كما هي بلا تخمين</string>
     <string name="drs__text_tools__tool_normalize_punctuation">معالجة علامات الترقيم</string>
     <string name="drs__text_tools__desc_normalize_punctuation">إزالة المسافة قبل الفاصلة والنقطة ووضع مسافة بعد المهما كان اتجاه النص</string>
     <string name="drs__text_tools__tool_clean_text">تنظيف شامل للنص</string>
