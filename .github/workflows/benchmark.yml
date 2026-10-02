@@ -31,7 +31,7 @@ jobs:
       # The run below needs a connected device / emulator with stable
       # thermals; on a device runner, produce results.json and gate it:
       - name: Run benchmarks + gate (device runners only)
-        if: runner.labels.contains('device')
+        if: contains(runner.labels, 'device')
         run: |
           ./gradlew :benchmark:connectedBenchmarkAndroidTest
           python3 ci/perf_budget_gate.py --measured benchmark-results.json --budgets ci/perf_budgets.json

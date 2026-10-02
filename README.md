@@ -4,9 +4,9 @@
 
 # DRS Smart Keyboard
 
-**لوحة مفاتيح أندرويد حرة ومفتوحة المصدر — عربية أولًا، خاصة بالكامل، وقابلة للتخصيص بعمق**
+**لوحة مفاتيح أندرويد من تطوير DRS — عربية أولًا، خاصة بالكامل، وقابلة للتخصيص بعمق**
 
-A free and open-source keyboard for Android — Arabic-first, fully private, deeply customizable.
+A DRS-built keyboard for Android — Arabic-first, fully private, deeply customizable.
 
 [![Version](https://img.shields.io/badge/version-1.0.0-0E9488?style=flat-square)](https://github.com/CTO-DRS/DRS-SmartKeyboard/releases/latest)
 [![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?style=flat-square&logo=android&logoColor=white)](https://android.com)
@@ -23,7 +23,7 @@ A free and open-source keyboard for Android — Arabic-first, fully private, dee
 
 ## نبذة عن المشروع
 
-**DRS Smart Keyboard** هو الإصدار الأول الرسمي من لوحة مفاتيح أندرويد متكاملة ومفتوحة المصدر، صُممت من الأساس لتكون **عربية أولًا** دون التنازل عن أي شيء لغير العربية: اتجاه RTL أصيل في كل شاشة، اقتراحات وتصحيح عربي، أشكال حروف محسوبة، وواجهة كاملة بالعربية والإنجليزية.
+**DRS Smart Keyboard** هو الإصدار الأول الرسمي من لوحة مفاتيح أندرويد متكاملة من تطوير DRS، صُممت من الأساس لتكون **عربية أولًا** دون التنازل عن أي شيء لغير العربية: اتجاه RTL أصيل في كل شاشة، اقتراحات وتصحيح عربي، أشكال حروف محسوبة، وواجهة كاملة بالعربية والإنجليزية.
 
 التطبيق مبني بتقنيات Android الحديثة (Kotlin + Jetpack Compose + Material 3)، ويعمل بموقع مستقل تمامًا: كل ما تكتبه وكل إعداداتك تبقى على جهازك، ولا تُرسل أي بيانات إلى أي جهة.
 
