@@ -49,6 +49,7 @@ import androidx.compose.material.icons.filled.SentimentNeutral
 import androidx.compose.material.icons.filled.Rule
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.ShortText
+import androidx.compose.material.icons.filled.Spellcheck
 import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.icons.filled.SortByAlpha
 import androidx.compose.material.icons.filled.SpaceBar
@@ -305,6 +306,15 @@ private val PANEL_SECTIONS: List<DrsTextToolsPanelSection> = listOf(
                 R.string.drs__text_tools__tool_remove_diacritics,
                 R.string.drs__text_tools__desc_remove_diacritics,
                 Icons.Default.FormatClear,
+            ),
+            // DRS v1.4.0 (public): the sentence vocalization — the honest
+            // counterpart: known words take their canonical harakat, unknown
+            // words stay untouched, never guessed.
+            toolItem(
+                DrsTextTool.TASHKEEL_TEXT,
+                R.string.drs__text_tools__tool_tashkeel_text,
+                R.string.drs__text_tools__desc_tashkeel_text,
+                Icons.Default.Spellcheck,
             ),
             // DRS v1.3.0: tatweel removal + digit conversions.
             toolItem(

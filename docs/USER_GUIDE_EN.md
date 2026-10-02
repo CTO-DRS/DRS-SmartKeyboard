@@ -59,6 +59,18 @@ with emoji and lighter colors — switch from the toolbar profile panel.
 Fast selection, case conversion, smart paste from the internal clipboard, and
 a context-aware tools panel (number, URL, email fields).
 
+**Deterministic text vocalization (new in v1.4.0):** in the text tools panel,
+«Vocalize text» adds canonical harakat to every word the local 3000-word
+lexicon knows — unknown words stay untouched, never guessed. Works on the
+selection or the whole field, and nothing ever leaves your device.
+
+**The deterministic smart clipboard (new in v1.3.0):** copy a link, phone
+number, verification code or amount, then open the smart clipboard panel from
+the switcher chip — a seven-way content class with ready one-tap variants:
+the tracking-parameter-free link, the unified Saudi phone forms, the extracted
+code, the amount in seven currencies, and the Western/Arabic digit flip. In a
+password field the clipboard is never read at all.
+
 ### The safe internal clipboard
 Your last copied items with previews. Copied media is protected by gates: it
 is never written to the system disk nor read before your approval, and its
