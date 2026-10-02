@@ -22,15 +22,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardReturn
 import androidx.compose.material.icons.automirrored.outlined.Backspace
 import androidx.compose.material.icons.filled.FormatClear
 import androidx.compose.runtime.Composable
@@ -45,15 +48,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.drs.smartkeyboard.R
 import com.drs.smartkeyboard.app.DrsPreferenceStore
 import com.drs.smartkeyboard.drs.DrsHarakat
+import com.drs.smartkeyboard.drs.DrsHarakatAdvisor
+import com.drs.smartkeyboard.drs.DrsHarakatWordOps
 import com.drs.smartkeyboard.drs.DrsKeyboardHarakat
 import com.drs.smartkeyboard.drs.DrsKeyboardHarakatKey
 import com.drs.smartkeyboard.drs.DrsPanelOrder
 import com.drs.smartkeyboard.drs.DrsStore
+import com.drs.smartkeyboard.drs.DrsWordTashkeel
 import com.drs.smartkeyboard.drs.HarakaInsertMode
 import com.drs.smartkeyboard.drs.HarakatSmartInsert
 import com.drs.smartkeyboard.drs.PanelUsageTracker
@@ -296,14 +306,22 @@ private fun gridSubheader(text: String) {
 }
 
 /**
- * لوحة الحركات — v1.16.0: the harakat KEYBOARD panel, «مشابه تمامًا
- * للوحة الحروف أو الأرقام»: four rows of the very same themed key
- * element the real keys render through (DrsImeUi.Key with its pressed
- * selector), at the real row height and margins. Smart insert (a mark
- * over a mark replaces it, shadda+haraka appends), the shadda combos
- * commit two characters, the real delete key repeats while held, the
- * real space key, and the recents strip leads with what this user
- * actually uses.
+ * لوحة الحركات — DRS v1.1.0: اللوحة الكاملة «مشابهة للوحة الحروف» —
+ * three full-width rows (nine marks, then tatweel + double vocalizations +
+ * madd forms + the definite-article lam, then the REAL bottom row
+ * حروف · ، · حذف · مسافة · . · إدخال) at the real row height, rendered
+ * through DrsImeUi.Key. Every mark key previews its effect in the corner
+ * (دَ) the same way the letters board previews number/symbol hints.
+ *
+ * The smart layer (v1.1.0): a contextual advice strip above the rows —
+ * the on-device advisor ([DrsHarakatAdvisor]) ranks the haraka that makes
+ * sense at the cursor (tanween completion, shadda's vowel, the
+ * definite-article lam, mark replacement, then the user's most-used),
+ * plus the lexicon word actions ([DrsWordTashkeel]): تشكيل الكلمة replaces
+ * the cursor word with its canonical vocalization and نزع التشكيل peels
+ * every mark off it, both atomically through the editor's word op.
+ * Smart insert (a mark over a mark replaces it, shadda+haraka appends)
+ * and the hold-to-repeat delete stay from v1.16/v1.21.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -316,7 +334,9 @@ fun DrsDiacriticsPanel(modifier: Modifier = Modifier) {
 
     val smartReplace by prefs.panels.harakatSmartReplace.collectAsState()
     val recentsEnabled by prefs.panels.panelRecents.collectAsState()
+    val adviceEnabled by prefs.panels.harakatSmartAdvice.collectAsState()
     var recents by remember { mutableStateOf(DrsPanelUsageStore.load(context, USAGE_PANEL_HARAKAT)) }
+    var commitStamp by remember { mutableIntStateOf(0) }
 
     RecordPanelOpen(ImeUiMode.DIACRITICS)
 
@@ -324,11 +344,6 @@ fun DrsDiacriticsPanel(modifier: Modifier = Modifier) {
         if (keyboardManager.activeState.isIncognitoMode) return
         DrsPanelUsageStore.record(context, USAGE_PANEL_HARAKAT, key)
         recents = DrsPanelUsageStore.load(context, USAGE_PANEL_HARAKAT)
-    }
-
-    fun commitText(text: String, usageKey: String?) {
-        editorInstance.commitText(text)
-        if (usageKey != null) recordUse(usageKey)
     }
 
     fun insertHaraka(haraka: Char) {
@@ -342,7 +357,35 @@ fun DrsDiacriticsPanel(modifier: Modifier = Modifier) {
         if (replaced == HarakaInsertMode.REPLACE_PREVIOUS) {
             editorInstance.deleteBackwards(OperationUnit.CHARACTERS)
         }
-        commitText(glyph, glyph)
+        editorInstance.commitText(glyph)
+        recordUse(glyph)
+        commitStamp++
+    }
+
+    fun commitText(text: String, usageKey: String?) {
+        editorInstance.commitText(text)
+        if (usageKey != null) recordUse(usageKey)
+        commitStamp++
+    }
+
+    fun tashkeelCurrentWord() {
+        val before = editorInstance.run { activeContent.getTextBeforeCursor(48) }
+        val word = DrsHarakatWordOps.currentWordBefore(before)
+        val vocalized = DrsWordTashkeel.vocalize(word) ?: return
+        if (editorInstance.replaceWordBeforeCursor(vocalized, word.length)) {
+            recordUse(vocalized)
+            commitStamp++
+        }
+    }
+
+    fun stripCurrentWord() {
+        val before = editorInstance.run { activeContent.getTextBeforeCursor(48) }
+        val word = DrsHarakatWordOps.currentWordBefore(before)
+        val stripped = DrsHarakatWordOps.stripDiacritics(word)
+        if (stripped.isEmpty() || stripped == word) return
+        if (editorInstance.replaceWordBeforeCursor(stripped, word.length)) {
+            commitStamp++
+        }
     }
 
     fun applyKey(key: DrsKeyboardHarakatKey) {
@@ -350,10 +393,17 @@ fun DrsDiacriticsPanel(modifier: Modifier = Modifier) {
             is DrsKeyboardHarakatKey.Haraka -> insertHaraka(key.char)
             is DrsKeyboardHarakatKey.Combo -> commitText(key.text, key.text)
             DrsKeyboardHarakatKey.Tatweel -> commitText("${DrsHarakat.TATWEEL}", null)
+            is DrsKeyboardHarakatKey.Literal -> commitText(key.text, null)
+            DrsKeyboardHarakatKey.BackToLetters ->
+                keyboardManager.activeState.imeUiMode = ImeUiMode.TEXT
             DrsKeyboardHarakatKey.Space ->
                 keyboardManager.inputEventDispatcher.sendDownUp(TextKeyData.SPACE)
             DrsKeyboardHarakatKey.Delete ->
                 keyboardManager.inputEventDispatcher.sendDownUp(TextKeyData.DELETE)
+            DrsKeyboardHarakatKey.Enter ->
+                keyboardManager.inputEventDispatcher.sendDownUp(
+                    TextKeyData(type = KeyType.ENTER_EDITING, code = KeyCode.ENTER, label = "enter"),
+                )
         }
     }
 
@@ -365,12 +415,42 @@ fun DrsDiacriticsPanel(modifier: Modifier = Modifier) {
 
     val systemSpec = DrsSystems.specOfName(DrsStore.state.value.userPath)
     val accent = if (isSystemInDarkTheme()) systemSpec.accentNight else systemSpec.accent
-    val recentsRow = remember(recents, recentsEnabled) {
+
+    val mruChars = remember(recents, recentsEnabled) {
         if (recentsEnabled) {
             PanelUsageTracker.topRecents(recents, DrsHarakat.GRID.map { it.toString() })
+                .map { it.first() }
         } else {
             emptyList()
         }
+    }
+
+    // The contextual advice — recomputed after every panel commit.
+    val beforeText = remember(adviceEnabled, commitStamp) {
+        if (adviceEnabled) {
+            editorInstance.run { activeContent.getTextBeforeCursor(24) }
+        } else {
+            ""
+        }
+    }
+    val advicePicks = remember(adviceEnabled, beforeText, mruChars) {
+        if (adviceEnabled) {
+            DrsHarakatAdvisor.advise(beforeText, mruChars)
+        } else {
+            emptyList()
+        }
+    }
+    val cursorWord = remember(adviceEnabled, beforeText) {
+        if (adviceEnabled) DrsHarakatWordOps.currentWordBefore(beforeText) else ""
+    }
+    val knownVocalized = remember(adviceEnabled, cursorWord) {
+        if (adviceEnabled) DrsWordTashkeel.vocalize(cursorWord) else null
+    }
+    val wordHasMarks = remember(adviceEnabled, cursorWord) {
+        adviceEnabled && DrsHarakatWordOps.containsDiacritics(cursorWord)
+    }
+    val alefNote = remember(adviceEnabled, beforeText) {
+        adviceEnabled && DrsHarakatAdvisor.alefNoteFor(beforeText)
     }
 
     val windowController = LocalWindowController.current
@@ -401,35 +481,83 @@ fun DrsDiacriticsPanel(modifier: Modifier = Modifier) {
         }
         PanelSwitcherChips(ImeUiMode.DIACRITICS, keyboardManager, accent)
 
-        // The recents strip — the smart layer above the keyboard rows.
-        if (recentsRow.isNotEmpty()) {
+        // The smart advice strip — the contextual layer above the rows.
+        if (adviceEnabled) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(DrsImeSizing.smartbarHeight)
-                    .padding(horizontal = windowSpec.keyMarginH),
-                horizontalArrangement = Arrangement.spacedBy(windowSpec.keyMarginH * 2),
+                    .padding(horizontal = windowSpec.keyMarginH)
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                recentsRow.forEach { char ->
-                    SnyggText(
-                        elementName = DrsImeUi.ClipboardSubheader.elementName,
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(accent.copy(alpha = 0.10f))
-                            .rippleClickable { insertHaraka(char.first()) }
-                            .padding(horizontal = 12.dp, vertical = 4.dp),
-                        text = DrsKeyboardHarakat.label(
-                            DrsKeyboardHarakatKey.Haraka(char.first()),
-                        ),
+                if (alefNote) {
+                    AdviceChip(
+                        label = stringRes(R.string.panel__harakat__alef_note),
+                        accent = accent,
+                        leading = false,
+                    )
+                }
+                advicePicks.forEach { pick ->
+                    val glyph = if (DrsHarakat.isCombiningMark(pick.commit.firstOrNull() ?: ' ')) {
+                        "${DrsKeyboardHarakat.DOTTED_CIRCLE}${pick.commit}"
+                    } else {
+                        pick.commit
+                    }
+                    AdviceChip(
+                        label = "$glyph · ${stringRes(adviceReasonLabel(pick.reason))}",
+                        accent = accent,
+                        leading = true,
+                        onClick = {
+                            feedback.keyPress()
+                            if (pick.commit.length == 1 && DrsHarakat.isCombiningMark(pick.commit.first())) {
+                                insertHaraka(pick.commit.first())
+                            } else {
+                                commitText(pick.commit, pick.commit)
+                            }
+                        },
+                    )
+                }
+                if (knownVocalized != null) {
+                    AdviceChip(
+                        label = "${stringRes(R.string.panel__harakat__tashkeel_word)}: $knownVocalized",
+                        accent = accent,
+                        leading = true,
+                        onClick = {
+                            feedback.keyPress()
+                            tashkeelCurrentWord()
+                        },
+                    )
+                }
+                if (wordHasMarks) {
+                    AdviceChip(
+                        label = stringRes(R.string.panel__harakat__strip_word),
+                        accent = accent,
+                        leading = true,
+                        onClick = {
+                            feedback.keyPress()
+                            stripCurrentWord()
+                        },
+                    )
+                }
+                mruChars.forEach { char ->
+                    AdviceChip(
+                        label = "${DrsKeyboardHarakat.DOTTED_CIRCLE}$char",
+                        accent = accent,
+                        leading = true,
+                        onClick = {
+                            feedback.keyPress()
+                            insertHaraka(char)
+                        },
                     )
                 }
             }
         }
 
-        // The keyboard itself: four rows x four keys, the exact anatomy
-        // of the numbers panel, rendered through DrsImeUi.Key.
-        DrsKeyboardHarakat.ROWS.forEach { rowKeys ->
+        // The board itself: two full-width harakat rows then the real
+        // bottom row — the anatomy of the letters keyboard.
+        DrsKeyboardHarakat.ROWS.forEachIndexed { rowIndex, rowKeys ->
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -438,10 +566,15 @@ fun DrsDiacriticsPanel(modifier: Modifier = Modifier) {
                 horizontalArrangement = Arrangement.spacedBy(windowSpec.keyMarginH * 2),
             ) {
                 rowKeys.forEach { key ->
+                    val weight = if (rowIndex == DrsKeyboardHarakat.ROWS.lastIndex && key is DrsKeyboardHarakatKey.Space) {
+                        2.2f
+                    } else {
+                        1f
+                    }
                     HarakatKeyboardKey(
                         key = key,
                         modifier = Modifier
-                            .weight(1f)
+                            .weight(weight)
                             .fillMaxHeight()
                             .padding(vertical = windowSpec.keyMarginV),
                         onPress = {
@@ -457,11 +590,47 @@ fun DrsDiacriticsPanel(modifier: Modifier = Modifier) {
     }
 }
 
+/** The localized label of an advisor reason (the smart strip chips). */
+@Composable
+private fun adviceReasonLabel(reason: DrsHarakatAdvisor.AdviceReason): Int = when (reason) {
+    DrsHarakatAdvisor.AdviceReason.AFTER_SHADDA -> R.string.panel__harakat__advice_after_shadda
+    DrsHarakatAdvisor.AdviceReason.DEFINITE_LAM -> R.string.panel__harakat__advice_definite_lam
+    DrsHarakatAdvisor.AdviceReason.TANWEEN_ALEF -> R.string.panel__harakat__advice_tanween_alef
+    DrsHarakatAdvisor.AdviceReason.OVER_MARK -> R.string.panel__harakat__advice_over_mark
+    DrsHarakatAdvisor.AdviceReason.MRU -> R.string.panel__harakat__advice_mru
+}
+
+/** One chip of the smart advice strip ([leading] chips get the accent fill). */
+@Composable
+private fun AdviceChip(
+    label: String,
+    accent: androidx.compose.ui.graphics.Color,
+    leading: Boolean,
+    onClick: (() -> Unit)? = null,
+) {
+    val modifier = if (onClick != null) {
+        Modifier
+            .clip(CircleShape)
+            .background(if (leading) accent.copy(alpha = 0.20f) else accent.copy(alpha = 0.08f))
+            .rippleClickable { onClick() }
+    } else {
+        Modifier
+            .clip(CircleShape)
+            .background(accent.copy(alpha = 0.08f))
+    }
+    SnyggText(
+        elementName = DrsImeUi.ClipboardSubheader.elementName,
+        modifier = modifier.padding(horizontal = 12.dp, vertical = 5.dp),
+        text = label,
+    )
+}
+
 /**
- * One keyboard key of the harakat panel — the SAME themed element the
+ * One keyboard key of the harakat board — the SAME themed element the
  * real keys render through (DrsImeUi.Key with its pressed selector), so
- * the panel looks exactly like the letters/numbers panels. [holdRepeat]
- * turns the key into the hold-to-repeat delete key.
+ * the board looks exactly like the letters/numbers boards. [holdRepeat]
+ * turns the key into the hold-to-repeat delete key; the corner hint
+ * previews the mark on the sample letter (دَ) like the real hinted keys.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -488,31 +657,89 @@ private fun HarakatKeyboardKey(
         }
     }
 
+    // DRS a11y/i18n/ux (r0-I): every board key speaks to TalkBack —
+    // marks use their localized names, control keys their own strings.
+    val a11yDescription = when (key) {
+        is DrsKeyboardHarakatKey.Haraka -> stringRes(harakaNameRes(key.char))
+        is DrsKeyboardHarakatKey.Combo -> stringRes(R.string.panel__harakat__combo_name)
+        DrsKeyboardHarakatKey.Tatweel -> stringRes(R.string.panel__harakat__name_tatweel)
+        is DrsKeyboardHarakatKey.Literal -> key.text
+        DrsKeyboardHarakatKey.BackToLetters ->
+            stringRes(R.string.key__a11y_harakat_back_to_letters)
+        DrsKeyboardHarakatKey.Delete -> stringRes(R.string.key__a11y_delete)
+        DrsKeyboardHarakatKey.Space -> stringRes(R.string.panel__harakat__space_bar)
+        DrsKeyboardHarakatKey.Enter -> stringRes(R.string.key__a11y_enter)
+    }
+
     SnyggBox(
         elementName = DrsImeUi.Key.elementName,
         selector = if (pressed) SnyggSelector.PRESSED else SnyggSelector.NONE,
-        modifier = modifier,
+        modifier = modifier.semantics {
+            role = Role.Button
+            contentDescription = a11yDescription
+        },
         clickAndSemanticsModifier = Modifier.combinedClickable(
             interactionSource = interaction,
             indication = null,
             onClick = { if (!holdRepeat) onPress() },
         ),
     ) {
-        if (key is DrsKeyboardHarakatKey.Delete) {
-            SnyggIcon(
-                modifier = Modifier.align(Alignment.Center),
-                imageVector = Icons.AutoMirrored.Outlined.Backspace,
-                // DRS a11y/i18n/ux (r0-I): the delete key of the harakat
-                // keyboard panel is icon-only (was null).
-                contentDescription = stringRes(R.string.key__a11y_delete),
-            )
-        } else {
-            SnyggText(
-                modifier = Modifier.align(Alignment.Center),
-                text = DrsKeyboardHarakat.label(key),
-            )
+        when (key) {
+            DrsKeyboardHarakatKey.Delete -> {
+                SnyggIcon(
+                    modifier = Modifier.align(Alignment.Center),
+                    imageVector = Icons.AutoMirrored.Outlined.Backspace,
+                    // DRS a11y/i18n/ux (r0-I): the delete key is icon-only;
+                    // the spoken label lives in the semantics above.
+                    contentDescription = null,
+                )
+            }
+            DrsKeyboardHarakatKey.Enter -> {
+                SnyggIcon(
+                    modifier = Modifier.align(Alignment.Center),
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardReturn,
+                    contentDescription = null,
+                )
+            }
+            else -> {
+                val displayLabel = if (key is DrsKeyboardHarakatKey.Space) {
+                    DrsKeyboardHarakat.SPACE_BAR_LABEL
+                } else {
+                    DrsKeyboardHarakat.label(key)
+                }
+                SnyggText(
+                    modifier = Modifier.align(Alignment.Center),
+                    text = displayLabel,
+                )
+                // The corner hint: the mark previewed on the sample letter,
+                // the same corner the real keys show their number/symbol
+                // hints in.
+                DrsKeyboardHarakat.hintLabel(key)?.let { hint ->
+                    SnyggText(
+                        elementName = DrsImeUi.KeyHint.elementName,
+                        modifier = Modifier
+                            .wrapContentSize()
+                            .align(Alignment.TopEnd),
+                        text = hint,
+                    )
+                }
+            }
         }
     }
+}
+
+/** The localized name of a combining haraka (the TalkBack label). */
+@Composable
+private fun harakaNameRes(char: Char): Int = when (char) {
+    DrsHarakat.FATHA -> R.string.panel__harakat__name_fatha
+    DrsHarakat.DAMMA -> R.string.panel__harakat__name_damma
+    DrsHarakat.KASRA -> R.string.panel__harakat__name_kasra
+    DrsHarakat.SUKUN -> R.string.panel__harakat__name_sukun
+    DrsHarakat.SHADDA -> R.string.panel__harakat__name_shadda
+    DrsHarakat.FATHATAN -> R.string.panel__harakat__name_fathatan
+    DrsHarakat.DAMMATAN -> R.string.panel__harakat__name_dammatan
+    DrsHarakat.KASRATAN -> R.string.panel__harakat__name_kasratan
+    else -> R.string.panel__harakat__name_superscript_alef
 }
 
 /**

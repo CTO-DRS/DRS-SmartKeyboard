@@ -741,6 +741,68 @@ class EditorInstance(context: Context) : AbstractEditorInstance(context) {
     }
 
     /**
+     * DRS v1.1.0: لوحة الحركات الذكية — replaces the Arabic word ending at
+     * the cursor (the trailing [wordLength] characters before the cursor,
+     * marks included) with [transformed], in one atomic batch edit the host
+     * app sees as a single change. Used by the smart harakat board's word
+     * actions (تشكيل الكلمة / نزع التشكيل) whose decision comes from the
+     * pure [com.drs.smartkeyboard.drs.DrsWordTashkeel] layer. Raw input
+     * editors, incognito mode and password fields are refused — the word
+     * surface must never rewrite credentials.
+     *
+     * @return True when the word was replaced, false otherwise (no cursor
+     *         word, refused context, or input-connection error).
+     */
+    fun replaceWordBeforeCursor(transformed: String, wordLength: Int): Boolean {
+        autoSpace.setInactive()
+        phantomSpace.setInactive()
+        if (transformed.isEmpty() || wordLength <= 0) return false
+        if (activeInfo.isRawInputEditor || activeState.isIncognitoMode ||
+            activeState.keyVariation == KeyVariation.PASSWORD
+        ) {
+            return false
+        }
+        val ic = currentInputConnection() ?: return false
+        ic.beginBatchEdit()
+        try {
+            ic.finishComposingText()
+            val extracted = try {
+                ic.getExtractedText(ExtractedTextRequest(), 0)
+            } catch (_: Throwable) {
+                null
+            }
+            val full: String
+            val cursor: Int
+            if (extracted?.text != null) {
+                full = extracted.text.toString()
+                cursor = extracted.selectionEnd.coerceIn(0, full.length)
+            } else {
+                // Fallback: the content window maintained by the IME itself.
+                val content = activeContent
+                full = content.text.toString()
+                cursor = content.selection.end.coerceIn(0, full.length)
+            }
+            val to = cursor
+            val from = (to - wordLength).coerceIn(0, to)
+            if (from >= to) return false
+            val ok = ic.setSelection(from, to) && ic.commitText(transformed, 1)
+            if (!ok) {
+                appContext.showShortToastSync(R.string.drs__text_tools__failed)
+            } else {
+                // Raw-IC commit succeeded — same queue-invalidation contract
+                // as the text tools (DRS p7 (F4)).
+                onRawTextToolCommit()
+            }
+            return ok
+        } finally {
+            try {
+                ic.endBatchEdit()
+            } catch (_: Throwable) {
+            }
+        }
+    }
+
+    /**
      * Cursor-relative line operations: delete the whole (selected) line(s),
      * or delete from the cursor to the start/end of the line. Implemented on
      * the real input connection so behavior matches the actual field content.

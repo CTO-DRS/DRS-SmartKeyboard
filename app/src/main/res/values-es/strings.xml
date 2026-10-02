@@ -1269,6 +1269,21 @@
     <string name="pref__panels__recents__summary">Recuerda tus tarjetas más usadas en los paneles de harakat, símbolos y letras — solo local</string>
     <string name="pref__panels__smart_order__label">Orden inteligente de paneles</string>
     <string name="pref__panels__smart_order__summary">El conmutador de paneles se reordena solo: el panel actual va primero, luego los más abiertos — solo local</string>
+    <!-- DRS v1.1.0: el tablero completo de harakat inteligente — asesor contextual y vocalización de palabras -->
+    <string name="panel__harakat__advice_after_shadda">shadda + fatha</string>
+    <string name="panel__harakat__advice_definite_lam">sukun de la lam definida</string>
+    <string name="panel__harakat__advice_tanween_alef">completa el tanween con alef</string>
+    <string name="panel__harakat__advice_over_mark">reemplazar la marca</string>
+    <string name="panel__harakat__advice_mru">más usados</string>
+    <string name="panel__harakat__alef_note">Una alef nunca lleva haraka — marca la letra anterior</string>
+    <string name="panel__harakat__tashkeel_word">Vocalizar la palabra</string>
+    <string name="panel__harakat__strip_word">Quitar diacríticos</string>
+    <string name="panel__harakat__no_safe_word">No hay sugerencia segura para esta palabra</string>
+    <string name="panel__harakat__space_bar">Harakat inteligentes</string>
+    <string name="panel__harakat__back_to_letters">Letras</string>
+    <string name="key__a11y_harakat_back_to_letters">Volver al teclado de letras</string>
+    <string name="pref__panels__harakat_advice__label">Consejo inteligente de haraka</string>
+    <string name="pref__panels__harakat_advice__summary">Una franja sugiere la haraka que encaja con el texto antes del cursor, y vocaliza palabras comunes — solo en el dispositivo</string>
     <string name="key__a11y_shift">Tecla Mayús</string>
     <string name="key__a11y_caps_lock">Bloqueo de mayúsculas</string>
     <string name="key__a11y_delete">Borrar</string>

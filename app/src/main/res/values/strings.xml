@@ -2459,6 +2459,21 @@
     <string name="drs__unified__bar_slots_hint">شريط المهام ثابت الآن: يعرض 10 مهام فقط فوق شريط الاقتراحات — تثبياتك أولًا ثم يُستكمل من الكتالوج. اضغط مطولًا على أي مهمة لتغييرها، وافتح الدرج (السحب الجانبي) لترتيبها وتثبيت غيرها.</string>
     <string name="pref__panels__smart_order__label">الترتيب الذكي للوحات</string>
     <string name="pref__panels__smart_order__summary">رقاقات مبدّل اللوحات تُرتَّب تلقائيًا: اللوحة الحالية أولًا ثم الأكثر فتحًا — محليًا فقط</string>
+    <!-- DRS v1.1.0: لوحة الحركات الذكية الكاملة — المستشار السياقي ومشكِّل الكلمة -->
+    <string name="panel__harakat__advice_after_shadda">شدّة + فتحة</string>
+    <string name="panel__harakat__advice_definite_lam">سكون لام التعريف</string>
+    <string name="panel__harakat__advice_tanween_alef">أكمل التنوين بألف</string>
+    <string name="panel__harakat__advice_over_mark">استبدال الحركة</string>
+    <string name="panel__harakat__advice_mru">الأكثر استخدامًا</string>
+    <string name="panel__harakat__alef_note">الألف لا تُشكَّل — ضع الحركة على الحرف السابق</string>
+    <string name="panel__harakat__tashkeel_word">تشكيل الكلمة</string>
+    <string name="panel__harakat__strip_word">نزع التشكيل</string>
+    <string name="panel__harakat__no_safe_word">لا اقتراح آمن لهذه الكلمة</string>
+    <string name="panel__harakat__space_bar">الحركات الذكية</string>
+    <string name="panel__harakat__back_to_letters">حروف</string>
+    <string name="key__a11y_harakat_back_to_letters">العودة إلى لوحة الحروف</string>
+    <string name="pref__panels__harakat_advice__label">التوصية الذكية بالحركة</string>
+    <string name="pref__panels__harakat_advice__summary">شريط يقترح الحركة الأنسب لما قبل المؤشر، وتشكيل الكلمة الشائعة قاموسيًا — على الجهاز فقط</string>
     <string name="key__a11y_shift">مفتاح التحويل</string>
     <string name="key__a11y_caps_lock">تثبيت التحويل</string>
     <string name="key__a11y_delete">حذف</string>

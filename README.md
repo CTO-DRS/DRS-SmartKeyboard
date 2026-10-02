@@ -8,7 +8,7 @@
 
 A DRS-built keyboard for Android — Arabic-first, fully private, deeply customizable.
 
-[![Version](https://img.shields.io/badge/version-1.0.0-0E9488?style=flat-square)](https://github.com/CTO-DRS/DRS-SmartKeyboard/releases/latest)
+[![Version](https://img.shields.io/badge/version-1.1.0-0E9488?style=flat-square)](https://github.com/CTO-DRS/DRS-SmartKeyboard/releases/latest)
 [![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?style=flat-square&logo=android&logoColor=white)](https://android.com)
 [![Release](https://img.shields.io/github/v/release/CTO-DRS/DRS-SmartKeyboard?style=flat-square&display_name=release)](https://github.com/CTO-DRS/DRS-SmartKeyboard/releases/latest)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/CTO-DRS/DRS-SmartKeyboard/release.yml?style=flat-square&label=Release%20Build)](https://github.com/CTO-DRS/DRS-SmartKeyboard/actions/workflows/release.yml)
@@ -45,6 +45,7 @@ A DRS-built keyboard for Android — Arabic-first, fully private, deeply customi
 | 🔄 **مركز تحديثات مدمج** | فحص وتنزيل وتثبيت أحدث إصدار من داخل التطبيق |
 | 📋 **حافظة متكاملة** | سجل ذكي، تثبيت عناصر، فلاتر، وصور |
 | ✍️ **كتابة ذكية** | اقتراحات، تصحيح، إيماءات تمرير، اختصارات نصية تشمل التاريخ الهجري |
+| 🎯 **لوحة الحركات الذكية الكاملة** | لوحة كاملة بتشريح لوحة الحروف الحقيقي، مستشار سياقي يقترح الحركة الأنسب، وتشكيل الكلمات الشائعة قاموسيًا بضغطة — على الجهاز فقط |
 | 🩺 **تشخيص ذاتي** | فحص شامل بنتيجة Pass/Warning/Error وأسباب الحلول، مع سجل أحداث تقني آمن |
 | 💾 **نسخ احتياطي واستعادة** | إعداداتك وسماتك وملفاتك الشخصية في ملف واحد قابل للنقل |
 | 🏆 **اقتصاد مكافآت حقيقي** | اكسب من الكتابة الفعلية، وخصص مظهر نظامك بعناصر حصرية |

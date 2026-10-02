@@ -949,6 +949,16 @@ abstract class DrsPreferenceModel : PreferenceModel() {
             key = "panels__smart_order",
             default = true,
         )
+        /**
+         * DRS v1.1.0: the smart harakat board's contextual advice strip —
+         * the on-device advisor ranks the harakat that make sense at the
+         * cursor (tanween completion, shadda's vowel, the definite-article
+         * lam) plus the lexicon word-tashkeel action. Off = a plain board.
+         */
+        val harakatSmartAdvice = boolean(
+            key = "panels__harakat_smart_advice",
+            default = true,
+        )
     }
 
     val spelling = Spelling()

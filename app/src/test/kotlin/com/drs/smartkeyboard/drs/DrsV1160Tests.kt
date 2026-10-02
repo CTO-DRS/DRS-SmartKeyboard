@@ -173,12 +173,15 @@ class DrsV1160Tests : FunSpec({
     }
 
     // -------------------------------------------------------------
-    // لوحة الحركات كلوحة مفاتيح: the 4x4 keyboard arrangement
+    // لوحة الحركات كلوحة مفاتيح: the v1.1.0 FULL-board arrangement
+    // (two full-width harakat rows + the real bottom row)
     // -------------------------------------------------------------
 
-    test("the harakat keyboard is four rows of four keys (the numeric panel anatomy)") {
-        DrsKeyboardHarakat.ROWS shouldHaveSize 4
-        DrsKeyboardHarakat.ROWS.forEach { row -> row shouldHaveSize 4 }
+    test("the harakat board is two full-width harakat rows plus the bottom row") {
+        DrsKeyboardHarakat.ROWS shouldHaveSize 3
+        DrsKeyboardHarakat.ROWS[0] shouldHaveSize 9
+        DrsKeyboardHarakat.ROWS[1] shouldHaveSize 10
+        DrsKeyboardHarakat.ROWS[2] shouldHaveSize 6
     }
 
     test("every mark, the tatweel, delete and space are present") {
@@ -191,11 +194,43 @@ class DrsV1160Tests : FunSpec({
         keys.count { it is DrsKeyboardHarakatKey.Space } shouldBe 1
     }
 
-    test("the combos row is the four shadda pairs") {
-        val combos = DrsKeyboardHarakat.ROWS.last()
+    test("the bottom row is the real letters-board anatomy") {
+        val bottom = DrsKeyboardHarakat.ROWS.last()
+        (bottom.first() is DrsKeyboardHarakatKey.BackToLetters) shouldBe true
+        (bottom[2] is DrsKeyboardHarakatKey.Delete) shouldBe true
+        (bottom[3] is DrsKeyboardHarakatKey.Space) shouldBe true
+        (bottom.last() is DrsKeyboardHarakatKey.Enter) shouldBe true
+        val literals = bottom.filterIsInstance<DrsKeyboardHarakatKey.Literal>().map { it.text }
+        literals shouldContainExactly listOf("،", ".")
+    }
+
+    test("the double vocalization row carries the four shadda pairs plus madd forms") {
+        val combos = DrsKeyboardHarakat.ROWS[1]
             .filterIsInstance<DrsKeyboardHarakatKey.Combo>()
             .map { it.text }
-        combos shouldContainExactly DrsHarakat.COMBOS
+        combos.take(4) shouldContainExactly DrsHarakat.COMBOS
+        combos shouldContainExactly listOf(
+            "${DrsHarakat.SHADDA}${DrsHarakat.FATHA}",
+            "${DrsHarakat.SHADDA}${DrsHarakat.DAMMA}",
+            "${DrsHarakat.SHADDA}${DrsHarakat.KASRA}",
+            "${DrsHarakat.SHADDA}${DrsHarakat.SUKUN}",
+            "اً", // تنوين الفتح بألفه
+            "َا", // مد الفتحة
+            "ُو", // مد الضمة
+            "ِي", // مد الكسرة
+        )
+        // ولام التعريف المسكنة مفتاح نصي في نهاية الصف
+        DrsKeyboardHarakat.ROWS[1].last() shouldBe DrsKeyboardHarakatKey.Literal("الْ")
+    }
+
+    test("every mark key previews its effect on the sample letter") {
+        val fatha = DrsKeyboardHarakatKey.Haraka(DrsHarakat.FATHA)
+        DrsKeyboardHarakat.hintLabel(fatha) shouldBe "${DrsKeyboardHarakat.HINT_SAMPLE_LETTER}${DrsHarakat.FATHA}"
+        val combo = DrsKeyboardHarakatKey.Combo("${DrsHarakat.SHADDA}${DrsHarakat.DAMMA}")
+        DrsKeyboardHarakat.hintLabel(combo) shouldBe "${DrsKeyboardHarakat.HINT_SAMPLE_LETTER}${DrsHarakat.SHADDA}${DrsHarakat.DAMMA}"
+        DrsKeyboardHarakat.hintLabel(DrsKeyboardHarakatKey.Literal("،")) shouldBe null
+        DrsKeyboardHarakat.hintLabel(DrsKeyboardHarakatKey.Space) shouldBe null
+        DrsKeyboardHarakat.HINT_SAMPLE_LETTER shouldBe 'د'
     }
 
     test("labels render combining marks on the dotted circle") {
@@ -211,12 +246,14 @@ class DrsV1160Tests : FunSpec({
         DrsKeyboardHarakat.DOTTED_CIRCLE shouldBe '◌'
     }
 
-    test("HARAKAT_KEYS excludes the delete and space keys") {
+    test("HARAKAT_KEYS is the two harakat rows only (no bottom-row controls)") {
         DrsKeyboardHarakat.HARAKAT_KEYS.forEach { key ->
             (key !is DrsKeyboardHarakatKey.Delete) shouldBe true
             (key !is DrsKeyboardHarakatKey.Space) shouldBe true
+            (key !is DrsKeyboardHarakatKey.Enter) shouldBe true
+            (key !is DrsKeyboardHarakatKey.BackToLetters) shouldBe true
         }
-        DrsKeyboardHarakat.HARAKAT_KEYS shouldHaveSize 14
+        DrsKeyboardHarakat.HARAKAT_KEYS shouldHaveSize 19
         (DrsKeyboardHarakat.HARAKAT_KEYS.first() is DrsKeyboardHarakatKey.Haraka) shouldBe true
     }
 

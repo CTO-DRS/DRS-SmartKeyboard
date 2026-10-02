@@ -62,6 +62,15 @@ object DrsHarakat {
         "$SHADDA$KASRA", // شِّ
         "$SHADDA$SUKUN", // شّْ
     )
+
+    /**
+     * DRS v1.1.0: true for the alef family (bare, hamza-carriers, alif
+     * wasla, alef maqsura) — letters that can never carry a combining
+     * haraka, so the smart advisor honestly refuses to recommend one.
+     */
+    fun isAlefLetter(c: Char): Boolean {
+        return c == 'ا' || c == 'أ' || c == 'إ' || c == 'آ' || c == 'ٱ' || c == 'ى'
+    }
 }
 
 /** How the smart insert engine applies the tapped haraka. */
@@ -172,10 +181,16 @@ object SymbolSmartSuggestor {
  * DRS v1.16.0 — لوحة الحركات كلوحة مفاتيح كاملة (the harakat KEYBOARD
  * panel). The user asked for a panel «مشابه تمامًا للوحة الحروف أو
  * الأرقام» — exactly like the letters/numbers panels — so the catalogue
- * is arranged as a real keyboard: four rows of four wide keys each (the
- * numeric panel's anatomy), rendered through the very same themed key
+ * is arranged as a real keyboard rendered through the very same themed key
  * element the real keys use. Pure data + pure labels so the arrangement
  * and its display are pinned by unit tests.
+ *
+ * DRS v1.1.0 — اللوحة الكاملة «مشابهة للوحة الحروف في كل صفوفها»: two
+ * full-width harakat rows (nine marks, then tatweel + the double
+ * vocalizations + the madd forms + the definite-article lam) followed by
+ * the REAL bottom-row anatomy of the letters board — back-to-letters,
+ * comma, space bar, period, enter — so the board behaves like a complete
+ * keyboard, not a grid.
  */
 sealed interface DrsKeyboardHarakatKey {
 
@@ -188,11 +203,20 @@ sealed interface DrsKeyboardHarakatKey {
     /** The tatweel (stretch) — not a combining mark. */
     object Tatweel : DrsKeyboardHarakatKey
 
+    /** A literal text key (the comma and period of the bottom row). */
+    data class Literal(val text: String) : DrsKeyboardHarakatKey
+
+    /** Back to the regular letters board. */
+    object BackToLetters : DrsKeyboardHarakatKey
+
     /** The real delete key (hold-to-repeat in the UI layer). */
     object Delete : DrsKeyboardHarakatKey
 
     /** The real space key. */
     object Space : DrsKeyboardHarakatKey
+
+    /** The real enter key. */
+    object Enter : DrsKeyboardHarakatKey
 }
 
 object DrsKeyboardHarakat {
@@ -200,13 +224,43 @@ object DrsKeyboardHarakat {
     /** The dotted circle base the combining marks render on. */
     const val DOTTED_CIRCLE = '◌' // U+25CC
 
+    /** The label of the back-to-letters key of the bottom row. */
+    const val BACK_TO_LETTERS_LABEL = "حروف"
+
+    /** The space-bar label of the harakat board. */
+    const val SPACE_BAR_LABEL = "الحركات الذكية"
+
+    /** The sample letter the key hints preview the haraka on. */
+    const val HINT_SAMPLE_LETTER = 'د'
+
+    /** True when [key] carries a combining mark (directly or in a combo). */
+    fun isMarkKey(key: DrsKeyboardHarakatKey): Boolean = when (key) {
+        is DrsKeyboardHarakatKey.Haraka -> true
+        is DrsKeyboardHarakatKey.Combo -> true
+        else -> false
+    }
+
     /**
-     * The full keyboard arrangement — four rows x four keys, the exact
-     * anatomy of the numbers panel:
-     *  1. التنوينات + الألف الخنجرية
-     *  2. الحركات الأساسية
-     *  3. الشدة والتطويل + مفتاحا الحذف والمسافة
-     *  4. التشكيل المزدوج (شدة + حركة)
+     * The preview label of a key's corner hint: the mark rendered on the
+     * sample letter (دَ) exactly like the letters board previews its
+     * number/symbol hints in the corner. The tatweel, literals and control
+     * keys have no preview.
+     */
+    fun hintLabel(key: DrsKeyboardHarakatKey): String? = when (key) {
+        is DrsKeyboardHarakatKey.Haraka -> "$HINT_SAMPLE_LETTER${key.char}"
+        is DrsKeyboardHarakatKey.Combo -> "$HINT_SAMPLE_LETTER${key.text}"
+        DrsKeyboardHarakatKey.Tatweel -> "$HINT_SAMPLE_LETTER${DrsHarakat.TATWEEL}"
+        else -> null
+    }
+
+    /**
+     * The full board arrangement — two full-width rows then the real
+     * bottom row, the anatomy of the letters keyboard:
+     *  1. الحركات التسع — التنوينات، الألف الخنجرية، الشدة، السكون،
+     *     الفتحة والضمة والكسرة
+     *  2. التطويل، التشكيل المزدوج (شدة + حركة)، تنوين الفتح بألفه،
+     *     مدود الحركات الثلاثة، ولام التعريف المسكنة
+     *  3. الصف السفلي الحقيقي: حروف · ، · حذف · مسافة · . · إدخال
      */
     val ROWS: List<List<DrsKeyboardHarakatKey>> = listOf(
         listOf(
@@ -214,43 +268,52 @@ object DrsKeyboardHarakat {
             DrsKeyboardHarakatKey.Haraka(DrsHarakat.DAMMATAN),
             DrsKeyboardHarakatKey.Haraka(DrsHarakat.KASRATAN),
             DrsKeyboardHarakatKey.Haraka(DrsHarakat.SUPERSCRIPT_ALEF),
-        ),
-        listOf(
+            DrsKeyboardHarakatKey.Haraka(DrsHarakat.SHADDA),
+            DrsKeyboardHarakatKey.Haraka(DrsHarakat.SUKUN),
             DrsKeyboardHarakatKey.Haraka(DrsHarakat.FATHA),
             DrsKeyboardHarakatKey.Haraka(DrsHarakat.DAMMA),
             DrsKeyboardHarakatKey.Haraka(DrsHarakat.KASRA),
-            DrsKeyboardHarakatKey.Haraka(DrsHarakat.SUKUN),
         ),
         listOf(
-            DrsKeyboardHarakatKey.Haraka(DrsHarakat.SHADDA),
             DrsKeyboardHarakatKey.Tatweel,
-            DrsKeyboardHarakatKey.Delete,
-            DrsKeyboardHarakatKey.Space,
-        ),
-        listOf(
             DrsKeyboardHarakatKey.Combo("${DrsHarakat.SHADDA}${DrsHarakat.FATHA}"),
             DrsKeyboardHarakatKey.Combo("${DrsHarakat.SHADDA}${DrsHarakat.DAMMA}"),
             DrsKeyboardHarakatKey.Combo("${DrsHarakat.SHADDA}${DrsHarakat.KASRA}"),
             DrsKeyboardHarakatKey.Combo("${DrsHarakat.SHADDA}${DrsHarakat.SUKUN}"),
+            DrsKeyboardHarakatKey.Combo("اً"), // كتابًا — تنوين الفتح على ألفه
+            DrsKeyboardHarakatKey.Combo("َا"), // مد الفتحة
+            DrsKeyboardHarakatKey.Combo("ُو"), // مد الضمة
+            DrsKeyboardHarakatKey.Combo("ِي"), // مد الكسرة
+            DrsKeyboardHarakatKey.Literal("الْ"), // لام التعريف مسكنة
+        ),
+        listOf(
+            DrsKeyboardHarakatKey.BackToLetters,
+            DrsKeyboardHarakatKey.Literal("،"),
+            DrsKeyboardHarakatKey.Delete,
+            DrsKeyboardHarakatKey.Space,
+            DrsKeyboardHarakatKey.Literal("."),
+            DrsKeyboardHarakatKey.Enter,
         ),
     )
 
-    /** All the harakat keys of the arrangement (no delete/space). */
-    val HARAKAT_KEYS: List<DrsKeyboardHarakatKey> = ROWS.flatten()
-        .filter { it !is DrsKeyboardHarakatKey.Delete && it !is DrsKeyboardHarakatKey.Space }
+    /** All the harakat keys of the arrangement (no bottom-row controls). */
+    val HARAKAT_KEYS: List<DrsKeyboardHarakatKey> = ROWS.take(2).flatten()
 
     /**
      * The display label of a key: combining marks render on the dotted
      * circle (◌َ) so a lone mark is visible exactly like real Arabic
-     * keyboards show it; the tatweel, space and delete keys have their
-     * own honest glyphs.
+     * keyboards show it; the tatweel, literals and control keys have
+     * their own honest glyphs.
      */
     fun label(key: DrsKeyboardHarakatKey): String = when (key) {
         is DrsKeyboardHarakatKey.Haraka -> "$DOTTED_CIRCLE${key.char}"
         is DrsKeyboardHarakatKey.Combo -> "$DOTTED_CIRCLE${key.text}"
         DrsKeyboardHarakatKey.Tatweel -> "${DrsHarakat.TATWEEL}"
+        is DrsKeyboardHarakatKey.Literal -> key.text
+        DrsKeyboardHarakatKey.BackToLetters -> BACK_TO_LETTERS_LABEL
         DrsKeyboardHarakatKey.Delete -> "\u232B"
         DrsKeyboardHarakatKey.Space -> "\u2423"
+        DrsKeyboardHarakatKey.Enter -> "\u23CE"
     }
 }
 

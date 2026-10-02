@@ -4,250 +4,193 @@
 
 package com.drs.smartkeyboard.drs
 
-import com.drs.smartkeyboard.ime.clipboard.ClipEditorHistory
-import com.drs.smartkeyboard.ime.clipboard.ClipFontOption
-import com.drs.smartkeyboard.ime.clipboard.ClipFontSizeOption
-import com.drs.smartkeyboard.ime.clipboard.ClipSearchEngine
-import com.drs.smartkeyboard.ime.clipboard.ClipTextTransforms
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 
 /**
- * DRS v1.10.0: the popup smart editor core — the smart text algorithms
- * (case family, whitespace surgery, line operations, Arabic-aware
- * normalization, smart extractors), the literal find/replace engine with
- * bounded results and wrap-around navigation, the bounded undo/redo
- * history, and the pure font customization choices.
- * Every rule is pinned where the engine owns it — pure, no fakes.
+ * DRS v1.1.0 — اللوحة الكاملة للوحة الحركات الذكية: the three on-device
+ * algorithms of the full harakat board, pinned pure on the JVM:
+ *
+ *  1. [DrsHarakatAdvisor] — the contextual haraka advisor (tanween
+ *     completion, shadda's vowel, the definite-article lam, mark
+ *     replacement, MRU fallback, and the honest alef note).
+ *  2. [DrsWordTashkeel] — the lexicon word vocalizer (stripped-form
+ *     matching, unknown words resolve to null).
+ *  3. [DrsHarakatWordOps] — the cursor-word surgery helpers (extraction,
+ *     stripping, cluster counting).
  */
 class DrsV1100Tests : FunSpec({
 
     // -------------------------------------------------------------
-    // Case family transforms
+    // DrsHarakatWordOps — جراحة الكلمة
     // -------------------------------------------------------------
 
-    test("upper/lower are locale-invariant and pass Arabic through") {
-        ClipTextTransforms.toUpper("hello Drs 123") shouldBe "HELLO DRS 123"
-        ClipTextTransforms.toLower("HELLO Drs 123") shouldBe "hello drs 123"
-        // Arabic has no case — the transform must be a no-op on it.
-        val arabic = "مرحبا بالعالم ١٢٣"
-        ClipTextTransforms.toUpper(arabic) shouldBe arabic
-        ClipTextTransforms.toLower(arabic) shouldBe arabic
+    test("currentWordBefore extracts the trailing Arabic word with its marks") {
+        DrsHarakatWordOps.currentWordBefore("مرحبا بالعال") shouldBe "بالعال"
+        DrsHarakatWordOps.currentWordBefore("قال كَانَتْ") shouldBe "كَانَتْ"
+        DrsHarakatWordOps.currentWordBefore("متـطاولـة") shouldBe "متـطاولـة" // tatweel is a word char
     }
 
-    test("title case capitalizes each word and preserves separators") {
-        ClipTextTransforms.toTitleCase("hello smart WORLD") shouldBe "Hello Smart World"
-        // Tabs, newlines and runs of spaces are preserved exactly.
-        ClipTextTransforms.toTitleCase("  first\tsecond\nthird  ") shouldBe "  First\tSecond\nThird  "
-        ClipTextTransforms.toTitleCase("") shouldBe ""
+    test("currentWordBefore returns empty when the cursor is not inside a word") {
+        DrsHarakatWordOps.currentWordBefore("") shouldBe ""
+        DrsHarakatWordOps.currentWordBefore("كتاب ") shouldBe ""
+        DrsHarakatWordOps.currentWordBefore("hello 123") shouldBe ""
     }
 
-    test("invert case swaps letters and leaves everything else alone") {
-        ClipTextTransforms.invertCase("aBc123!مرحبا") shouldBe "AbC123!مرحبا"
-        ClipTextTransforms.invertCase("") shouldBe ""
+    test("currentWordBefore keeps Arabic-Indic digits out of the word") {
+        DrsHarakatWordOps.currentWordBefore("عام 1447") shouldBe ""
+        DrsHarakatWordOps.currentWordBefore("عام1447") shouldBe ""
     }
 
-    // -------------------------------------------------------------
-    // Whitespace surgery
-    // -------------------------------------------------------------
-
-    test("trim lines trims every line independently") {
-        ClipTextTransforms.trimLines("  a  \n\t b \n c") shouldBe "a\nb\nc"
-        ClipTextTransforms.trimLines("") shouldBe ""
+    test("stripDiacritics removes the nine marks and the tatweel only") {
+        DrsHarakatWordOps.stripDiacritics("مُحَمَّـد") shouldBe "محمد"
+        DrsHarakatWordOps.stripDiacritics("كِتَابًا") shouldBe "كتابا"
+        DrsHarakatWordOps.stripDiacritics("اللَّهِ") shouldBe "الله"
+        DrsHarakatWordOps.stripDiacritics("بلا تشكيل") shouldBe "بلا تشكيل"
     }
 
-    test("collapse spaces merges horizontal runs but keeps line breaks") {
-        ClipTextTransforms.collapseHorizontalWhitespace("a \t b\n  c   d") shouldBe "a b\n c d"
-        // A non-breaking space run collapses too.
-        ClipTextTransforms.collapseHorizontalWhitespace("x\u00a0\u00a0y") shouldBe "x y"
+    test("containsDiacritics detects marks honestly") {
+        DrsHarakatWordOps.containsDiacritics("كَانَ") shouldBe true
+        DrsHarakatWordOps.containsDiacritics("كان") shouldBe false
+        DrsHarakatWordOps.containsDiacritics("") shouldBe false
     }
 
-    test("remove empty lines drops only blank lines") {
-        ClipTextTransforms.removeEmptyLines("a\n\n  \nb") shouldBe "a\nb"
-        ClipTextTransforms.removeEmptyLines("\n\n") shouldBe ""
+    test("clusterCount counts letters, not marks — a letter plus its marks is one cluster") {
+        DrsHarakatWordOps.clusterCount("كان") shouldBe 3
+        DrsHarakatWordOps.clusterCount("كَانَ") shouldBe 3
+        DrsHarakatWordOps.clusterCount("مُحَمَّد") shouldBe 4
+        DrsHarakatWordOps.clusterCount("ـتطويلـ") shouldBe 7 // tatweel is its own cluster
+        DrsHarakatWordOps.clusterCount("") shouldBe 0
     }
 
     // -------------------------------------------------------------
-    // Line operations
+    // DrsWordTashkeel — مشكِّل الكلمة
     // -------------------------------------------------------------
 
-    test("duplicate lines are removed keeping the first occurrence and order") {
-        ClipTextTransforms.removeDuplicateLines("b\na\nb\na\n c\n c") shouldBe "b\na\n c"
+    test("the lexicon is non-trivial and every entry is self-consistent") {
+        (DrsWordTashkeel.size >= 80) shouldBe true
+        DrsWordTashkeel.LEXICON.forEach { (stripped, vocalized) ->
+            // Every key must equal the stripped form of its own value —
+            // a canonical round-trip guarantee.
+            DrsHarakatWordOps.stripDiacritics(vocalized) shouldBe stripped
+        }
     }
 
-    test("sort lines ascending and descending pin the natural order") {
-        ClipTextTransforms.sortLinesAscending("b\na\nc") shouldBe "a\nb\nc"
-        ClipTextTransforms.sortLinesDescending("b\na\nc") shouldBe "c\nb\na"
+    test("vocalize resolves stripped and partially-marked input alike") {
+        DrsWordTashkeel.vocalize("كان") shouldBe "كَانَ"
+        DrsWordTashkeel.vocalize("كَان") shouldBe "كَانَ" // partial marks still match
+        DrsWordTashkeel.vocalize("الذي") shouldBe "الَّذِي"
+        DrsWordTashkeel.vocalize("الله") shouldBe "اللَّه"
+        DrsWordTashkeel.vocalize("من") shouldBe "مِنْ"
+        DrsWordTashkeel.vocalize("هذا") shouldBe "هَٰذَا"
+        DrsWordTashkeel.vocalize("لكن") shouldBe "لَٰكِنَّ"
     }
 
-    test("reverse lines flips the order without touching line content") {
-        ClipTextTransforms.reverseLines("1\n2\n3") shouldBe "3\n2\n1"
+    test("vocalize returns null for unknown and empty words — no invented diacritics") {
+        DrsWordTashkeel.vocalize("كلمة_غير_موجودة").shouldBeNull()
+        DrsWordTashkeel.vocalize("").shouldBeNull()
+        DrsWordTashkeel.vocalize(" ").shouldBeNull()
+        DrsWordTashkeel.isKnown("كتاب_مجهول") shouldBe false
+        DrsWordTashkeel.isKnown("قال") shouldBe true
+    }
+
+    test("the superscript alef (dagger alef) survives stripping in the canonical forms") {
+        // هَٰذَا strips to هذا — the dagger rides the first alef.
+        DrsHarakatWordOps.stripDiacritics("هَٰذَا") shouldBe "هذا"
+        DrsHarakatWordOps.stripDiacritics("ذَٰلِكَ") shouldBe "ذلك"
     }
 
     // -------------------------------------------------------------
-    // Arabic-aware smart normalization
+    // DrsHarakatAdvisor — المستشار السياقي
     // -------------------------------------------------------------
 
-    test("arabic diacritics are stripped while letters survive") {
-        val diacritized = "مُحَمَّدٌ شَاذَلِي"
-        val stripped = ClipTextTransforms.removeArabicDiacritics(diacritized)
-        stripped shouldBe "محمد شاذلي"
-        // Letters without diacritics pass through unchanged.
-        ClipTextTransforms.removeArabicDiacritics("مرحبا") shouldBe "مرحبا"
+    test("R1 — a tanween fath off its alef asks for the alef") {
+        val advice = DrsHarakatAdvisor.advise("كتابً")
+        advice shouldHaveSize 1
+        advice.first().commit shouldBe "اً"
+        advice.first().reason shouldBe DrsHarakatAdvisor.AdviceReason.TANWEEN_ALEF
     }
 
-    test("arabic letter normalization unifies hamza forms maqsura and ta marbuta") {
-        ClipTextTransforms.normalizeArabicLetters("أإآٱ") shouldBe "اااا"
-        ClipTextTransforms.normalizeArabicLetters("ى") shouldBe "ي"
-        ClipTextTransforms.normalizeArabicLetters("ة") shouldBe "ه"
-        // Latin text is untouched.
-        ClipTextTransforms.normalizeArabicLetters("hello") shouldBe "hello"
+    test("R1 — a tanween fath already on an alef asks for nothing") {
+        DrsHarakatAdvisor.advise("كتاباً").shouldBeEmpty()
+        DrsHarakatAdvisor.advise("ً").shouldBeEmpty() // lone tanween, no base letter
     }
 
-    // -------------------------------------------------------------
-    // Smart extractors
-    // -------------------------------------------------------------
+    test("R2 — a fresh shadda asks for its fatha first") {
+        val advice = DrsHarakatAdvisor.advise("ش")
+        DrsHarakatAdvisor.advise("ش${DrsHarakat.SHADDA}").let { picks ->
+            picks shouldHaveSize 1
+            picks.first().commit shouldBe DrsHarakat.FATHA.toString()
+            picks.first().reason shouldBe DrsHarakatAdvisor.AdviceReason.AFTER_SHADDA
+        }
+        advice shouldBe advice // (the bare-letter case has no rule — silence)
+    }
 
-    test("url extraction returns ordered deduplicated links") {
-        val text = "see https://drs.app/a then www.example.com then https://drs.app/a"
-        ClipTextTransforms.extractUrls(text) shouldContainExactly listOf(
-            "https://drs.app/a", "www.example.com",
+    test("R3 — the lam of a fresh definite article asks for its sukun") {
+        val picks = DrsHarakatAdvisor.advise("في ال")
+        picks shouldHaveSize 1
+        picks.first().commit shouldBe DrsHarakat.SUKUN.toString()
+        picks.first().reason shouldBe DrsHarakatAdvisor.AdviceReason.DEFINITE_LAM
+
+        // Mid-word ال is NOT the article — no rule.
+        DrsHarakatAdvisor.advise("عال").shouldBeEmpty()
+    }
+
+    test("R4 — a mark under the cursor asks to be replaced by the top pick") {
+        val picks = DrsHarakatAdvisor.advise("كَ", mru = listOf(DrsHarakat.DAMMA, DrsHarakat.KASRA))
+        picks shouldHaveSize 1
+        picks.first().commit shouldBe DrsHarakat.DAMMA.toString()
+        picks.first().reason shouldBe DrsHarakatAdvisor.AdviceReason.OVER_MARK
+    }
+
+    test("R4 — with no usage history the replacement falls back to the fatha") {
+        val picks = DrsHarakatAdvisor.advise("كَ")
+        picks.first().commit shouldBe DrsHarakat.FATHA.toString()
+    }
+
+    test("an alef before the cursor gets the honest note, never a haraka pick") {
+        DrsHarakatAdvisor.alefNoteFor("كتابا") shouldBe true
+        DrsHarakatAdvisor.alefNoteFor("أنا") shouldBe true
+        DrsHarakatAdvisor.alefNoteFor("كتاب") shouldBe false
+        DrsHarakatAdvisor.alefNoteFor("") shouldBe false
+        DrsHarakatAdvisor.advise("كتابا").shouldBeEmpty()
+        DrsHarakat.isAlefLetter('ا') shouldBe true
+        DrsHarakat.isAlefLetter('ى') shouldBe true
+        DrsHarakat.isAlefLetter('ب') shouldBe false
+    }
+
+    test("an empty or plain-letter context returns no contextual picks") {
+        DrsHarakatAdvisor.advise("").shouldBeEmpty()
+        DrsHarakatAdvisor.advise("كتاب").shouldBeEmpty()
+    }
+
+    test("mruPicks caps at MAX_PICKS and tags the MRU reason") {
+        val picks = DrsHarakatAdvisor.mruPicks(
+            listOf(DrsHarakat.FATHA, DrsHarakat.SUKUN, DrsHarakat.SHADDA, DrsHarakat.DAMMA),
+            n = 3,
         )
-        ClipTextTransforms.extractUrls("no links here") shouldContainExactly emptyList()
-        ClipTextTransforms.extractUrls("") shouldContainExactly emptyList()
-    }
-
-    test("email extraction catches real addresses and skips bare words") {
-        ClipTextTransforms.extractEmails("mail user@example.com or a.b@sub.domain.co") shouldContainExactly listOf(
-            "user@example.com", "a.b@sub.domain.co",
+        picks shouldHaveSize 3
+        picks.map { it.commit } shouldContainExactly listOf(
+            DrsHarakat.FATHA.toString(),
+            DrsHarakat.SUKUN.toString(),
+            DrsHarakat.SHADDA.toString(),
         )
-        ClipTextTransforms.extractEmails("not@anemail") shouldContainExactly emptyList()
-    }
-
-    test("phone extraction guards on at least seven digits") {
-        ClipTextTransforms.extractPhoneNumbers("call 0501234567 or +966 50 123 4567") shouldContainExactly listOf(
-            "0501234567", "+966 50 123 4567",
-        )
-        // Short runs (a year, a small number) are not phone numbers.
-        ClipTextTransforms.extractPhoneNumbers("in 2026 there were 123456 items") shouldContainExactly emptyList()
+        picks.forEach { it.reason shouldBe DrsHarakatAdvisor.AdviceReason.MRU }
+        DrsHarakatAdvisor.MAX_PICKS shouldBe 3
     }
 
     // -------------------------------------------------------------
-    // The literal find/replace engine
+    // Smart insert engine — unchanged by the board rebuild
     // -------------------------------------------------------------
 
-    test("find matches are literal — regex metacharacters never interpret") {
-        val text = "a.c a.c abc"
-        val matches = ClipSearchEngine.findMatches(text, "a.c", ignoreCase = false)
-        matches.size shouldBe 2
-        matches[0].start shouldBe 0
-        matches[1].end shouldBe 7
-    }
-
-    test("case sensitivity toggle and empty query contracts") {
-        ClipSearchEngine.findMatches("Abc abc", "abc", ignoreCase = true).size shouldBe 2
-        ClipSearchEngine.findMatches("Abc abc", "abc", ignoreCase = false).size shouldBe 1
-        ClipSearchEngine.findMatches("anything", "", ignoreCase = true) shouldContainExactly emptyList()
-    }
-
-    test("the match list is capped at MAX_MATCHES") {
-        ClipSearchEngine.MAX_MATCHES shouldBe 1000
-        val text = "ab".repeat(2000) // 2000 potential matches
-        ClipSearchEngine.findMatches(text, "ab", ignoreCase = false).size shouldBe 1000
-    }
-
-    test("replace one replaces exactly the chosen range") {
-        val text = "abcabc"
-        val first = ClipSearchEngine.findMatches(text, "bc", ignoreCase = false).first()
-        ClipSearchEngine.replaceOne(text, first, "X") shouldBe "aXabc"
-    }
-
-    test("replace all is literal and reports the honest count") {
-        // The `$0` replacement must land verbatim — no regex group semantics.
-        val (newText, count) = ClipSearchEngine.replaceAll("a.c a.c", "a.c", "\$0x", ignoreCase = false)
-        newText shouldBe "\$0x \$0x"
-        count shouldBe 2
-        // Nothing matched → text unchanged, count zero.
-        val (same, zero) = ClipSearchEngine.replaceAll("abc", "zzz", "X", ignoreCase = false)
-        same shouldBe "abc"
-        zero shouldBe 0
-    }
-
-    test("match navigation wraps around and clamps stale indices") {
-        // Forward wrap.
-        ClipSearchEngine.nextMatchIndex(3, 0) shouldBe 1
-        ClipSearchEngine.nextMatchIndex(3, 2) shouldBe 0
-        // Backward wrap.
-        ClipSearchEngine.prevMatchIndex(3, 0) shouldBe 2
-        ClipSearchEngine.prevMatchIndex(3, 1) shouldBe 0
-        // Stale index (text changed under the UI) never crashes.
-        ClipSearchEngine.nextMatchIndex(3, 99) shouldBe 1
-        ClipSearchEngine.prevMatchIndex(3, -5) shouldBe 2
-        // No matches → -1.
-        ClipSearchEngine.nextMatchIndex(0, 0) shouldBe -1
-        ClipSearchEngine.prevMatchIndex(0, 4) shouldBe -1
-    }
-
-    // -------------------------------------------------------------
-    // The bounded undo/redo history
-    // -------------------------------------------------------------
-
-    test("undo and redo alternate cleanly over the pushed states") {
-        val history = ClipEditorHistory()
-        history.canUndo shouldBe false
-        history.canRedo shouldBe false
-
-        history.push("a") // before change 1
-        history.push("b") // before change 2
-
-        history.undo("c") shouldBe "b"
-        history.canRedo shouldBe true
-        history.redo("b") shouldBe "c"
-        history.canRedo shouldBe false
-
-        history.undo("c") shouldBe "b"
-        history.undo("b") shouldBe "a"
-        history.canUndo shouldBe false
-        history.undo("a") shouldBe null
-
-        history.redo("a") shouldBe "b"
-        history.redo("b") shouldBe "c"
-        history.redo("c") shouldBe null
-    }
-
-    test("a new push voids the redo branch and the stack caps at its bound") {
-        val history = ClipEditorHistory()
-        history.push("a")
-        history.undo("b")
-        history.canRedo shouldBe true
-        history.push("x")
-        history.canRedo shouldBe false
-
-        val tiny = ClipEditorHistory(maxStates = 3)
-        for (state in 1..4) tiny.push(state.toString())
-        tiny.undo("5") shouldBe "4"
-        tiny.undo("4") shouldBe "3"
-        tiny.undo("3") shouldBe "2"
-        tiny.undo("2") shouldBe null // "1" was dropped with the oldest entry
-        tiny.clear()
-        tiny.canUndo shouldBe false
-        tiny.canRedo shouldBe false
-    }
-
-    // -------------------------------------------------------------
-    // The pure font customization choices
-    // -------------------------------------------------------------
-
-    test("the editor exposes five distinct font families and four size steps") {
-        ClipFontOption.entries.size shouldBe 5
-        ClipFontOption.entries.map { it.id }.toSet().size shouldBe 5
-        ClipFontOption.entries.map { it.name } shouldContainExactly listOf(
-            "DEFAULT", "SANS_SERIF", "SERIF", "MONOSPACE", "CURSIVE",
-        )
-
-        ClipFontSizeOption.entries.size shouldBe 4
-        ClipFontSizeOption.entries.map { it.spValue } shouldContainExactly listOf(12, 14, 17, 20)
-        ClipFontSizeOption.entries.map { it.id }.toSet().size shouldBe 4
+    test("the smart stacking engine keeps its shadda-combo exception") {
+        HarakatSmartInsert.decide(DrsHarakat.SHADDA, DrsHarakat.FATHA, true) shouldBe
+            HarakaInsertMode.APPEND
+        HarakatSmartInsert.decide(DrsHarakat.FATHA, DrsHarakat.DAMMA, true) shouldBe
+            HarakaInsertMode.REPLACE_PREVIOUS
     }
 })

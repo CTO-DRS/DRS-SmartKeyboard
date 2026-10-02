@@ -2541,6 +2541,21 @@
     <string name="drs__unified__bar_slots_hint">The tasks bar is now FIXED: it shows 10 tasks only above the suggestions strip — your pins first, then filled from the catalogue. Long-press any task to change it, and open the drawer (side-pull handle) to reorder or pin others.</string>
     <string name="pref__panels__smart_order__label">Smart panel ordering</string>
     <string name="pref__panels__smart_order__summary">The panels switcher reorders itself: the current panel leads, then the most-opened ones — local only</string>
+    <!-- DRS v1.1.0: the full smart harakat board — contextual advisor and word tashkeel -->
+    <string name="panel__harakat__advice_after_shadda">shadda + fatha</string>
+    <string name="panel__harakat__advice_definite_lam">sukun of the definite lam</string>
+    <string name="panel__harakat__advice_tanween_alef">complete the tanween with alef</string>
+    <string name="panel__harakat__advice_over_mark">replace the mark</string>
+    <string name="panel__harakat__advice_mru">most used</string>
+    <string name="panel__harakat__alef_note">An alef never takes a haraka — mark the previous letter instead</string>
+    <string name="panel__harakat__tashkeel_word">Vocalize the word</string>
+    <string name="panel__harakat__strip_word">Strip diacritics</string>
+    <string name="panel__harakat__no_safe_word">No safe suggestion for this word</string>
+    <string name="panel__harakat__space_bar">Smart harakat</string>
+    <string name="panel__harakat__back_to_letters">Letters</string>
+    <string name="key__a11y_harakat_back_to_letters">Back to the letters board</string>
+    <string name="pref__panels__harakat_advice__label">Smart haraka advice</string>
+    <string name="pref__panels__harakat_advice__summary">A strip suggesting the haraka that fits the text before the cursor, plus lexicon-based word vocalization — on-device only</string>
     <string name="key__a11y_shift">Shift key</string>
     <string name="key__a11y_caps_lock">Caps lock</string>
     <string name="key__a11y_delete">Delete</string>
