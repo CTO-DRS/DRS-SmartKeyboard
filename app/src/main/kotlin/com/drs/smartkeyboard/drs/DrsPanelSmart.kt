@@ -335,17 +335,19 @@ object DrsPanelOrder {
      * used), then the remaining panels by their usage counts (most
      * used first, ties break by [catalogue] order). A panel missing
      * from the usage map counts as zero. Pure and deterministic.
+     * DRS v1.2.0: generic over the enum — the smart numbers panel
+     * orders its seven contexts with the very same rule.
      */
-    fun smartSwitcher(
-        current: ImeUiMode,
+    fun <T : Enum<T>> smartSwitcher(
+        current: T,
         usage: Map<String, Int>,
-        catalogue: List<ImeUiMode>,
-    ): List<ImeUiMode> {
+        catalogue: List<T>,
+    ): List<T> {
         if (catalogue.size <= 1) return catalogue
         val index = catalogue.withIndex().associate { (i, mode) -> mode to i }
         val rest = catalogue.filter { it != current }
             .sortedWith(
-                compareByDescending<ImeUiMode> { usage[it.name] ?: 0 }
+                compareByDescending<T> { usage[it.name] ?: 0 }
                     .thenBy { index[it]!! },
             )
         return listOf(current) + rest

@@ -1315,6 +1315,13 @@ class KeyboardManager(context: Context) : InputKeyEventReceiver {
                 activeState.imeUiMode = ImeUiMode.ARABIC_LETTERS
                 DrsRuntimeState.closeStripSlotEditor()
             }
+            // DRS v1.2.0: the fourth smart panel (لوحة الأرقام الذكية)
+            // opens through the same path as every other UI mode.
+            KeyCode.IME_UI_MODE_SMART_NUMBER -> {
+                exitMediaSearch()
+                activeState.imeUiMode = ImeUiMode.SMART_NUMBER
+                DrsRuntimeState.closeStripSlotEditor()
+            }
             in DrsTextTool.CODE_RANGE -> {
                 DrsTextTool.fromCode(data.code)?.let { editorInstance.performTextTool(it) }
             }

@@ -2444,6 +2444,19 @@
     <string name="panel__switcher_harakat">حركات</string>
     <string name="panel__switcher_symbols">رموز</string>
     <string name="panel__switcher_letters">حروف</string>
+    <!-- DRS v1.2.0: لوحة الأرقام الذكية (the smart numbers panel) -->
+    <string name="panel__switcher_numbers">أرقام</string>
+    <string name="panel__numbers__title">لوحة الأرقام الذكية</string>
+    <string name="panel__numbers__ctx_general">عام</string>
+    <string name="panel__numbers__ctx_phone">هاتف</string>
+    <string name="panel__numbers__ctx_money">مبلغ</string>
+    <string name="panel__numbers__ctx_date">تاريخ</string>
+    <string name="panel__numbers__ctx_otp">رمز</string>
+    <string name="panel__numbers__ctx_math">حساب</string>
+    <string name="panel__numbers__ctx_id">رقمية</string>
+    <string name="panel__numbers__formats_title">تنسيقات جاهزة</string>
+    <string name="drs__unified__tool_smart_number_panel">لوحة الأرقام الذكية</string>
+    <string name="drs__unified__tool_smart_number_panel_desc">تفتح لوحة أرقام تكشف سياق الحقل وتعيد ترتيب نفسه، وتعرض تنسيقات جاهزة: هاتف، تاريخ ميلادي وهجري، وسبع عملات — كلها حساب محلي خالص بلا شبكة</string>
     <string name="pref__panels__group__label">اللوحات الذكية</string>
     <string name="pref__panels__harakat_smart_replace__label">الدمج الذكي للحركات</string>
     <string name="pref__panels__harakat_smart_replace__summary">حركة فوق حركة تستبدلها بدل أن تتراكم، والشدة تُلحق بالحركة</string>

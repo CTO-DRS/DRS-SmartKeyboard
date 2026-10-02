@@ -137,8 +137,11 @@ class DrsV1190Tests : FunSpec({
         val merge = DrsUnifiedTools.byId("merge_keyboard").shouldNotBeNull()
         merge.code shouldBe KeyCode.MERGE_LAYOUT
         // Appended at the tail, keeping every persisted arrangement.
-        DrsUnifiedTools.ALL.last().id shouldBe "merge_keyboard"
-        DrsUnifiedTools.ALL[DrsUnifiedTools.ALL.size - 2].id shouldBe "split_keyboard"
+        // DRS v1.2.0 (الإصدار العام) appended the smart numbers panel
+        // after the pair.
+        DrsUnifiedTools.ALL.last().id shouldBe "smart_number_panel"
+        DrsUnifiedTools.ALL[DrsUnifiedTools.ALL.size - 2].id shouldBe "merge_keyboard"
+        DrsUnifiedTools.ALL[DrsUnifiedTools.ALL.size - 3].id shouldBe "split_keyboard"
     }
 
     // -------------------------------------------------------------

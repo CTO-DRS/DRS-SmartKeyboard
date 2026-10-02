@@ -172,9 +172,13 @@ object DrsArabicLettersCatalog {
     )
 }
 
-/** The shared panel-switcher chips row, smart-ordered by local open counts. */
+/**
+ * The shared panel-switcher chips row, smart-ordered by local open counts.
+ * DRS v1.2.0: shared with the fourth smart panel (لوحة الأرقام الذكية)
+ * — internal so the numbers panel mounts the exact same chips row.
+ */
 @Composable
-private fun PanelSwitcherChips(current: ImeUiMode, keyboardManager: com.drs.smartkeyboard.ime.keyboard.KeyboardManager, accent: androidx.compose.ui.graphics.Color) {
+internal fun PanelSwitcherChips(current: ImeUiMode, keyboardManager: com.drs.smartkeyboard.ime.keyboard.KeyboardManager, accent: androidx.compose.ui.graphics.Color) {
     val context = LocalContext.current
     val prefs by DrsPreferenceStore
     val smartOrder by prefs.panels.panelSmartOrder.collectAsState()
@@ -182,6 +186,7 @@ private fun PanelSwitcherChips(current: ImeUiMode, keyboardManager: com.drs.smar
         ImeUiMode.DIACRITICS to R.string.panel__switcher_harakat,
         ImeUiMode.SMART_SYMBOLS to R.string.panel__switcher_symbols,
         ImeUiMode.ARABIC_LETTERS to R.string.panel__switcher_letters,
+        ImeUiMode.SMART_NUMBER to R.string.panel__switcher_numbers,
     )
     val options = remember(current, smartOrder) {
         if (!smartOrder) {
@@ -217,9 +222,10 @@ private fun PanelSwitcherChips(current: ImeUiMode, keyboardManager: com.drs.smar
  * Records one open of [mode] into the LOCAL panel-open counters (the
  * smart ordering input). Counts only — the incognito mode records
  * nothing at all, exactly like every other DRS usage counter.
+ * DRS v1.2.0: internal — shared with the smart numbers panel.
  */
 @Composable
-private fun RecordPanelOpen(mode: ImeUiMode) {
+internal fun RecordPanelOpen(mode: ImeUiMode) {
     val context = LocalContext.current
     val keyboardManager by context.keyboardManager()
     LaunchedEffect(mode) {
@@ -229,9 +235,12 @@ private fun RecordPanelOpen(mode: ImeUiMode) {
     }
 }
 
-/** The shared header of the three smart panels (back + title + actions). */
+/**
+ * The shared header of the smart panels (back + title + actions).
+ * DRS v1.2.0: internal — the smart numbers panel mounts it too.
+ */
 @Composable
-private fun SmartPanelHeader(
+internal fun SmartPanelHeader(
     titleRes: Int,
     keyboardManager: com.drs.smartkeyboard.ime.keyboard.KeyboardManager,
     trailing: @Composable () -> Unit = {},
@@ -600,9 +609,13 @@ private fun adviceReasonLabel(reason: DrsHarakatAdvisor.AdviceReason): Int = whe
     DrsHarakatAdvisor.AdviceReason.MRU -> R.string.panel__harakat__advice_mru
 }
 
-/** One chip of the smart advice strip ([leading] chips get the accent fill). */
+/**
+ * One chip of the smart advice strip ([leading] chips get the accent fill).
+ * DRS v1.2.0: internal — the smart numbers panel reuses it for its
+ * context bar and its ready-formats strip.
+ */
 @Composable
-private fun AdviceChip(
+internal fun AdviceChip(
     label: String,
     accent: androidx.compose.ui.graphics.Color,
     leading: Boolean,
@@ -631,10 +644,13 @@ private fun AdviceChip(
  * the board looks exactly like the letters/numbers boards. [holdRepeat]
  * turns the key into the hold-to-repeat delete key; the corner hint
  * previews the mark on the sample letter (دَ) like the real hinted keys.
+ *
+ * DRS v1.2.0: internal — the smart numbers panel renders its grid and
+ * bottom row through the very same themed key element.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun HarakatKeyboardKey(
+internal fun HarakatKeyboardKey(
     key: DrsKeyboardHarakatKey,
     modifier: Modifier = Modifier,
     onPress: () -> Unit,

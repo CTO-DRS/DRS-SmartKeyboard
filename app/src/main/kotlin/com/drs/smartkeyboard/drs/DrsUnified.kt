@@ -724,6 +724,23 @@ object DrsUnifiedTools {
         group = DrsToolGroup.TOOLS,
     )
 
+    /**
+     * DRS v1.2.0: opens the context-aware smart numbers panel (لوحة
+     * الأرقام الذكية) through the REAL engine action
+     * (KeyCode.IME_UI_MODE_SMART_NUMBER) — the raw field class, the live
+     * text and the local open counts decide the context, and every
+     * ready format (phone, Gregorian, Hijri, seven currencies) is a
+     * deterministic local computation.
+     */
+    val SMART_NUMBER_PANEL = DrsUnifiedTool(
+        id = "smart_number_panel",
+        code = KeyCode.IME_UI_MODE_SMART_NUMBER,
+        type = KeyType.SYSTEM_GUI,
+        scope = DrsSettingScope.BASIC,
+        defaultView = DrsToolView.BOTH,
+        group = DrsToolGroup.TOOLS,
+    )
+
     /** The full basic/shared catalogue in default display order. */
     val ALL: List<DrsUnifiedTool> = listOf(
         EMOJI, CLIPBOARD, TEXT_TOOLS, NUMBERS, SYMBOLS, LANGUAGE,
@@ -754,6 +771,10 @@ object DrsUnifiedTools {
         DIACRITICS_PANEL, SMART_SYMBOLS, ARABIC_LETTERS,
         // DRS v1.19.0: same tail-append contract for the new tools.
         SPLIT_KEYBOARD, MERGE_KEYBOARD,
+        // DRS v1.2.0 (الإصدار العام): same tail-append contract —
+        // لوحة الأرقام الذكية joins last so every persisted
+        // order/pin arrangement keeps its exact meaning.
+        SMART_NUMBER_PANEL,
     )
 
     private val BY_ID = ALL.associateBy { it.id }

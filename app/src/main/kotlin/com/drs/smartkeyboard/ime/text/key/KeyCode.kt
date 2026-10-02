@@ -123,6 +123,11 @@ object KeyCode {
     const val LANGUAGE_SWITCH =             -227
     const val SHOW_SUBTYPE_PICKER =         -228
 
+    // DRS v1.2.0: the fourth smart panel (لوحة الأرقام الذكية) — a real
+    // ImeUiMode handled in KeyboardManager + hosted in ImeWindow, joined
+    // the unified tool catalogue with the same tail-append contract.
+    const val IME_UI_MODE_SMART_NUMBER =    -229
+
     const val IME_SHOW_UI =                 -231
     const val IME_HIDE_UI =                 -232
     const val VOICE_INPUT =                 -233

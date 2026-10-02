@@ -277,7 +277,10 @@ class DrsV1150Tests : FunSpec({
         ImeUiMode.fromInt(4) shouldBe ImeUiMode.DIACRITICS
         ImeUiMode.fromInt(5) shouldBe ImeUiMode.SMART_SYMBOLS
         ImeUiMode.fromInt(6) shouldBe ImeUiMode.ARABIC_LETTERS
-        ImeUiMode.fromInt(7) shouldBe ImeUiMode.TEXT // defensive fallback
+        // DRS v1.2.0: mode 7 joined as the smart numbers panel — the
+        // defensive fallback moved to 8.
+        ImeUiMode.fromInt(7) shouldBe ImeUiMode.SMART_NUMBER
+        ImeUiMode.fromInt(8) shouldBe ImeUiMode.TEXT // defensive fallback
         ImeUiMode.fromInt(99) shouldBe ImeUiMode.TEXT
     }
 })

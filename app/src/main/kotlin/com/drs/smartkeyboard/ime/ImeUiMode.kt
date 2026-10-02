@@ -19,7 +19,10 @@ enum class ImeUiMode(val value: Int) {
     SMART_SYMBOLS(5),
 
     /** DRS v1.15.0: the extended Arabic letters panel (لوحة الحروف الموسعة). */
-    ARABIC_LETTERS(6);
+    ARABIC_LETTERS(6),
+
+    /** DRS v1.2.0: the context-aware smart numbers panel (لوحة الأرقام الذكية). */
+    SMART_NUMBER(7);
 
     companion object {
         fun fromInt(int: Int) = entries.firstOrNull { it.value == int } ?: TEXT

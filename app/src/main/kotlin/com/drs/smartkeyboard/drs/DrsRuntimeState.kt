@@ -24,6 +24,18 @@ object DrsRuntimeState {
     val contextMode: StateFlow<DrsContextMode> = _contextMode.asStateFlow()
 
     /**
+     * DRS v1.2.0: the raw number-field class of the focused editor —
+     * the input the smart numbers panel (لوحة الأرقام الذكية) detects
+     * its context from. Set at EVERY input start BEFORE the
+     * context-modes pref gate: the raw EditorInfo truth is not a user
+     * preference, the panel reads it regardless of the adaptive-UI
+     * switch (like every usage counter, it is counted but never
+     * recorded when disabled).
+     */
+    private val _numberFieldClass = MutableStateFlow(DrsNumberFieldClass.GENERAL)
+    val numberFieldClass: StateFlow<DrsNumberFieldClass> = _numberFieldClass.asStateFlow()
+
+    /**
      * DRS v1.16.0: the open slot editor of the fixed tasks bar — null
      * when closed, otherwise the index of the slot being changed
      * («إمكانية تغيير المهام»). Runtime-only state like the drawer flag;
@@ -50,6 +62,10 @@ object DrsRuntimeState {
 
     /** Called from EditorInstance.handleStartInputView for every new input. */
     fun onInputStarted(editorInfo: DrsEditorInfo) {
+        // DRS v1.2.0: the raw number-field class lands FIRST — before
+        // the pref gate returns early — so the smart numbers panel sees
+        // every field, not just the adaptive-UI-enabled ones.
+        _numberFieldClass.value = detectNumberFieldClass(editorInfo)
         val state = DrsStore.state.value
         if (!state.contextModesEnabled) {
             _contextMode.value = DrsContextMode.NORMAL
@@ -98,6 +114,35 @@ object DrsRuntimeState {
         if (packageName.isNullOrEmpty()) return false
         val name = packageName.lowercase()
         return codingPackageHints.any { name.contains(it) }
+    }
+
+    /**
+     * DRS v1.2.0: the raw field class of the number panel — OTP (a
+     * number+password field), PHONE, DATE, MONEY (a decimal field),
+     * MATH (a plain number field) or GENERAL. Pure and honest: no
+     * guessing beyond what the editor actually declares.
+     */
+    private fun detectNumberFieldClass(editorInfo: DrsEditorInfo): DrsNumberFieldClass {
+        val attributes = editorInfo.inputAttributes
+        return when {
+            attributes.type == InputAttributes.Type.NUMBER &&
+                attributes.variation == InputAttributes.Variation.PASSWORD ->
+                DrsNumberFieldClass.OTP
+
+            attributes.type == InputAttributes.Type.PHONE ->
+                DrsNumberFieldClass.PHONE
+
+            attributes.type == InputAttributes.Type.DATETIME ->
+                DrsNumberFieldClass.DATE
+
+            attributes.type == InputAttributes.Type.NUMBER && attributes.flagNumberDecimal ->
+                DrsNumberFieldClass.MONEY
+
+            attributes.type == InputAttributes.Type.NUMBER ->
+                DrsNumberFieldClass.MATH
+
+            else -> DrsNumberFieldClass.GENERAL
+        }
     }
 
 }
