@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Percent
 import androidx.compose.material.icons.filled.ClearAll
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Compress
@@ -383,6 +384,16 @@ private val PANEL_SECTIONS: List<DrsTextToolsPanelSection> = listOf(
                 R.string.drs__text_tools__desc_ordinal_words,
                 Icons.Default.EmojiEvents,
             ),
+            // DRS v2.0.0: the decimal in words — a clean decimal speaks
+            // its digit-by-digit words (واحد فاصلة خمسة صفر), prose
+            // stays untouched. The sixth round opens: the decimal tail
+            // speaks, and the words speak back numbers.
+            toolItem(
+                DrsTextTool.DECIMAL_WORDS,
+                R.string.drs__text_tools__tool_decimal_words,
+                R.string.drs__text_tools__desc_decimal_words,
+                Icons.Default.Percent,
+            ),
             // DRS v1.3.0: tatweel removal + digit conversions.
             toolItem(
                 DrsTextTool.REMOVE_TATWEEL,
@@ -650,6 +661,8 @@ fun textToolTitleRes(tool: DrsTextTool): Int = when (tool) {
     DrsTextTool.WEEKDAY -> R.string.drs__text_tools__tool_weekday
     // DRS v1.10.0: the ordinal in words.
     DrsTextTool.ORDINAL_WORDS -> R.string.drs__text_tools__tool_ordinal_words
+    // DRS v2.0.0: the decimal in words.
+    DrsTextTool.DECIMAL_WORDS -> R.string.drs__text_tools__tool_decimal_words
     DrsTextTool.REMOVE_TATWEEL -> R.string.drs__text_tools__tool_remove_tatweel
     DrsTextTool.TO_ARABIC_DIGITS -> R.string.drs__text_tools__tool_to_arabic_digits
     DrsTextTool.TO_WESTERN_DIGITS -> R.string.drs__text_tools__tool_to_western_digits
@@ -722,6 +735,8 @@ fun textToolDescRes(tool: DrsTextTool): Int = when (tool) {
     DrsTextTool.WEEKDAY -> R.string.drs__text_tools__desc_weekday
     // DRS v1.10.0: the ordinal in words.
     DrsTextTool.ORDINAL_WORDS -> R.string.drs__text_tools__desc_ordinal_words
+    // DRS v2.0.0: the decimal in words.
+    DrsTextTool.DECIMAL_WORDS -> R.string.drs__text_tools__desc_decimal_words
     DrsTextTool.REMOVE_TATWEEL -> R.string.drs__text_tools__desc_remove_tatweel
     DrsTextTool.TO_ARABIC_DIGITS -> R.string.drs__text_tools__desc_to_arabic_digits
     DrsTextTool.TO_WESTERN_DIGITS -> R.string.drs__text_tools__desc_to_western_digits

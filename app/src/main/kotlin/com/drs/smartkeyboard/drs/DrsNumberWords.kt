@@ -40,6 +40,17 @@ object DrsNumberWords {
     const val MAX_DIGITS = 12
 
     /**
+     * DRS v2.0.0 — the shared spoken digit alphabet «صفر»..«تسعة», the
+     * digit-by-digit voice. The decimal-tail renderer speaks every tail
+     * digit through this one table — the same single source of truth the
+     * integer part already renders through — so the whole words family
+     * spells digits exactly one way.
+     */
+    val DIGIT_WORDS = listOf(
+        "صفر", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة",
+    )
+
+    /**
      * The written grammatical case of the rendered words. NOMINATIVE is
      * the v1.6.0 default output; GENITIVE is the written oblique shape
      * (the accusative shares it — tanwin is never written).

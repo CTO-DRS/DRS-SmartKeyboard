@@ -267,11 +267,23 @@ enum class DrsTextTool(
     // the الأول/الحادي written distinction and one source of truth for
     // the cardinal groups via [DrsNumberWords]; anything that is not a
     // clean number returns byte-identical, never a guess.
-    ORDINAL_WORDS(-665);
+    ORDINAL_WORDS(-665),
+
+    // DRS v2.0.0: the deterministic decimal-in-words rendering — the
+    // sixth round opens with the decimal tail speaking: a clean
+    // two-component decimal over one separator from the closed pair
+    // { . ، ٫ } becomes its formal digit-by-digit words «واحد فاصلة
+    // خمسة صفر» (see [DrsDecimalWords]): the integer part through
+    // [DrsNumberWords] (value not position, the minus, no negative
+    // zero), the tail digit-by-digit through the shared DIGIT_WORDS
+    // alphabet with no simplification, and a fifteen-digit ceiling;
+    // any ambiguous or invalid shape returns byte-identical, never a
+    // guess.
+    DECIMAL_WORDS(-666);
 
     companion object {
         /** Inclusive range covering every tool code, for fast dispatch. */
-        val CODE_RANGE = -665..-601
+        val CODE_RANGE = -666..-601
 
         fun fromCode(code: Int): DrsTextTool? = entries.firstOrNull { it.code == code }
     }
@@ -400,6 +412,10 @@ object DrsTextTools {
                 // integer speaks its ordinal, prose stays byte-identical
                 // (see [DrsOrdinalWords]).
                 DrsTextTool.ORDINAL_WORDS -> DrsOrdinalWords.ordinalWordsOrNull(text) ?: text
+                // DRS v2.0.0: the decimal-in-words rendering — a clean
+                // decimal field speaks its digit-by-digit words, prose
+                // stays byte-identical (see [DrsDecimalWords]).
+                DrsTextTool.DECIMAL_WORDS -> DrsDecimalWords.decimalWordsOrNull(text) ?: text
                 // DRS v1.3.0: strip tatweel (kashida) elongation and
                 // convert digits between Western and Arabic-Indic forms.
                 // Both are per-character, lossless-for-everything-else

@@ -304,6 +304,11 @@ class DrsTextToolsTest : FunSpec({
             // the ordinal-words tool is a byte-identical passthrough.
             DrsTextTool.ORDINAL_WORDS -> result shouldBe input
 
+            // DRS v2.0.0: the hostile input carries no decimal separator
+            // from the closed pair { . ، ٫ } — the decimal-words tool is
+            // a byte-identical passthrough.
+            DrsTextTool.DECIMAL_WORDS -> result shouldBe input
+
             else -> error("DRS p9 (Q3): tool ${tool.name} has no pinned hostile-input invariant")
         }
     }
