@@ -1801,6 +1801,8 @@
     <string name="drs__text_tools__desc_fraction_words">Spell the field\'s fraction out in formal Arabic (3/4 becomes «ثلاثة أرباع», 1/2 becomes «النصف», 2/3 becomes «ثلثان») — anything that is not a clean fraction stays untouched</string>
     <string name="drs__text_tools__tool_weekday">Day of week</string>
     <string name="drs__text_tools__desc_weekday">Resolve a clean date to its weekday with a closed deterministic rule (2026-10-03 becomes «السبت», and 03/10/2026 says the same) — anything that is not a clean date stays untouched</string>
+    <string name="drs__text_tools__tool_ordinal_words">Ordinal in words</string>
+    <string name="drs__text_tools__desc_ordinal_words">Spell the field\'s ordinal out in formal Arabic (3 becomes «الثالث», 21 becomes «الحادي والعشرون», 1000 becomes «الألف») — anything that is not a clean number stays untouched</string>
     <string name="drs__text_tools__tool_normalize_punctuation">Normalize punctuation</string>
     <string name="drs__text_tools__desc_normalize_punctuation">Remove spaces before punctuation and ensure one space after</string>
     <string name="drs__text_tools__tool_clean_text">Full text clean-up</string>

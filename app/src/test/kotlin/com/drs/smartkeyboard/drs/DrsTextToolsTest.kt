@@ -300,6 +300,10 @@ class DrsTextToolsTest : FunSpec({
             // weekday tool is a byte-identical passthrough.
             DrsTextTool.WEEKDAY -> result shouldBe input
 
+            // DRS v1.10.0: the hostile input carries no digits at all —
+            // the ordinal-words tool is a byte-identical passthrough.
+            DrsTextTool.ORDINAL_WORDS -> result shouldBe input
+
             else -> error("DRS p9 (Q3): tool ${tool.name} has no pinned hostile-input invariant")
         }
     }

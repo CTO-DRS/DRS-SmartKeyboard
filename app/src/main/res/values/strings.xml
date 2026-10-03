@@ -1719,6 +1719,8 @@
     <string name="drs__text_tools__desc_fraction_words">صياغة الكسر كلماته العربية الفصيحة (3/4 تصير «ثلاثة أرباع»، و1/2 تصير «النصف»، و2/3 تصير «ثلثان») — وما ليس كسرًا نظيفًا يبقى كما هو</string>
     <string name="drs__text_tools__tool_weekday">يوم الأسبوع</string>
     <string name="drs__text_tools__desc_weekday">تحديد يوم الأسبوع من تاريخ نظيف بقاعدة حتمية موثقة (2026-10-03 تصير «السبت»، و03/10/2026 تقول الشيء نفسه) — وما ليس تاريخًا نظيفًا يبقى كما هو</string>
+    <string name="drs__text_tools__tool_ordinal_words">الترتيب بالكلمات</string>
+    <string name="drs__text_tools__desc_ordinal_words">صياغة العدد الترتيبي كلماته الفصيحة (3 تصير «الثالث»، و21 تصير «الحادي والعشرون»، و1000 تصير «الألف») — وما ليس عددًا نظيفًا يبقى كما هو</string>
     <string name="drs__text_tools__tool_normalize_punctuation">معالجة علامات الترقيم</string>
     <string name="drs__text_tools__desc_normalize_punctuation">إزالة المسافة قبل الفاصلة والنقطة ووضع مسافة بعد المهما كان اتجاه النص</string>
     <string name="drs__text_tools__tool_clean_text">تنظيف شامل للنص</string>

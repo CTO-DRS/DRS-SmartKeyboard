@@ -258,11 +258,20 @@ enum class DrsTextTool(
     // Sakamoto congruence (exhaustively verified against the reference
     // calendar for every accepted date 1..9999); any ambiguous or
     // invalid shape returns byte-identical, never a guess.
-    WEEKDAY(-664);
+    WEEKDAY(-664),
+
+    // DRS v1.10.0: the deterministic ordinal-in-words rendering — a clean
+    // integer speaks its ordinal «الحادي والعشرون» (see
+    // [DrsOrdinalWords]): the closed zone 1..9999, the documented
+    // masculine-nominative-with-article convention (the citation form),
+    // the الأول/الحادي written distinction and one source of truth for
+    // the cardinal groups via [DrsNumberWords]; anything that is not a
+    // clean number returns byte-identical, never a guess.
+    ORDINAL_WORDS(-665);
 
     companion object {
         /** Inclusive range covering every tool code, for fast dispatch. */
-        val CODE_RANGE = -664..-601
+        val CODE_RANGE = -665..-601
 
         fun fromCode(code: Int): DrsTextTool? = entries.firstOrNull { it.code == code }
     }
@@ -387,6 +396,10 @@ object DrsTextTools {
                 // resolves to its weekday name, prose stays byte-identical
                 // (see [DrsDateWords.weekdayOrNull]).
                 DrsTextTool.WEEKDAY -> DrsDateWords.weekdayOrNull(text) ?: text
+                // DRS v1.10.0: the ordinal-in-words rendering — a clean
+                // integer speaks its ordinal, prose stays byte-identical
+                // (see [DrsOrdinalWords]).
+                DrsTextTool.ORDINAL_WORDS -> DrsOrdinalWords.ordinalWordsOrNull(text) ?: text
                 // DRS v1.3.0: strip tatweel (kashida) elongation and
                 // convert digits between Western and Arabic-Indic forms.
                 // Both are per-character, lossless-for-everything-else

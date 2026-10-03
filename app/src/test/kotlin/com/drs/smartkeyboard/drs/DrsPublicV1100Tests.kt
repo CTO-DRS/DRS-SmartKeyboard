@@ -8,12 +8,13 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 /**
- * الإصدار العام v1.10.0 — التوسعة الخامسة: الكسور بالكلمات والترتيب
- * بالكلمات ويوم الأسبوع.
+ * الإصدار العام v1.10.0 — التوسعة الخامسة: الكسور بالكلمات ويوم
+ * الأسبوع والترتيب بالكلمات.
  *
- * الجولة الخامسة تفتح: v1.6.0 جعلت الأعداد تتكلم، وv1.7.0 المبالغ،
- * وv1.8.0 التواريخ، وv1.9.0 الأوقات — وv1.10.0 تجعل الكسور تتكلم
- * «3/4» تصير «ثلاثة أرباع».
+ * الجولة الخامسة ثلاثيتها مكتملة: v1.6.0 جعلت الأعداد تتكلم، وv1.7.0
+ * المبالغ، وv1.8.0 التواريخ، وv1.9.0 الأوقات — وv1.10.0 تجعل الكسور
+ * تتكلم «3/4» تصير «ثلاثة أرباع»، والتواريخ تنطق يومها «السبت»،
+ * والأعداد تنطق ترتيبها «الحادي والعشرون».
  *
  * عقود الكسر المثبتة هنا:
  *  - المحلل المغلق: مكونان فقط بشرطة الكسر الواحدة من { / ، ⁄ } —
@@ -133,10 +134,11 @@ class DrsPublicV1100Tests : FunSpec({
         val tool = DrsTextTool.FRACTION_WORDS
         tool.code shouldBe -663
         DrsTextTool.fromCode(-663) shouldBe tool
-        DrsTextTool.CODE_RANGE.first shouldBe -664
+        DrsTextTool.CODE_RANGE.first shouldBe -665
         (tool.code in DrsTextTool.CODE_RANGE) shouldBe true
-        // 56 tools through v1.9.0 + the v1.10.0 fraction and weekday tools.
-        DrsTextTool.entries.size shouldBe 58
+        // 56 tools through v1.9.0 + the v1.10.0 fraction, weekday and
+        // ordinal tools.
+        DrsTextTool.entries.size shouldBe 59
         (tool.isInfoOnly) shouldBe false
         (tool.isEditorOp) shouldBe false
         (tool.isInsertMark) shouldBe false
@@ -201,10 +203,10 @@ class DrsPublicV1100Tests : FunSpec({
         val tool = DrsTextTool.WEEKDAY
         tool.code shouldBe -664
         DrsTextTool.fromCode(-664) shouldBe tool
-        DrsTextTool.CODE_RANGE.first shouldBe -664
+        DrsTextTool.CODE_RANGE.first shouldBe -665
         (tool.code in DrsTextTool.CODE_RANGE) shouldBe true
         // 57 tools after the fraction tool + the weekday tool.
-        DrsTextTool.entries.size shouldBe 58
+        DrsTextTool.entries.size shouldBe 59
         (tool.isInfoOnly) shouldBe false
         (tool.isEditorOp) shouldBe false
         (tool.isInsertMark) shouldBe false
@@ -216,5 +218,92 @@ class DrsPublicV1100Tests : FunSpec({
     test("the weekday tool output is a fixed point — no separator, no re-parse") {
         val once = applyWeekday("2026-10-03")
         applyWeekday(once) shouldBe once
+    }
+
+    // -------------------------------------------------------------
+    // الترتيب بالكلمات — the closed ordinal grammar (v1.10.0, batch C)
+    // -------------------------------------------------------------
+
+    fun ordinal(text: String): String? = DrsOrdinalWords.ordinalWordsOrNull(text)
+
+    test("bare units speak الأول..العاشر — and teens keep الحادي") {
+        ordinal("1") shouldBe "الأول"
+        ordinal("3") shouldBe "الثالث"
+        ordinal("9") shouldBe "التاسع"
+        ordinal("10") shouldBe "العاشر"
+        ordinal("11") shouldBe "الحادي عشر" // لا «الأول عشر» — التمييز الموثق
+        ordinal("12") shouldBe "الثاني عشر"
+        ordinal("19") shouldBe "التاسع عشر"
+    }
+
+    test("the compound pairs pin the الأول/الحادي written distinction") {
+        ordinal("20") shouldBe "العشرون"
+        ordinal("21") shouldBe "الحادي والعشرون" // الواحد يصير الحادي في المركب
+        ordinal("22") shouldBe "الثاني والعشرون"
+        ordinal("32") shouldBe "الثاني والثلاثون"
+        ordinal("58") shouldBe "الثامن والخمسون"
+        ordinal("99") shouldBe "التاسع والتسعون"
+    }
+
+    test("higher groups keep their cardinal words under the article") {
+        ordinal("100") shouldBe "المائة"
+        ordinal("101") shouldBe "المائة والأول"
+        ordinal("121") shouldBe "المائة والحادي والعشرون"
+        ordinal("200") shouldBe "المائتان" // المثنى موثق
+        ordinal("300") shouldBe "الثلاثمائة"
+        ordinal("345") shouldBe "الثلاثمائة والخامس والأربعون"
+        ordinal("1000") shouldBe "الألف"
+        ordinal("1001") shouldBe "الألف والأول"
+        ordinal("2000") shouldBe "الألفان"
+        ordinal("3000") shouldBe "الثلاثة آلاف"
+        ordinal("1234") shouldBe "الألف والمائتان والرابع والثلاثون"
+        ordinal("9999") shouldBe "التسعة آلاف والتسعمائة والتاسع والتسعون"
+    }
+
+    test("the three digit systems parse — padding by value, never position") {
+        ordinal("٣") shouldBe "الثالث"
+        ordinal("۲۱") shouldBe "الحادي والعشرون"
+        ordinal("٠٢١") shouldBe "الحادي والعشرون" // القيمة لا الموضع
+        ordinal("١٢٣٤") shouldBe "الألف والمائتان والرابع والثلاثون"
+    }
+
+    test("the closed zone refuses everything else honestly") {
+        ordinal("0") shouldBe null // الصفر ليس ترتيبًا في المنطقة المغلقة
+        ordinal("-3") shouldBe null
+        ordinal("+3") shouldBe null
+        ordinal("10000") shouldBe null // ما وراء التسعة آلاف رفض لا اختراع
+        ordinal("3.5") shouldBe null
+        ordinal("الثالث") shouldBe null
+        ordinal("") shouldBe null
+        ordinal("   ") shouldBe null
+    }
+
+    test("the ordinal output is a fixed point — no digits, no re-parse") {
+        val out = ordinal("21")!!
+        ordinal(out) shouldBe null
+        out shouldBe "الحادي والعشرون"
+    }
+
+    fun applyOrdinal(text: String) = DrsTextTools.apply(DrsTextTool.ORDINAL_WORDS, text)
+
+    test("ORDINAL_WORDS registers at -665 and converts a clean integer") {
+        val tool = DrsTextTool.ORDINAL_WORDS
+        tool.code shouldBe -665
+        DrsTextTool.fromCode(-665) shouldBe tool
+        DrsTextTool.CODE_RANGE.first shouldBe -665
+        (tool.code in DrsTextTool.CODE_RANGE) shouldBe true
+        // 58 tools after the weekday tool + the ordinal-words tool.
+        DrsTextTool.entries.size shouldBe 59
+        (tool.isInfoOnly) shouldBe false
+        (tool.isEditorOp) shouldBe false
+        (tool.isInsertMark) shouldBe false
+        applyOrdinal("21") shouldBe "الحادي والعشرون"
+        applyOrdinal("الطبقة الثالثة") shouldBe "الطبقة الثالثة"
+        applyOrdinal("") shouldBe ""
+    }
+
+    test("the ordinal tool output is a fixed point — applying twice changes nothing") {
+        val once = applyOrdinal("21")
+        applyOrdinal(once) shouldBe once
     }
 })

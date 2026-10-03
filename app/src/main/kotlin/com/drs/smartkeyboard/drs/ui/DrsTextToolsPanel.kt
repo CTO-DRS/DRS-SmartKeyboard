@@ -24,6 +24,7 @@ import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Calculate
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.ClearAll
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Compress
@@ -373,6 +374,15 @@ private val PANEL_SECTIONS: List<DrsTextToolsPanelSection> = listOf(
                 R.string.drs__text_tools__desc_weekday,
                 Icons.Default.Today,
             ),
+            // DRS v1.10.0: the ordinal in words — a clean integer speaks
+            // its ordinal (الأول، الحادي والعشرون، الألف), prose stays
+            // untouched. The fifth round closes its trio.
+            toolItem(
+                DrsTextTool.ORDINAL_WORDS,
+                R.string.drs__text_tools__tool_ordinal_words,
+                R.string.drs__text_tools__desc_ordinal_words,
+                Icons.Default.EmojiEvents,
+            ),
             // DRS v1.3.0: tatweel removal + digit conversions.
             toolItem(
                 DrsTextTool.REMOVE_TATWEEL,
@@ -638,6 +648,8 @@ fun textToolTitleRes(tool: DrsTextTool): Int = when (tool) {
     DrsTextTool.FRACTION_WORDS -> R.string.drs__text_tools__tool_fraction_words
     // DRS v1.10.0: the weekday resolution.
     DrsTextTool.WEEKDAY -> R.string.drs__text_tools__tool_weekday
+    // DRS v1.10.0: the ordinal in words.
+    DrsTextTool.ORDINAL_WORDS -> R.string.drs__text_tools__tool_ordinal_words
     DrsTextTool.REMOVE_TATWEEL -> R.string.drs__text_tools__tool_remove_tatweel
     DrsTextTool.TO_ARABIC_DIGITS -> R.string.drs__text_tools__tool_to_arabic_digits
     DrsTextTool.TO_WESTERN_DIGITS -> R.string.drs__text_tools__tool_to_western_digits
@@ -708,6 +720,8 @@ fun textToolDescRes(tool: DrsTextTool): Int = when (tool) {
     DrsTextTool.FRACTION_WORDS -> R.string.drs__text_tools__desc_fraction_words
     // DRS v1.10.0: the weekday resolution.
     DrsTextTool.WEEKDAY -> R.string.drs__text_tools__desc_weekday
+    // DRS v1.10.0: the ordinal in words.
+    DrsTextTool.ORDINAL_WORDS -> R.string.drs__text_tools__desc_ordinal_words
     DrsTextTool.REMOVE_TATWEEL -> R.string.drs__text_tools__desc_remove_tatweel
     DrsTextTool.TO_ARABIC_DIGITS -> R.string.drs__text_tools__desc_to_arabic_digits
     DrsTextTool.TO_WESTERN_DIGITS -> R.string.drs__text_tools__desc_to_western_digits
