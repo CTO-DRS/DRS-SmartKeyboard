@@ -269,6 +269,11 @@ class DrsTextToolsTest : FunSpec({
             // vocalized: the byte-identical passthrough IS the contract.
             DrsTextTool.TASHKEEL_TEXT -> result shouldBe input
 
+            // DRS v1.6.0: the hostile input carries NO digits — the
+            // number-to-words tool is a byte-identical passthrough on
+            // anything it cannot parse as a clean integer.
+            DrsTextTool.NUMBER_WORDS -> result shouldBe input
+
             else -> error("DRS p9 (Q3): tool ${tool.name} has no pinned hostile-input invariant")
         }
     }

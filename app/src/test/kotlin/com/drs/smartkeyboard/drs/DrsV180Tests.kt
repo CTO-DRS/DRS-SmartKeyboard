@@ -222,7 +222,8 @@ class DrsV180Tests : FunSpec({
         sep shouldBe DrsTextTool.SEPARATE_DIGIT_LETTERS
         rem shouldBe DrsTextTool.REMOVE_PUNCTUATION
         // DRS v1.21.0: +4 mark-insertion tools (RLM/LRM/ZWJ/ZWNJ);
-        // public v1.4.0: +1 the deterministic sentence vocalization.
-        (DrsTextTool.entries.size) shouldBe 52
+        // public v1.4.0: +1 the deterministic sentence vocalization;
+        // public v1.6.0: +1 the number-to-Arabic-words rendering.
+        (DrsTextTool.entries.size) shouldBe 53
     }
 })
