@@ -1715,6 +1715,8 @@
     <string name="drs__text_tools__desc_date_words">صياغة التاريخ العبارة الوثائقية الرسمية (2026-10-03 تصير «الثالث من أكتوبر عام ألفين وستة وعشرين») — وما ليس تاريخًا نظيفًا يبقى كما هو</string>
     <string name="drs__text_tools__tool_time_words">الوقت بالكلمات</string>
     <string name="drs__text_tools__desc_time_words">صياغة الوقت عبارة الساعة الرسمية (14:45 تصير «الثالثة إلا الربع»، و09:30 تصير «التاسعة والنصف») — وما ليس وقتًا نظيفًا يبقى كما هو</string>
+    <string name="drs__text_tools__tool_fraction_words">الكسر بالكلمات</string>
+    <string name="drs__text_tools__desc_fraction_words">صياغة الكسر كلماته العربية الفصيحة (3/4 تصير «ثلاثة أرباع»، و1/2 تصير «النصف»، و2/3 تصير «ثلثان») — وما ليس كسرًا نظيفًا يبقى كما هو</string>
     <string name="drs__text_tools__tool_normalize_punctuation">معالجة علامات الترقيم</string>
     <string name="drs__text_tools__desc_normalize_punctuation">إزالة المسافة قبل الفاصلة والنقطة ووضع مسافة بعد المهما كان اتجاه النص</string>
     <string name="drs__text_tools__tool_clean_text">تنظيف شامل للنص</string>

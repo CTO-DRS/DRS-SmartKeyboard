@@ -239,11 +239,22 @@ enum class DrsTextTool(
     // the documented quarter/half/إلا branches and feminine counted-noun
     // minutes; any ambiguous or invalid shape returns byte-identical,
     // never a guess.
-    TIME_WORDS(-662);
+    TIME_WORDS(-662),
+
+    // DRS v1.10.0: the deterministic fraction-in-words rendering — the
+    // first expansion of the fifth round (v1.10.0 fractions, ordinals,
+    // weekdays): a clean two-component fraction over one fraction slash
+    // becomes its formal written words «ثلاثة أرباع» (see
+    // [DrsFractionWords]): the closed Arabic fraction-word zone
+    // (denominator 2..10, numerator 1..10), the documented counted-noun
+    // agreement (النصف، ثلثان، ثلاثة أثلاث) and no tanwin — house
+    // style; any ambiguous or invalid shape returns byte-identical,
+    // never a guess.
+    FRACTION_WORDS(-663);
 
     companion object {
         /** Inclusive range covering every tool code, for fast dispatch. */
-        val CODE_RANGE = -662..-601
+        val CODE_RANGE = -663..-601
 
         fun fromCode(code: Int): DrsTextTool? = entries.firstOrNull { it.code == code }
     }
@@ -360,6 +371,10 @@ object DrsTextTools {
                 // clock time speaks its formal spoken phrase, anything
                 // else stays byte-identical (see [DrsTimeWords]).
                 DrsTextTool.TIME_WORDS -> DrsTimeWords.timeWordsOrNull(text) ?: text
+                // DRS v1.10.0: the fraction-in-words rendering — a clean
+                // fraction field speaks its Arabic words, prose stays
+                // byte-identical (see [DrsFractionWords]).
+                DrsTextTool.FRACTION_WORDS -> DrsFractionWords.fractionWordsOrNull(text) ?: text
                 // DRS v1.3.0: strip tatweel (kashida) elongation and
                 // convert digits between Western and Arabic-Indic forms.
                 // Both are per-character, lossless-for-everything-else

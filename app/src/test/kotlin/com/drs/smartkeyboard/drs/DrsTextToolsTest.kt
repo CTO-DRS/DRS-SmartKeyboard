@@ -290,6 +290,11 @@ class DrsTextToolsTest : FunSpec({
             // a byte-identical passthrough.
             DrsTextTool.TIME_WORDS -> result shouldBe input
 
+            // DRS v1.10.0: the hostile input carries no fraction slash
+            // and no digit components — the fraction-words tool is a
+            // byte-identical passthrough.
+            DrsTextTool.FRACTION_WORDS -> result shouldBe input
+
             else -> error("DRS p9 (Q3): tool ${tool.name} has no pinned hostile-input invariant")
         }
     }

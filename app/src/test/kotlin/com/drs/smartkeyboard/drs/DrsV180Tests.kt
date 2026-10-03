@@ -226,7 +226,8 @@ class DrsV180Tests : FunSpec({
         // public v1.6.0: +1 the number-to-Arabic-words rendering;
         // public v1.7.0: +1 the financial tafqit;
         // public v1.8.0: +1 the date-in-words tool;
-        // public v1.9.0: +1 the clock-time-in-words tool.
-        (DrsTextTool.entries.size) shouldBe 56
+        // public v1.9.0: +1 the clock-time-in-words tool;
+        // public v1.10.0: +1 the fraction-in-words tool.
+        (DrsTextTool.entries.size) shouldBe 57
     }
 })
