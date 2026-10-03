@@ -20,7 +20,9 @@ import com.drs.smartkeyboard.ime.text.key.KeyType
 import com.drs.smartkeyboard.ime.text.key.KeyVariation
 import com.drs.smartkeyboard.lib.lowercase
 
-class TextKey(override val data: AbstractKeyData) : Key(data) {
+// DRS v1.5.0: open so JVM tests can subclass it and pin the glide
+// pipeline (SHARK2) contracts against a synthetic Arabic key grid.
+open class TextKey(override val data: AbstractKeyData) : Key(data) {
     var computedData: KeyData = TextKeyData.UNSPECIFIED
         private set
     val computedPopups: MutablePopupSet<KeyData> = MutablePopupSet()

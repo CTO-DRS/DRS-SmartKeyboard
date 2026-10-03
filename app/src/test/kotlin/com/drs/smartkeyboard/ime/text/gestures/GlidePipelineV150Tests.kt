@@ -8,6 +8,8 @@ import androidx.collection.SparseArrayCompat
 import com.drs.smartkeyboard.ime.text.keyboard.TextKey
 import com.drs.smartkeyboard.ime.text.keyboard.TextKeyData
 import com.drs.smartkeyboard.lib.DrsRect
+import com.drs.smartkeyboard.ime.text.gestures.StatisticalGlideTypingClassifier.Gesture
+import com.drs.smartkeyboard.ime.text.gestures.StatisticalGlideTypingClassifier.Pruner
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
@@ -57,7 +59,7 @@ class GlidePipelineV150Tests : FunSpec({
         return map
     }
 
-    private fun keys(grid: SparseArrayCompat<TextKey>): List<TextKey> =
+    fun keys(grid: SparseArrayCompat<TextKey>): List<TextKey> =
         (0 until grid.size()).map { grid.valueAt(it) }
 
     // -------------------------------------------------------------
@@ -106,9 +108,9 @@ class GlidePipelineV150Tests : FunSpec({
         g.addPoint(100f, 0f)
         val r = g.resample(200)
         r.getFirstX() shouldBe 0f
-        abs(r.getLastX() - 100f) < 1e-3f shouldBe true
+        (abs(r.getLastX() - 100f) < 1e-3f) shouldBe true
         // geometric invariance: the resampled path measures the same length
-        abs(r.getLength() - 100f) < 0.5f shouldBe true
+        (abs(r.getLength() - 100f) < 0.5f) shouldBe true
     }
 
     test("a zigzag keeps its total length after resampling") {
@@ -117,9 +119,9 @@ class GlidePipelineV150Tests : FunSpec({
         g.addPoint(30f, 40f)
         g.addPoint(60f, 0f)
         val r = g.resample(200)
-        abs(r.getLength() - 100f) < 0.5f shouldBe true
-        abs(r.getLastX() - 60f) < 1e-3f shouldBe true
-        abs(r.getLastY()) < 1e-3f shouldBe true
+        (abs(r.getLength() - 100f) < 0.5f) shouldBe true
+        (abs(r.getLastX() - 60f) < 1e-3f) shouldBe true
+        (abs(r.getLastY()) < 1e-3f) shouldBe true
     }
 
     test("a single-point gesture resamples into a constant burst") {
@@ -150,8 +152,8 @@ class GlidePipelineV150Tests : FunSpec({
         g.addPoint(0f, 0f)
         g.addPoint(100f, 0f)
         val n = g.normalizeByBoxSide()
-        abs(n.getX(0) + 0.5f) < 1e-4f shouldBe true
-        abs(n.getX(1) - 0.5f) < 1e-4f shouldBe true
+        (abs(n.getX(0) + 0.5f) < 1e-4f) shouldBe true
+        (abs(n.getX(1) - 0.5f) < 1e-4f) shouldBe true
         n.getY(0) shouldBe 0f
     }
 
