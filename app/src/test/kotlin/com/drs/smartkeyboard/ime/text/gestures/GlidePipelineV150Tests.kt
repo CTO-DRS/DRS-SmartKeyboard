@@ -9,6 +9,7 @@ import com.drs.smartkeyboard.ime.text.keyboard.TextKey
 import com.drs.smartkeyboard.ime.text.keyboard.TextKeyData
 import com.drs.smartkeyboard.lib.DrsRect
 import com.drs.smartkeyboard.ime.text.gestures.StatisticalGlideTypingClassifier.Gesture
+import com.drs.smartkeyboard.ime.text.gestures.StatisticalGlideTypingClassifier.GlideMath
 import com.drs.smartkeyboard.ime.text.gestures.StatisticalGlideTypingClassifier.Pruner
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -281,5 +282,65 @@ class GlidePipelineV150Tests : FunSpec({
         val radius = 60f
         val farLen = Gesture.generateIdealGestures("سلام", grid).first().getLength()
         (abs(user.getLength() - farLen) > 8.42 * radius) shouldBe true
+    }
+
+    // -------------------------------------------------------------
+    // الرياضيات الخالصة — the GlideMath contracts (DRS v1.5.0)
+    // -------------------------------------------------------------
+
+    test("shape distance is zero for identical gestures and symmetric otherwise") {
+        val a = Gesture()
+        a.addPoint(0f, 0f)
+        a.addPoint(100f, 0f)
+        val ra = a.resample(200)
+        val b = Gesture()
+        b.addPoint(0f, 50f)
+        b.addPoint(100f, 50f)
+        val rb = b.resample(200)
+
+        GlideMath.shapeDistance(ra, ra.clone(), 200) shouldBe 0f
+        val d1 = GlideMath.shapeDistance(ra, rb, 200)
+        val d2 = GlideMath.shapeDistance(rb, ra, 200)
+        d1 shouldBe d2
+        (d1 > 0f) shouldBe true
+        // خطان متوازيان يبعدان 50: مسافة الشكل الإجمالية = 50 × 200 نقطة
+        d1 shouldBe 10000f
+    }
+
+    test("location distance is the mean half-Manhattan offset") {
+        val a = Gesture()
+        a.addPoint(0f, 0f)
+        a.addPoint(100f, 0f)
+        val ra = a.resample(200)
+        val b = Gesture()
+        b.addPoint(0f, 50f)
+        b.addPoint(100f, 50f)
+        val rb = b.resample(200)
+
+        GlideMath.locationDistance(ra, ra.clone(), 200) shouldBe 0f
+        // (|dx| + |dy|) / 2 لكل نقطة = (0 + 50) / 2 = 25 بالضبط لخطين متوازيين
+        GlideMath.locationDistance(ra, rb, 200) shouldBe 25f
+    }
+
+    test("gaussian probability peaks at the mean, symmetric and decaying") {
+        val peakAt5 = GlideMath.gaussianProbability(5f, 5f, 2f)
+        val expectedPeak5 = (1.0 / (2.0 * kotlin.math.sqrt(2.0 * Math.PI))).toFloat()
+        // القمة عند الوسط = 1 / (σ·√2π)
+        (abs(peakAt5 - expectedPeak5) < 1e-6f) shouldBe true
+        val p1 = GlideMath.gaussianProbability(1f, 0f, 1f)
+        val pMinus1 = GlideMath.gaussianProbability(-1f, 0f, 1f)
+        p1 shouldBe pMinus1          // تناظر حول الوسط
+        (p1 < GlideMath.gaussianProbability(0f, 0f, 1f)) shouldBe true
+        (GlideMath.gaussianProbability(3f, 0f, 1f) < p1) shouldBe true
+    }
+
+    test("resample honors the numPoints parameter for single-point gestures") {
+        val g = Gesture()
+        g.addPoint(5f, 5f)
+        val r = g.resample(50)
+        // 50 نقطة متماهية — الكود القديم كان يجيب بالثابت الصارم 200 مهما طُلب
+        for (i in 0 until 50) {
+            (r.getX(i) == 5f && r.getY(i) == 5f) shouldBe true
+        }
     }
 })

@@ -356,37 +356,72 @@ class StatisticalGlideTypingClassifier(
     }
 
     private fun calcLocationDistance(gesture1: Gesture, gesture2: Gesture): Float {
-        var totalDistance = 0.0f
-        for (i in 0 until SAMPLING_POINTS) {
-            val x1 = gesture1.getX(i)
-            val x2 = gesture2.getX(i)
-            val y1 = gesture1.getY(i)
-            val y2 = gesture2.getY(i)
-            val distance = abs(x1 - x2) + abs(y1 - y2)
-            totalDistance += distance
-        }
-        return totalDistance / SAMPLING_POINTS / 2
+        return GlideMath.locationDistance(gesture1, gesture2, SAMPLING_POINTS)
     }
 
     private fun calcGaussianProbability(value: Float, mean: Float, standardDeviation: Float): Float {
-        val factor = 1.0 / (standardDeviation * sqrt(2 * PI))
-        val exponent = ((value - mean) / standardDeviation).toDouble().pow(2.0)
-        val probability = factor * exp(-1.0 / 2 * exponent)
-        return probability.toFloat()
+        return GlideMath.gaussianProbability(value, mean, standardDeviation)
     }
 
     private fun calcShapeDistance(gesture1: Gesture, gesture2: Gesture): Float {
-        var distance: Float
-        var totalDistance = 0.0f
-        for (i in 0 until SAMPLING_POINTS) {
-            val x1 = gesture1.getX(i)
-            val x2 = gesture2.getX(i)
-            val y1 = gesture1.getY(i)
-            val y2 = gesture2.getY(i)
-            distance = Gesture.distance(x1, y1, x2, y2)
-            totalDistance += distance
+        return GlideMath.shapeDistance(gesture1, gesture2, SAMPLING_POINTS)
+    }
+
+    /**
+     * DRS v1.5.0 — الرياضيات الخالصة لـ SHARK2 (the pure glide math),
+     * extracted from the classifier so the JVM test suite can pin their
+     * contracts directly (the classifier itself needs an Android Context
+     * and is therefore un-testable in isolation). Deterministic, pure,
+     * on-device — the doctrine, in numbers.
+     */
+    object GlideMath {
+
+        /**
+         * The mean Euclidean point-to-point distance between two gestures
+         * sampled at [samplingPoints] points. Zero for identical shapes;
+         * symmetric by construction (|a-b| = |b-a|).
+         */
+        fun shapeDistance(gesture1: Gesture, gesture2: Gesture, samplingPoints: Int): Float {
+            var totalDistance = 0.0f
+            for (i in 0 until samplingPoints) {
+                val x1 = gesture1.getX(i)
+                val x2 = gesture2.getX(i)
+                val y1 = gesture1.getY(i)
+                val y2 = gesture2.getY(i)
+                totalDistance += Gesture.distance(x1, y1, x2, y2)
+            }
+            return totalDistance
         }
-        return totalDistance
+
+        /**
+         * The mean half-Manhattan distance between two gestures sampled at
+         * [samplingPoints] points — the LOCATION contract (which keys the
+         * stroke passes near), deliberately un-normalized so it stays in
+         * key-radius units.
+         */
+        fun locationDistance(gesture1: Gesture, gesture2: Gesture, samplingPoints: Int): Float {
+            var totalDistance = 0.0f
+            for (i in 0 until samplingPoints) {
+                val x1 = gesture1.getX(i)
+                val x2 = gesture2.getX(i)
+                val y1 = gesture1.getY(i)
+                val y2 = gesture2.getY(i)
+                totalDistance += abs(x1 - x2) + abs(y1 - y2)
+            }
+            return totalDistance / samplingPoints / 2
+        }
+
+        /**
+         * The Gaussian probability of [value] under N([mean], [std]) —
+         * peaks exactly at the mean, symmetric around it, monotonically
+         * decaying with distance. Pure float math, deterministic.
+         */
+        fun gaussianProbability(value: Float, mean: Float, standardDeviation: Float): Float {
+            val factor = 1.0 / (standardDeviation * sqrt(2 * PI))
+            val exponent = ((value - mean) / standardDeviation).toDouble().pow(2.0)
+            val probability = factor * exp(-1.0 / 2 * exponent)
+            return probability.toFloat()
+        }
     }
 
     class Pruner(
@@ -653,8 +688,12 @@ class StatisticalGlideTypingClassifier(
             var cumulativeError = 0.0f
 
             // otherwise nothing happens if size is only 1:
+            // DRS v1.5.0: honor the numPoints PARAMETER (the old code added
+            // the hard-coded SAMPLING_POINTS constant — identical in the
+            // production call but silently wrong for any other resolution).
             if (this.size == 1) {
-                for (i in 0 until SAMPLING_POINTS) {
+                val burst = numPoints.coerceAtLeast(1)
+                for (i in 0 until burst) {
                     resampledGesture.addPoint(xs[0], ys[0])
                 }
             }
