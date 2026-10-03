@@ -1727,6 +1727,8 @@
     <string name="drs__text_tools__desc_words_to_number">إرجاع العدد من كلماته على معجم الإصدار الواحد (ثلاثة وعشرون تصير 23، ومائة ألف تصير 100000) — وما ليس تركيبًا معجميًا نظيفًا يبقى كما هو</string>
     <string name="drs__text_tools__tool_gregorian_to_hijri">الميلادي إلى هجري</string>
     <string name="drs__text_tools__desc_gregorian_to_hijri">تحويل تاريخ ميلادي نظيف إلى عبارته الهجرية الرسمية بالكلمات (2026-02-18 تصير «الأول من رمضان عام ألف وأربعمائة وسبعة وأربعين هجري») على تقويم أم القرى المضمّن في المنصة، والمنطقة مغلقة 1300..1600 هجري — وما ليس تاريخًا نظيفًا أو كان خارج المنطقة يبقى كما هو</string>
+    <string name="drs__text_tools__tool_hijri_to_gregorian">الهجري إلى ميلادي</string>
+    <string name="drs__text_tools__desc_hijri_to_gregorian">تحويل تاريخ هجري نظيف إلى عبارته الميلادية الرسمية بالكلمات (1447/9/1 تصير «الثامن عشر من فبراير عام ألفين وستة وعشرين») على تقويم أم القرى المضمّن في المنصة، والمنطقة مغلقة 1300..1600 هجري — وما ليس تاريخًا نظيفًا أو كان خارج المنطقة يبقى كما هو</string>
     <string name="drs__text_tools__tool_normalize_punctuation">معالجة علامات الترقيم</string>
     <string name="drs__text_tools__desc_normalize_punctuation">إزالة المسافة قبل الفاصلة والنقطة ووضع مسافة بعد المهما كان اتجاه النص</string>
     <string name="drs__text_tools__tool_clean_text">تنظيف شامل للنص</string>

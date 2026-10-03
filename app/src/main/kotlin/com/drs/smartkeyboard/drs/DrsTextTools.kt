@@ -302,11 +302,23 @@ enum class DrsTextTool(
     // zone 1300..1600 AH, the shared day ordinals and number words;
     // anything out of zone or out of grammar returns byte-identical,
     // never a guess.
-    GREGORIAN_TO_HIJRI(-668);
+    GREGORIAN_TO_HIJRI(-668),
+
+    // DRS v2.1.0: the deterministic Hijri→Gregorian conversion — the
+    // seventh round closes with the calendar speaking both ways: a
+    // clean Hijri date in digits becomes its Gregorian documentary
+    // phrase through the SAME formatter as DATE_WORDS — «1447/9/1» →
+    // «الثامن عشر من فبراير عام ألفين وستة وعشرين» (see
+    // [DrsHijriWords]): a closed Hijri parser mirroring the Gregorian
+    // shape rules, the year pinned to the platform's closed zone
+    // 1300..1600 AH, month lengths the platform's own, and one
+    // phrase shape for one calendar; anything out of zone or out of
+    // grammar returns byte-identical, never a guess.
+    HIJRI_TO_GREGORIAN(-669);
 
     companion object {
         /** Inclusive range covering every tool code, for fast dispatch. */
-        val CODE_RANGE = -668..-601
+        val CODE_RANGE = -669..-601
 
         fun fromCode(code: Int): DrsTextTool? = entries.firstOrNull { it.code == code }
     }
@@ -448,6 +460,12 @@ object DrsTextTools {
                 // dates stay byte-identical (see [DrsHijriWords]).
                 DrsTextTool.GREGORIAN_TO_HIJRI ->
                     DrsHijriWords.gregorianToHijriWordsOrNull(text) ?: text
+                // DRS v2.1.0: the Hijri→Gregorian conversion — a clean
+                // Hijri date speaks its Gregorian phrase through the
+                // DATE_WORDS formatter, prose and out-of-zone dates
+                // stay byte-identical (see [DrsHijriWords]).
+                DrsTextTool.HIJRI_TO_GREGORIAN ->
+                    DrsHijriWords.hijriToGregorianWordsOrNull(text) ?: text
                 // DRS v1.3.0: strip tatweel (kashida) elongation and
                 // convert digits between Western and Arabic-Indic forms.
                 // Both are per-character, lossless-for-everything-else

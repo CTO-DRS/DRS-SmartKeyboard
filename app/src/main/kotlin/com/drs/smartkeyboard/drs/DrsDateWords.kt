@@ -97,8 +97,12 @@ object DrsDateWords {
     /** The documented Sakamoto month-offset table (Jan..Dec). */
     private val SAKAMOTO_OFFSETS = intArrayOf(0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4)
 
-    /** Maps every accepted digit to its value, mirroring [DrsNumberWords]. */
-    private fun digitValue(c: Char): Int? = when (c) {
+    /**
+     * Maps every accepted digit to its value, mirroring [DrsNumberWords].
+     * DRS v2.1.0: INTERNAL — the locale-blind digit alphabet shared
+     * with [DrsHijriWords] (one digit system for the whole family).
+     */
+    internal fun digitValue(c: Char): Int? = when (c) {
         in '0'..'9' -> c - '0'
         in '\u0660'..'\u0669' -> c - '\u0660'
         in '\u06F0'..'\u06F9' -> c - '\u06F0'

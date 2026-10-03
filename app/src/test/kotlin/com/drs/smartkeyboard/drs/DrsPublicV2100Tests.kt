@@ -72,10 +72,10 @@ class DrsPublicV2100Tests : FunSpec({
         val tool = DrsTextTool.GREGORIAN_TO_HIJRI
         tool.code shouldBe -668
         DrsTextTool.fromCode(-668) shouldBe tool
-        DrsTextTool.CODE_RANGE.first shouldBe -668
+        DrsTextTool.CODE_RANGE.first shouldBe -669
         (tool.code in DrsTextTool.CODE_RANGE) shouldBe true
         // 61 tools through v2.0.0 + the calendar-conversion tool.
-        DrsTextTool.entries.size shouldBe 62
+        DrsTextTool.entries.size shouldBe 63
         (tool.isInfoOnly) shouldBe false
         (tool.isEditorOp) shouldBe false
         (tool.isInsertMark) shouldBe false
@@ -187,6 +187,140 @@ class DrsPublicV2100Tests : FunSpec({
             d = d.plusDays(1)
         }
         // 1882-11-12..2174-11-25 = 106,665 يومًا كلها مطابقة.
+        count shouldBe 106665
+    }
+
+    test("HIJRI_TO_GREGORIAN registers at -669 in the catalogue") {
+        val tool = DrsTextTool.HIJRI_TO_GREGORIAN
+        tool.code shouldBe -669
+        DrsTextTool.fromCode(-669) shouldBe tool
+        DrsTextTool.CODE_RANGE.first shouldBe -669
+        (tool.code in DrsTextTool.CODE_RANGE) shouldBe true
+        // 62 tools after the Gregorian→Hijri tool + the inverse.
+        DrsTextTool.entries.size shouldBe 63
+        (tool.isInfoOnly) shouldBe false
+        (tool.isEditorOp) shouldBe false
+        (tool.isInsertMark) shouldBe false
+    }
+
+    test("the inverse tool dispatch speaks the Gregorian phrase") {
+        DrsTextTools.apply(
+            DrsTextTool.HIJRI_TO_GREGORIAN, "1447/9/1", ar,
+        ) shouldBe "الثامن عشر من فبراير عام ألفين وستة وعشرين"
+    }
+
+    test("documented inverse anchors speak their Gregorian phrases") {
+        // مراسٍ موثقة معكوسة: مواسم الرمضان، رأس السنة 1440 و1421،
+        // حواف المنطقة 1300 و1600 — كلها مُثبتة على جدول المنصة
+        // ومُحققة تبادليًا مع تنفيذ مستقل داخل تداخل النطاقين.
+        DrsHijriWords.hijriToGregorianWordsOrNull("1447/9/1") shouldBe
+            "الثامن عشر من فبراير عام ألفين وستة وعشرين" // 2026-02-18
+        DrsHijriWords.hijriToGregorianWordsOrNull("1446/9/1") shouldBe
+            "الأول من مارس عام ألفين وخمسة وعشرين" // 2025-03-01
+        DrsHijriWords.hijriToGregorianWordsOrNull("1445/9/1") shouldBe
+            "الحادي عشر من مارس عام ألفين وأربعة وعشرين" // 2024-03-11
+        DrsHijriWords.hijriToGregorianWordsOrNull("1440/1/1") shouldBe
+            "الحادي عشر من سبتمبر عام ألفين وثمانية عشر" // 2018-09-11
+        DrsHijriWords.hijriToGregorianWordsOrNull("1421/1/1") shouldBe
+            "السادس من أبريل عام ألفين" // 2000-04-06
+        DrsHijriWords.hijriToGregorianWordsOrNull("1447/3/10") shouldBe
+            "الثاني من سبتمبر عام ألفين وخمسة وعشرين" // 2025-09-02
+        DrsHijriWords.hijriToGregorianWordsOrNull("1448/3/21") shouldBe
+            "الثالث من سبتمبر عام ألفين وستة وعشرين" // 2026-09-03
+        DrsHijriWords.hijriToGregorianWordsOrNull("1447/12/10") shouldBe
+            "السابع والعشرين من مايو عام ألفين وستة وعشرين" // 2026-05-27
+        // حواف المنطقة — أول يوم وآخر يوم في جدول المنصة.
+        DrsHijriWords.hijriToGregorianWordsOrNull("1300/1/1") shouldBe
+            "الثاني عشر من نوفمبر عام ألف وثمانمائة واثنين وثمانين" // 1882-11-12
+        DrsHijriWords.hijriToGregorianWordsOrNull("1600/12/30") shouldBe
+            "الخامس والعشرين من نوفمبر عام ألفين ومائة وأربعة وسبعين" // 2174-11-25
+    }
+
+    test("the inverse renders through the SAME formatter as DATE_WORDS") {
+        // مصدر الحقيقة الواحد: عبارت الأداتين لنفس اليوم حرفيًا واحدة.
+        DrsHijriWords.hijriToGregorianWordsOrNull("1447/9/1") shouldBe
+            DrsDateWords.dateWordsOrNull("2026-02-18")
+        DrsHijriWords.hijriToGregorianWordsOrNull("1445/9/1") shouldBe
+            DrsDateWords.dateWordsOrNull("2024-03-11")
+        DrsHijriWords.hijriToGregorianWordsOrNull("1600/12/30") shouldBe
+            DrsDateWords.dateWordsOrNull("2174-11-25")
+    }
+
+    test("the closed Hijri parser mirrors the Gregorian shape rules") {
+        // الفواصل الثلاثة تقبل، والسنة حيثما يقف المكوّن الرباعي.
+        DrsHijriWords.hijriToGregorianWordsOrNull("1447-9-1") shouldBe
+            "الثامن عشر من فبراير عام ألفين وستة وعشرين"
+        DrsHijriWords.hijriToGregorianWordsOrNull("1447.9.1") shouldBe
+            "الثامن عشر من فبراير عام ألفين وستة وعشرين"
+        DrsHijriWords.hijriToGregorianWordsOrNull("  1447/9/1  ") shouldBe
+            "الثامن عشر من فبراير عام ألفين وستة وعشرين"
+        DrsHijriWords.hijriToGregorianWordsOrNull("1/9/1447") shouldBe
+            "الثامن عشر من فبراير عام ألفين وستة وعشرين"
+        DrsHijriWords.hijriToGregorianWordsOrNull("1447/9-1") shouldBe null
+        DrsHijriWords.hijriToGregorianWordsOrNull("47/9/1") shouldBe null
+        DrsHijriWords.hijriToGregorianWordsOrNull("1447/03/1447") shouldBe null
+        DrsHijriWords.hijriToGregorianWordsOrNull("1447/9") shouldBe null
+        DrsHijriWords.hijriToGregorianWordsOrNull("1447/9/1/5") shouldBe null
+    }
+
+    test("Hijri digits are locale-blind on the three systems, mixed accepted") {
+        DrsHijriWords.hijriToGregorianWordsOrNull("١٤٤٧/٩/١") shouldBe
+            "الثامن عشر من فبراير عام ألفين وستة وعشرين"
+        DrsHijriWords.hijriToGregorianWordsOrNull("۱۴۴۷-۹-۱") shouldBe
+            "الثامن عشر من فبراير عام ألفين وستة وعشرين"
+        DrsHijriWords.hijriToGregorianWordsOrNull("١٤٤٧/9/۱") shouldBe
+            "الثامن عشر من فبراير عام ألفين وستة وعشرين"
+    }
+
+    test("out of the closed Hijri zone and wrong month lengths are honest no-ops") {
+        // السنة قبل أول سنة في الجدول وبعدها.
+        DrsHijriWords.hijriToGregorianWordsOrNull("1299/12/30") shouldBe null
+        DrsHijriWords.hijriToGregorianWordsOrNull("1601/1/1") shouldBe null
+        // الشهر 13 ليس شهرًا.
+        DrsHijriWords.hijriToGregorianWordsOrNull("1447/13/1") shouldBe null
+        // صفر 1447 له 29 يومًا — الثلاثون مرفوضة بجدول المنصة نفسه.
+        DrsHijriWords.hijriToGregorianWordsOrNull("1447/2/30") shouldBe null
+        DrsHijriWords.hijriToGregorianWordsOrNull("1447/2/29") shouldBe
+            "الثالث والعشرين من أغسطس عام ألفين وخمسة وعشرين" // 2025-08-23
+        // لاحقة «هـ» ليست في القواعد المغلقة — لا نثر بروفي.
+        DrsHijriWords.hijriToGregorianWordsOrNull("1447/9/1 هـ") shouldBe null
+        DrsHijriWords.hijriToGregorianWordsOrNull("") shouldBe null
+        DrsHijriWords.hijriToGregorianWordsOrNull("اليوم عيد الأضحى") shouldBe null
+    }
+
+    test("the inverse output is a fixed point too") {
+        val out = DrsHijriWords.hijriToGregorianWordsOrNull("1447/9/1")!!
+        // المخرج عبارة ميلادية بلا أرقام ولا فواصل — المحرك يعيد null
+        // والأداة تمرر بايتيًا.
+        DrsHijriWords.hijriToGregorianWordsOrNull(out) shouldBe null
+        DrsTextTools.apply(DrsTextTool.HIJRI_TO_GREGORIAN, out, ar) shouldBe out
+    }
+
+    test("every Hijri day of the zone returns the DATE_WORDS phrase of its Gregorian day") {
+        // الفحص الشامل المعكوس: كل يوم هجري في المنطقة كاملة (1300
+        // إلى 1600، كل شهر بكل أيامه بجداول المنصة نفسها) يعطي حرفيًا
+        // عبارت DATE_WORDS لليوم الميلادي الموافق — المحرك هو المرآة
+        // الحرفية لمصدر الحقيقة، يومًا يومًا.
+        var count = 0
+        for (year in DrsHijriWords.HIJRI_YEAR_FIRST..DrsHijriWords.HIJRI_YEAR_LAST) {
+            for (month in 1..12) {
+                val length = HijrahDate.of(year, month, 1).lengthOfMonth()
+                for (day in 1..length) {
+                    val hijriInput = "$year/$month/$day"
+                    val gregorian = LocalDate.from(HijrahDate.of(year, month, day))
+                    val expected = DrsDateWords.dateWordsOrNull(
+                        "${gregorian.year}-${gregorian.monthValue}-${gregorian.dayOfMonth}",
+                    ) ?: error("DATE_WORDS null for $gregorian")
+                    val actual = DrsHijriWords.hijriToGregorianWordsOrNull(hijriInput)
+                    if (actual != expected) {
+                        error("inverse mismatch at $hijriInput ($gregorian): " +
+                            "actual=[$actual] expected=[$expected]")
+                    }
+                    count++
+                }
+            }
+        }
+        // 1300-01-01..1600-12-30 = 106,665 يومًا كلها مطابقة تمامًا.
         count shouldBe 106665
     }
 })

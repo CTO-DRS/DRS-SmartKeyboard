@@ -1809,6 +1809,8 @@
     <string name="drs__text_tools__desc_words_to_number">Return the number from its words on the one release lexicon («ثلاثة وعشرون» becomes 23, «مائة ألف» becomes 100000) — anything that is not a clean lexical composition stays untouched</string>
     <string name="drs__text_tools__tool_gregorian_to_hijri">Gregorian to Hijri</string>
     <string name="drs__text_tools__desc_gregorian_to_hijri">Convert a clean Gregorian date into its formal Hijri phrase in words (2026-02-18 becomes «الأول من رمضان عام ألف وأربعمائة وسبعة وأربعين هجري») on the platform-embedded Umm al-Qura calendar, the zone closed 1300..1600 AH — anything that is not a clean date or is out of zone stays untouched</string>
+    <string name="drs__text_tools__tool_hijri_to_gregorian">Hijri to Gregorian</string>
+    <string name="drs__text_tools__desc_hijri_to_gregorian">Convert a clean Hijri date into its formal Gregorian phrase in words (1447/9/1 becomes «الثامن عشر من فبراير عام ألفين وستة وعشرين») on the platform-embedded Umm al-Qura calendar, the zone closed 1300..1600 AH — anything that is not a clean date or is out of zone stays untouched</string>
     <string name="drs__text_tools__tool_normalize_punctuation">Normalize punctuation</string>
     <string name="drs__text_tools__desc_normalize_punctuation">Remove spaces before punctuation and ensure one space after</string>
     <string name="drs__text_tools__tool_clean_text">Full text clean-up</string>
