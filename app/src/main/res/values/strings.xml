@@ -1713,6 +1713,8 @@
     <string name="drs__text_tools__desc_tafqit">صياغة المبلغ كلماتٍ فصيحة بصيغة الشيكات الرسمية (1234.50 تصير «فقط ألف ومائتان وأربعة وثلاثون ريال وخمسون هللة لا غير») — وما ليس مبلغًا نظيفًا يبقى كما هو</string>
     <string name="drs__text_tools__tool_date_words">التاريخ بالكلمات</string>
     <string name="drs__text_tools__desc_date_words">صياغة التاريخ العبارة الوثائقية الرسمية (2026-10-03 تصير «الثالث من أكتوبر عام ألفين وستة وعشرين») — وما ليس تاريخًا نظيفًا يبقى كما هو</string>
+    <string name="drs__text_tools__tool_time_words">الوقت بالكلمات</string>
+    <string name="drs__text_tools__desc_time_words">صياغة الوقت عبارة الساعة الرسمية (14:45 تصير «الثالثة إلا الربع»، و09:30 تصير «التاسعة والنصف») — وما ليس وقتًا نظيفًا يبقى كما هو</string>
     <string name="drs__text_tools__tool_normalize_punctuation">معالجة علامات الترقيم</string>
     <string name="drs__text_tools__desc_normalize_punctuation">إزالة المسافة قبل الفاصلة والنقطة ووضع مسافة بعد المهما كان اتجاه النص</string>
     <string name="drs__text_tools__tool_clean_text">تنظيف شامل للنص</string>

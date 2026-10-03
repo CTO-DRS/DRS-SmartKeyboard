@@ -229,11 +229,21 @@ enum class DrsTextTool(
     // (see [DrsDateWords]): closed 31-day ordinal table, closed 12-month
     // catalog, the year through [DrsNumberWords] in the genitive; any
     // ambiguous or invalid shape returns byte-identical, never a guess.
-    DATE_WORDS(-661);
+    DATE_WORDS(-661),
+
+    // DRS v1.9.0: the deterministic clock-time-in-words rendering — the
+    // quartet closes (v1.6.0 numbers, v1.7.0 amounts, v1.8.0 dates,
+    // v1.9.0 times): a clean two-component clock time over the single
+    // colon separator becomes its formal spoken phrase «الثالثة إلا
+    // الربع» (see [DrsTimeWords]): closed 12-entry feminine hour table,
+    // the documented quarter/half/إلا branches and feminine counted-noun
+    // minutes; any ambiguous or invalid shape returns byte-identical,
+    // never a guess.
+    TIME_WORDS(-662);
 
     companion object {
         /** Inclusive range covering every tool code, for fast dispatch. */
-        val CODE_RANGE = -661..-601
+        val CODE_RANGE = -662..-601
 
         fun fromCode(code: Int): DrsTextTool? = entries.firstOrNull { it.code == code }
     }
@@ -346,6 +356,10 @@ object DrsTextTools {
                 // speaks its formal documentary phrase, anything else
                 // stays byte-identical (see [DrsDateWords]).
                 DrsTextTool.DATE_WORDS -> DrsDateWords.dateWordsOrNull(text) ?: text
+                // DRS v1.9.0: the clock-time-in-words rendering — a clean
+                // clock time speaks its formal spoken phrase, anything
+                // else stays byte-identical (see [DrsTimeWords]).
+                DrsTextTool.TIME_WORDS -> DrsTimeWords.timeWordsOrNull(text) ?: text
                 // DRS v1.3.0: strip tatweel (kashida) elongation and
                 // convert digits between Western and Arabic-Indic forms.
                 // Both are per-character, lossless-for-everything-else

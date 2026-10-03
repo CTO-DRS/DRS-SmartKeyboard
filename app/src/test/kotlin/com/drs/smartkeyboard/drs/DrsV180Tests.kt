@@ -224,7 +224,9 @@ class DrsV180Tests : FunSpec({
         // DRS v1.21.0: +4 mark-insertion tools (RLM/LRM/ZWJ/ZWNJ);
         // public v1.4.0: +1 the deterministic sentence vocalization;
         // public v1.6.0: +1 the number-to-Arabic-words rendering;
-        // public v1.7.0: +1 the financial tafqit.
-        (DrsTextTool.entries.size) shouldBe 55
+        // public v1.7.0: +1 the financial tafqit;
+        // public v1.8.0: +1 the date-in-words tool;
+        // public v1.9.0: +1 the clock-time-in-words tool.
+        (DrsTextTool.entries.size) shouldBe 56
     }
 })

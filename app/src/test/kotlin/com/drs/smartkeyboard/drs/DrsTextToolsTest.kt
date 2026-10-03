@@ -285,6 +285,11 @@ class DrsTextToolsTest : FunSpec({
             // passthrough.
             DrsTextTool.DATE_WORDS -> result shouldBe input
 
+            // DRS v1.9.0: the hostile input carries no clock colon and
+            // no clean two-component time — the clock-time-words tool is
+            // a byte-identical passthrough.
+            DrsTextTool.TIME_WORDS -> result shouldBe input
+
             else -> error("DRS p9 (Q3): tool ${tool.name} has no pinned hostile-input invariant")
         }
     }

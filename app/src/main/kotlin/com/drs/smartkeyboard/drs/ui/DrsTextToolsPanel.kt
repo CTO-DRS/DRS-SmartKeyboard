@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.FirstPage
 import androidx.compose.material.icons.filled.FormatClear
@@ -343,6 +344,15 @@ private val PANEL_SECTIONS: List<DrsTextToolsPanelSection> = listOf(
                 R.string.drs__text_tools__desc_date_words,
                 Icons.Default.Event,
             ),
+            // DRS v1.9.0: the clock time in words — a clean clock time speaks
+            // its formal spoken phrase, prose stays untouched. The quartet
+            // closes: numbers, amounts, dates, times.
+            toolItem(
+                DrsTextTool.TIME_WORDS,
+                R.string.drs__text_tools__tool_time_words,
+                R.string.drs__text_tools__desc_time_words,
+                Icons.Default.Schedule,
+            ),
             // DRS v1.3.0: tatweel removal + digit conversions.
             toolItem(
                 DrsTextTool.REMOVE_TATWEEL,
@@ -602,6 +612,8 @@ fun textToolTitleRes(tool: DrsTextTool): Int = when (tool) {
     DrsTextTool.TAFQIT -> R.string.drs__text_tools__tool_tafqit
     // DRS v1.8.0: the date in words.
     DrsTextTool.DATE_WORDS -> R.string.drs__text_tools__tool_date_words
+    // DRS v1.9.0: the clock time in words.
+    DrsTextTool.TIME_WORDS -> R.string.drs__text_tools__tool_time_words
     DrsTextTool.REMOVE_TATWEEL -> R.string.drs__text_tools__tool_remove_tatweel
     DrsTextTool.TO_ARABIC_DIGITS -> R.string.drs__text_tools__tool_to_arabic_digits
     DrsTextTool.TO_WESTERN_DIGITS -> R.string.drs__text_tools__tool_to_western_digits
@@ -666,6 +678,8 @@ fun textToolDescRes(tool: DrsTextTool): Int = when (tool) {
     DrsTextTool.TAFQIT -> R.string.drs__text_tools__desc_tafqit
     // DRS v1.8.0: the date in words.
     DrsTextTool.DATE_WORDS -> R.string.drs__text_tools__desc_date_words
+    // DRS v1.9.0: the clock time in words.
+    DrsTextTool.TIME_WORDS -> R.string.drs__text_tools__desc_time_words
     DrsTextTool.REMOVE_TATWEEL -> R.string.drs__text_tools__desc_remove_tatweel
     DrsTextTool.TO_ARABIC_DIGITS -> R.string.drs__text_tools__desc_to_arabic_digits
     DrsTextTool.TO_WESTERN_DIGITS -> R.string.drs__text_tools__desc_to_western_digits

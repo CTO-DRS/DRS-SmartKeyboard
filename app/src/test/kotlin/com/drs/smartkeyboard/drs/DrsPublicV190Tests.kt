@@ -166,4 +166,35 @@ class DrsPublicV190Tests : FunSpec({
         time(out) shouldBe null
         out shouldBe "الثالثة إلا الربع"
     }
+
+    // -------------------------------------------------------------
+    // الأداة في الكتالوج — the TIME_WORDS tool wiring (v1.9.0)
+    // -------------------------------------------------------------
+
+    test("TIME_WORDS registers at -662 in the catalogue") {
+        val tool = DrsTextTool.TIME_WORDS
+        tool.code shouldBe -662
+        DrsTextTool.fromCode(-662) shouldBe tool
+        DrsTextTool.CODE_RANGE.first shouldBe -662
+        (tool.code in DrsTextTool.CODE_RANGE) shouldBe true
+        // 55 tools through v1.8.0 + the clock-time-in-words tool.
+        DrsTextTool.entries.size shouldBe 56
+        (tool.isInfoOnly) shouldBe false
+        (tool.isEditorOp) shouldBe false
+        (tool.isInsertMark) shouldBe false
+    }
+
+    fun applyTime(text: String) = DrsTextTools.apply(DrsTextTool.TIME_WORDS, text)
+
+    test("the tool converts a clean clock time and passes prose byte-identical") {
+        applyTime("14:45") shouldBe "الثالثة إلا الربع"
+        applyTime("09:30") shouldBe "التاسعة والنصف"
+        applyTime("الساعة 14:45") shouldBe "الساعة 14:45"
+        applyTime("") shouldBe ""
+    }
+
+    test("the tool output is a fixed point — applying twice changes nothing") {
+        val once = applyTime("14:45")
+        applyTime(once) shouldBe once
+    }
 })
