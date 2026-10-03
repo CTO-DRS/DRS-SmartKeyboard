@@ -167,7 +167,7 @@ class DrsPublicV160Tests : FunSpec({
 
     test("the vocalized article marks sun tokens with sukun+shadda") {
         // الشمس → الْ + شّ + مس : the lam is silent, the sun letter doubles.
-        DrsArabicLetters.vocalizedArticle("الشمس") shouldBe "الْشَّمس"
+        DrsArabicLetters.vocalizedArticle("الشمس") shouldBe "الْشّمس"
         DrsArabicLetters.vocalizedArticle("النور") shouldBe "الْنّور"
     }
 
