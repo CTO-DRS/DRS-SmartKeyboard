@@ -115,7 +115,7 @@ class DrsPublicV140Tests : FunSpec({
         // 51 tools through v1.21.0, + the sentence vocalization (v1.4.0)
         // and + the number-to-words tool (v1.6.0) and + the tafqit tool
         // (v1.7.0).
-        DrsTextTool.entries.size shouldBe 54
+        DrsTextTool.entries.size shouldBe 55
         (tool.isInfoOnly) shouldBe false
         (tool.isEditorOp) shouldBe false
         (tool.isInsertMark) shouldBe false

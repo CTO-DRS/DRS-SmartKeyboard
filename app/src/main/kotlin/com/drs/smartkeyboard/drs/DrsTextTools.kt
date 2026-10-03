@@ -220,11 +220,20 @@ enum class DrsTextTool(
     // (see [DrsTafqit]): closed five-currency catalog, documented
     // counted-noun agreement, feminine subunit counting; anything that
     // is not a clean amount returns byte-identical, never a guess.
-    TAFQIT(-660);
+    TAFQIT(-660),
+
+    // DRS v1.8.0: the deterministic date-in-words rendering — the trilogy
+    // closes (v1.6.0 numbers, v1.7.0 amounts, v1.8.0 dates): a clean
+    // three-component date over one consistent separator becomes its
+    // formal documentary phrase «الثالث من أكتوبر عام ألفين وستة وعشرين»
+    // (see [DrsDateWords]): closed 31-day ordinal table, closed 12-month
+    // catalog, the year through [DrsNumberWords] in the genitive; any
+    // ambiguous or invalid shape returns byte-identical, never a guess.
+    DATE_WORDS(-661);
 
     companion object {
         /** Inclusive range covering every tool code, for fast dispatch. */
-        val CODE_RANGE = -660..-601
+        val CODE_RANGE = -661..-601
 
         fun fromCode(code: Int): DrsTextTool? = entries.firstOrNull { it.code == code }
     }
@@ -333,6 +342,10 @@ object DrsTextTools {
                 // its formal check words, anything else stays byte-identical
                 // (see [DrsTafqit]).
                 DrsTextTool.TAFQIT -> DrsTafqit.tafqitOrNull(text) ?: text
+                // DRS v1.8.0: the date-in-words rendering — a clean date
+                // speaks its formal documentary phrase, anything else
+                // stays byte-identical (see [DrsDateWords]).
+                DrsTextTool.DATE_WORDS -> DrsDateWords.dateWordsOrNull(text) ?: text
                 // DRS v1.3.0: strip tatweel (kashida) elongation and
                 // convert digits between Western and Arabic-Indic forms.
                 // Both are per-character, lossless-for-everything-else

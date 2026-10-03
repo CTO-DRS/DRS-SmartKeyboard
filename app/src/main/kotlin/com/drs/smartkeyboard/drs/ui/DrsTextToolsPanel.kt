@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.FirstPage
 import androidx.compose.material.icons.filled.FormatClear
@@ -333,6 +334,15 @@ private val PANEL_SECTIONS: List<DrsTextToolsPanelSection> = listOf(
                 R.string.drs__text_tools__desc_tafqit,
                 Icons.Default.Paid,
             ),
+            // DRS v1.8.0: the date in words — a clean date speaks its formal
+            // documentary phrase, prose stays untouched. The trilogy closes:
+            // numbers, amounts, dates.
+            toolItem(
+                DrsTextTool.DATE_WORDS,
+                R.string.drs__text_tools__tool_date_words,
+                R.string.drs__text_tools__desc_date_words,
+                Icons.Default.Event,
+            ),
             // DRS v1.3.0: tatweel removal + digit conversions.
             toolItem(
                 DrsTextTool.REMOVE_TATWEEL,
@@ -590,6 +600,8 @@ fun textToolTitleRes(tool: DrsTextTool): Int = when (tool) {
     DrsTextTool.NUMBER_WORDS -> R.string.drs__text_tools__tool_number_words
     // DRS v1.7.0: the financial tafqit.
     DrsTextTool.TAFQIT -> R.string.drs__text_tools__tool_tafqit
+    // DRS v1.8.0: the date in words.
+    DrsTextTool.DATE_WORDS -> R.string.drs__text_tools__tool_date_words
     DrsTextTool.REMOVE_TATWEEL -> R.string.drs__text_tools__tool_remove_tatweel
     DrsTextTool.TO_ARABIC_DIGITS -> R.string.drs__text_tools__tool_to_arabic_digits
     DrsTextTool.TO_WESTERN_DIGITS -> R.string.drs__text_tools__tool_to_western_digits
@@ -652,6 +664,8 @@ fun textToolDescRes(tool: DrsTextTool): Int = when (tool) {
     DrsTextTool.NUMBER_WORDS -> R.string.drs__text_tools__desc_number_words
     // DRS v1.7.0: the financial tafqit.
     DrsTextTool.TAFQIT -> R.string.drs__text_tools__desc_tafqit
+    // DRS v1.8.0: the date in words.
+    DrsTextTool.DATE_WORDS -> R.string.drs__text_tools__desc_date_words
     DrsTextTool.REMOVE_TATWEEL -> R.string.drs__text_tools__desc_remove_tatweel
     DrsTextTool.TO_ARABIC_DIGITS -> R.string.drs__text_tools__desc_to_arabic_digits
     DrsTextTool.TO_WESTERN_DIGITS -> R.string.drs__text_tools__desc_to_western_digits

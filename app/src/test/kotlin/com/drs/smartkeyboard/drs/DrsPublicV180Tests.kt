@@ -192,4 +192,35 @@ class DrsPublicV180Tests : FunSpec({
         date("") shouldBe null
         date("   ") shouldBe null
     }
+
+    // -------------------------------------------------------------
+    // الأداة في الكتالوج — the DATE_WORDS tool wiring (v1.8.0)
+    // -------------------------------------------------------------
+
+    test("DATE_WORDS registers at -661 in the catalogue") {
+        val tool = DrsTextTool.DATE_WORDS
+        tool.code shouldBe -661
+        DrsTextTool.fromCode(-661) shouldBe tool
+        DrsTextTool.CODE_RANGE.first shouldBe -661
+        (tool.code in DrsTextTool.CODE_RANGE) shouldBe true
+        // 54 tools through v1.7.0 + the date-in-words tool.
+        DrsTextTool.entries.size shouldBe 55
+        (tool.isInfoOnly) shouldBe false
+        (tool.isEditorOp) shouldBe false
+        (tool.isInsertMark) shouldBe false
+    }
+
+    fun applyDate(text: String) = DrsTextTools.apply(DrsTextTool.DATE_WORDS, text)
+
+    test("the tool converts a clean date and passes prose byte-identical") {
+        applyDate("2026-10-03") shouldBe "الثالث من أكتوبر عام ألفين وستة وعشرين"
+        applyDate("3-10-2026") shouldBe "الثالث من أكتوبر عام ألفين وستة وعشرين"
+        applyDate("عام 2026") shouldBe "عام 2026"
+        applyDate("") shouldBe ""
+    }
+
+    test("the tool output is a fixed point — applying twice changes nothing") {
+        val once = applyDate("2026-10-03")
+        applyDate(once) shouldBe once
+    }
 })

@@ -202,7 +202,7 @@ class DrsPublicV160Tests : FunSpec({
         DrsTextTool.fromCode(-659) shouldBe tool
         (tool.code in DrsTextTool.CODE_RANGE) shouldBe true
         // 52 tools through v1.4.0 (public) + the number-to-words tool.
-        DrsTextTool.entries.size shouldBe 54
+        DrsTextTool.entries.size shouldBe 55
         (tool.isInfoOnly) shouldBe false
         (tool.isEditorOp) shouldBe false
         (tool.isInsertMark) shouldBe false

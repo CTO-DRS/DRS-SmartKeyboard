@@ -225,6 +225,6 @@ class DrsV180Tests : FunSpec({
         // public v1.4.0: +1 the deterministic sentence vocalization;
         // public v1.6.0: +1 the number-to-Arabic-words rendering;
         // public v1.7.0: +1 the financial tafqit.
-        (DrsTextTool.entries.size) shouldBe 54
+        (DrsTextTool.entries.size) shouldBe 55
     }
 })

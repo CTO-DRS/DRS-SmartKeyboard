@@ -279,6 +279,12 @@ class DrsTextToolsTest : FunSpec({
             // parses, so the tafqit tool is a byte-identical passthrough.
             DrsTextTool.TAFQIT -> result shouldBe input
 
+            // DRS v1.8.0: the hostile input carries no separator from the
+            // closed date set {- / .} and no digit components — no clean
+            // date parses, so the date-words tool is a byte-identical
+            // passthrough.
+            DrsTextTool.DATE_WORDS -> result shouldBe input
+
             else -> error("DRS p9 (Q3): tool ${tool.name} has no pinned hostile-input invariant")
         }
     }
