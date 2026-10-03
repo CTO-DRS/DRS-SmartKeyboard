@@ -292,8 +292,8 @@ class DrsV1210Tests : FunSpec({
         // DRS v1.6.0 (public): the number-to-words tool extends it once more;
         // DRS v1.7.0 (public): the financial tafqit extends it last;
         // DRS v1.9.0 (public): the clock-time tool extends it last;
-        // DRS v1.10.0 (public): the fraction tool extends it last.
-        DrsTextTool.CODE_RANGE.first shouldBe -663
+        // DRS v1.10.0 (public): the fraction and weekday tools extend it last.
+        DrsTextTool.CODE_RANGE.first shouldBe -664
     }
 
     // -------------------------------------------------------------

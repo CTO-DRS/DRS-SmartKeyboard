@@ -250,11 +250,19 @@ enum class DrsTextTool(
     // agreement (النصف، ثلثان، ثلاثة أثلاث) and no tanwin — house
     // style; any ambiguous or invalid shape returns byte-identical,
     // never a guess.
-    FRACTION_WORDS(-663);
+    FRACTION_WORDS(-663),
+
+    // DRS v1.10.0: the deterministic weekday resolution — a clean date
+    // resolves to its weekday name «السبت» (see [DrsDateWords]): the
+    // same closed date parser as DATE_WORDS plus the documented
+    // Sakamoto congruence (exhaustively verified against the reference
+    // calendar for every accepted date 1..9999); any ambiguous or
+    // invalid shape returns byte-identical, never a guess.
+    WEEKDAY(-664);
 
     companion object {
         /** Inclusive range covering every tool code, for fast dispatch. */
-        val CODE_RANGE = -663..-601
+        val CODE_RANGE = -664..-601
 
         fun fromCode(code: Int): DrsTextTool? = entries.firstOrNull { it.code == code }
     }
@@ -375,6 +383,10 @@ object DrsTextTools {
                 // fraction field speaks its Arabic words, prose stays
                 // byte-identical (see [DrsFractionWords]).
                 DrsTextTool.FRACTION_WORDS -> DrsFractionWords.fractionWordsOrNull(text) ?: text
+                // DRS v1.10.0: the weekday resolution — a clean date
+                // resolves to its weekday name, prose stays byte-identical
+                // (see [DrsDateWords.weekdayOrNull]).
+                DrsTextTool.WEEKDAY -> DrsDateWords.weekdayOrNull(text) ?: text
                 // DRS v1.3.0: strip tatweel (kashida) elongation and
                 // convert digits between Western and Arabic-Indic forms.
                 // Both are per-character, lossless-for-everything-else

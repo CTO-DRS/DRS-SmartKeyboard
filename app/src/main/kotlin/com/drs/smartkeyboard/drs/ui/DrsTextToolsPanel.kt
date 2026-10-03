@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Today
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.FirstPage
 import androidx.compose.material.icons.filled.FormatClear
@@ -363,6 +364,15 @@ private val PANEL_SECTIONS: List<DrsTextToolsPanelSection> = listOf(
                 R.string.drs__text_tools__desc_fraction_words,
                 Icons.Default.PieChart,
             ),
+            // DRS v1.10.0: the weekday — a clean date resolves to its
+            // weekday name by the closed Sakamoto congruence, prose stays
+            // untouched.
+            toolItem(
+                DrsTextTool.WEEKDAY,
+                R.string.drs__text_tools__tool_weekday,
+                R.string.drs__text_tools__desc_weekday,
+                Icons.Default.Today,
+            ),
             // DRS v1.3.0: tatweel removal + digit conversions.
             toolItem(
                 DrsTextTool.REMOVE_TATWEEL,
@@ -626,6 +636,8 @@ fun textToolTitleRes(tool: DrsTextTool): Int = when (tool) {
     DrsTextTool.TIME_WORDS -> R.string.drs__text_tools__tool_time_words
     // DRS v1.10.0: the fraction in words.
     DrsTextTool.FRACTION_WORDS -> R.string.drs__text_tools__tool_fraction_words
+    // DRS v1.10.0: the weekday resolution.
+    DrsTextTool.WEEKDAY -> R.string.drs__text_tools__tool_weekday
     DrsTextTool.REMOVE_TATWEEL -> R.string.drs__text_tools__tool_remove_tatweel
     DrsTextTool.TO_ARABIC_DIGITS -> R.string.drs__text_tools__tool_to_arabic_digits
     DrsTextTool.TO_WESTERN_DIGITS -> R.string.drs__text_tools__tool_to_western_digits
@@ -694,6 +706,8 @@ fun textToolDescRes(tool: DrsTextTool): Int = when (tool) {
     DrsTextTool.TIME_WORDS -> R.string.drs__text_tools__desc_time_words
     // DRS v1.10.0: the fraction in words.
     DrsTextTool.FRACTION_WORDS -> R.string.drs__text_tools__desc_fraction_words
+    // DRS v1.10.0: the weekday resolution.
+    DrsTextTool.WEEKDAY -> R.string.drs__text_tools__desc_weekday
     DrsTextTool.REMOVE_TATWEEL -> R.string.drs__text_tools__desc_remove_tatweel
     DrsTextTool.TO_ARABIC_DIGITS -> R.string.drs__text_tools__desc_to_arabic_digits
     DrsTextTool.TO_WESTERN_DIGITS -> R.string.drs__text_tools__desc_to_western_digits

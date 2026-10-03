@@ -133,10 +133,10 @@ class DrsPublicV1100Tests : FunSpec({
         val tool = DrsTextTool.FRACTION_WORDS
         tool.code shouldBe -663
         DrsTextTool.fromCode(-663) shouldBe tool
-        DrsTextTool.CODE_RANGE.first shouldBe -663
+        DrsTextTool.CODE_RANGE.first shouldBe -664
         (tool.code in DrsTextTool.CODE_RANGE) shouldBe true
-        // 56 tools through v1.9.0 + the fraction-in-words tool.
-        DrsTextTool.entries.size shouldBe 57
+        // 56 tools through v1.9.0 + the v1.10.0 fraction and weekday tools.
+        DrsTextTool.entries.size shouldBe 58
         (tool.isInfoOnly) shouldBe false
         (tool.isEditorOp) shouldBe false
         (tool.isInsertMark) shouldBe false
@@ -154,5 +154,67 @@ class DrsPublicV1100Tests : FunSpec({
     test("the tool output is a fixed point — applying twice changes nothing") {
         val once = applyFraction("3/4")
         applyFraction(once) shouldBe once
+    }
+
+    // -------------------------------------------------------------
+    // يوم الأسبوع — the closed Sakamoto congruence (v1.10.0, batch B)
+    // -------------------------------------------------------------
+
+    fun weekday(text: String): String? = DrsDateWords.weekdayOrNull(text)
+
+    test("known dates speak their weekday — the reference-calendar contract") {
+        weekday("2026-10-03") shouldBe "السبت"
+        weekday("03/10/2026") shouldBe "السبت" // العرف الوثائقي يوم-شهر-سنة يقول الشيء نفسه
+        weekday("2026-01-01") shouldBe "الخميس"
+        weekday("2025-01-01") shouldBe "الأربعاء"
+        weekday("2024-02-29") shouldBe "الخميس" // يوم الكبيسة نفسه يدخل الحساب
+        weekday("2000-01-01") shouldBe "السبت"
+        weekday("1900-01-01") shouldBe "الاثنين" // 1900 ليست كبيسة والقاعدة تعرف
+        weekday("0001-01-01") shouldBe "الاثنين" // أول يوم في التقويم البروليبتيك
+        weekday("1.1.1") shouldBe null // لا مكوّن رباعي — السنة غامضة والمحلل يرفض
+        weekday("9999-12-31") shouldBe "الجمعة" // آخر يوم يقبلها المحلل
+    }
+
+    test("the full week is reachable: Sunday through Saturday") {
+        // 2026-10-04 (Sunday) .. 2026-10-10 (Saturday) — seven consecutive days.
+        weekday("2026-10-04") shouldBe "الأحد"
+        weekday("2026-10-05") shouldBe "الاثنين"
+        weekday("2026-10-06") shouldBe "الثلاثاء"
+        weekday("2026-10-07") shouldBe "الأربعاء"
+        weekday("2026-10-08") shouldBe "الخميس"
+        weekday("2026-10-09") shouldBe "الجمعة"
+        weekday("2026-10-10") shouldBe "السبت"
+    }
+
+    test("the weekday inherits the closed date parser verbatim") {
+        weekday("١٤/٠٣/٢٠٢٦") shouldBe weekday("14/03/2026") // الأرقام الهندية بلا تغيير
+        weekday("29/2/2023") shouldBe null // 2023 ليست كبيسة
+        weekday("2026-13-01") shouldBe null
+        weekday("2026-10-03 و2026-10-04") shouldBe null
+        weekday("السبت الماضي") shouldBe null
+        weekday("2026-10-03T09:00") shouldBe null
+    }
+
+    fun applyWeekday(text: String) = DrsTextTools.apply(DrsTextTool.WEEKDAY, text)
+
+    test("WEEKDAY registers at -664 and converts a clean date") {
+        val tool = DrsTextTool.WEEKDAY
+        tool.code shouldBe -664
+        DrsTextTool.fromCode(-664) shouldBe tool
+        DrsTextTool.CODE_RANGE.first shouldBe -664
+        (tool.code in DrsTextTool.CODE_RANGE) shouldBe true
+        // 57 tools after the fraction tool + the weekday tool.
+        DrsTextTool.entries.size shouldBe 58
+        (tool.isInfoOnly) shouldBe false
+        (tool.isEditorOp) shouldBe false
+        (tool.isInsertMark) shouldBe false
+        applyWeekday("2026-10-03") shouldBe "السبت"
+        applyWeekday("بكرة السبت") shouldBe "بكرة السبت"
+        applyWeekday("") shouldBe ""
+    }
+
+    test("the weekday tool output is a fixed point — no separator, no re-parse") {
+        val once = applyWeekday("2026-10-03")
+        applyWeekday(once) shouldBe once
     }
 })

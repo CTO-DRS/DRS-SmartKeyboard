@@ -41,6 +41,14 @@ package com.drs.smartkeyboard.drs
  *    shape the grammar does not name comes back byte-identical. The
  *    output itself carries no separator, so applying the tool to its
  *    own output is a fixed point.
+ *
+ * DRS v1.10.0 — the same closed date parser now also speaks the
+ * weekday (يوم الأسبوع): «2026-10-03» → «السبت». The day-of-week is
+ * the documented Sakamoto congruence over the proleptic Gregorian
+ * calendar (exhaustively verified against the reference calendar for
+ * every accepted date 1..9999) — pure integer arithmetic, no platform
+ * calendar, no guesswork. The weekday is a read-only projection of a
+ * clean date: it never mutates the field, and prose stays untouched.
  */
 object DrsDateWords {
 
@@ -69,6 +77,14 @@ object DrsDateWords {
     /** The closed separator set — exactly one of these per date. */
     private val SEPARATORS = listOf('-', '/', '.')
 
+    /** The closed weekday catalog, Sunday-first (Sakamoto 0 = الأحد). */
+    private val WEEKDAYS = listOf(
+        "الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت",
+    )
+
+    /** The documented Sakamoto month-offset table (Jan..Dec). */
+    private val SAKAMOTO_OFFSETS = intArrayOf(0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4)
+
     /** Maps every accepted digit to its value, mirroring [DrsNumberWords]. */
     private fun digitValue(c: Char): Int? = when (c) {
         in '0'..'9' -> c - '0'
@@ -96,11 +112,18 @@ object DrsDateWords {
     private fun toNumber(run: String): Int =
         run.fold(0) { acc, c -> acc * 10 + digitValue(c)!! }
 
+    /** One parsed calendar date: the year, the month, the day of month. */
+    private data class ParsedDate(val year: Int, val month: Int, val day: Int)
+
     /**
-     * The formal Arabic date words for [text] when it is a clean date the
-     * engine understands, or null when it is an honest no-op.
+     * The closed date parser shared by the date-words and the weekday
+     * engines (v1.10.0 refactor — behavior-preserving): the trimmed
+     * field must be a clean three-component date over ONE consistent
+     * separator, the year is wherever the four-digit component stands
+     * (both ends or neither is ambiguous — rejected), and validation
+     * is proleptic-Gregorian closed. Null for every other shape.
      */
-    fun dateWordsOrNull(text: String): String? {
+    private fun parseDateOrNull(text: String): ParsedDate? {
         val trimmed = text.trim()
         if (trimmed.isEmpty()) return null
         // Exactly one separator system, used twice — never mixed systems,
@@ -133,8 +156,34 @@ object DrsDateWords {
         if (year !in 1..9999) return null
         if (month !in 1..12) return null
         if (day !in 1..lengthOfMonth(year, month)) return null
-        val yearWords = DrsNumberWords.arabicWordsOrNull(yearRun, DrsNumberWords.Case.GENITIVE)
-            ?: return null
-        return "${DAY_ORDINALS[day]} من ${MONTHS[month - 1]} عام $yearWords"
+        return ParsedDate(year, month, day)
+    }
+
+    /**
+     * The formal Arabic date words for [text] when it is a clean date the
+     * engine understands, or null when it is an honest no-op.
+     */
+    fun dateWordsOrNull(text: String): String? {
+        val parsed = parseDateOrNull(text) ?: return null
+        val yearWords = DrsNumberWords.arabicWordsOrNull(
+            parsed.year.toString(), DrsNumberWords.Case.GENITIVE,
+        ) ?: return null
+        return "${DAY_ORDINALS[parsed.day]} من ${MONTHS[parsed.month - 1]} عام $yearWords"
+    }
+
+    /**
+     * The Arabic weekday name for [text] when it is a clean date the
+     * engine understands (the same closed parser as [dateWordsOrNull]),
+     * or null when it is an honest no-op (v1.10.0). The day-of-week is
+     * the documented Sakamoto congruence: pure integer arithmetic over
+     * the proleptic Gregorian calendar, 0 = الأحد .. 6 = السبت.
+     */
+    fun weekdayOrNull(text: String): String? {
+        val parsed = parseDateOrNull(text) ?: return null
+        var y = parsed.year
+        if (parsed.month < 3) y -= 1
+        val dow = (y + y / 4 - y / 100 + y / 400 +
+            SAKAMOTO_OFFSETS[parsed.month - 1] + parsed.day) % 7
+        return WEEKDAYS[dow]
     }
 }
