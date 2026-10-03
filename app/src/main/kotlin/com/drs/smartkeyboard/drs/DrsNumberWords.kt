@@ -57,11 +57,18 @@ object DrsNumberWords {
      */
     enum class Case { NOMINATIVE, GENITIVE }
 
-    private val UNITS = listOf(
+    /** DRS v2.0.0: the render tables are INTERNAL — the module-level source
+     *  of truth shared with the inverse engine [DrsWordsToNumber], whose
+     *  lexicon is exactly the words these tables emit. */
+    internal val UNITS = listOf(
         "", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة",
     )
 
-    private val TENS = listOf(
+    internal val UNITS_GEN = listOf(
+        "", "واحد", "اثنين", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة",
+    )
+
+    internal val TENS = listOf(
         "", "", "عشرون", "ثلاثون", "أربعون", "خمسون", "ستون", "سبعون", "ثمانون", "تسعون",
     )
 
@@ -70,7 +77,7 @@ object DrsNumberWords {
         "خمسة عشر", "ستة عشر", "سبعة عشر", "ثمانية عشر", "تسعة عشر",
     )
 
-    private val HUNDREDS = listOf(
+    internal val HUNDREDS = listOf(
         "", "مائة", "مائتان", "ثلاثمائة", "أربعمائة", "خمسمائة",
         "ستمائة", "سبعمائة", "ثمانمائة", "تسعمائة",
     )
@@ -89,7 +96,7 @@ object DrsNumberWords {
     private val BILLION = Scale("مليار", "ملياران", "مليارات", "مليارين")
 
     /** The oblique tens (v1.8.0): عشرون → عشرين … تسعون → تسعين. */
-    private val TENS_GEN = listOf(
+    internal val TENS_GEN = listOf(
         "", "", "عشرين", "ثلاثين", "أربعين", "خمسين", "ستين", "سبعين", "ثمانين", "تسعين",
     )
 
@@ -100,7 +107,7 @@ object DrsNumberWords {
     private const val TEEN_TWELVE_GEN = "اثني عشر"
 
     /** The written oblique dual hundred: مائتان → مائتين (v1.8.0). */
-    private const val HUNDRED_TWO_GEN = "مائتين"
+    internal const val HUNDRED_TWO_GEN = "مائتين"
 
     /** Maps every accepted digit to its value, or null when not a digit. */
     private fun digitValue(c: Char): Int? = when (c) {

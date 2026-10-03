@@ -228,6 +228,6 @@ class DrsV180Tests : FunSpec({
         // public v1.8.0: +1 the date-in-words tool;
         // public v1.9.0: +1 the clock-time-in-words tool;
         // public v1.10.0: +3 the fraction, weekday and ordinal tools.
-        (DrsTextTool.entries.size) shouldBe 60
+        (DrsTextTool.entries.size) shouldBe 61
     }
 })

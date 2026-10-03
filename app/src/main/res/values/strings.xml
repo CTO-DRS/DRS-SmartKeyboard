@@ -1723,6 +1723,8 @@
     <string name="drs__text_tools__desc_ordinal_words">صياغة العدد الترتيبي كلماته الفصيحة (3 تصير «الثالث»، و21 تصير «الحادي والعشرون»، و1000 تصير «الألف») — وما ليس عددًا نظيفًا يبقى كما هو</string>
     <string name="drs__text_tools__tool_decimal_words">العشري بالكلمات</string>
     <string name="drs__text_tools__desc_decimal_words">صياغة العدد العشري رقمًا رقمًا بلا تبسيط (1.5 تصير «واحد فاصلة خمسة»، و1.50 تقول «واحد فاصلة خمسة صفر») — وما ليس عددًا عشريًا نظيفًا يبقى كما هو</string>
+    <string name="drs__text_tools__tool_words_to_number">الكلمات إلى عدد</string>
+    <string name="drs__text_tools__desc_words_to_number">إرجاع العدد من كلماته على معجم الإصدار الواحد (ثلاثة وعشرون تصير 23، ومائة ألف تصير 100000) — وما ليس تركيبًا معجميًا نظيفًا يبقى كما هو</string>
     <string name="drs__text_tools__tool_normalize_punctuation">معالجة علامات الترقيم</string>
     <string name="drs__text_tools__desc_normalize_punctuation">إزالة المسافة قبل الفاصلة والنقطة ووضع مسافة بعد المهما كان اتجاه النص</string>
     <string name="drs__text_tools__tool_clean_text">تنظيف شامل للنص</string>

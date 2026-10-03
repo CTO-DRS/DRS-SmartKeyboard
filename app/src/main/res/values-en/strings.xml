@@ -1805,6 +1805,8 @@
     <string name="drs__text_tools__desc_ordinal_words">Spell the field\'s ordinal out in formal Arabic (3 becomes «الثالث», 21 becomes «الحادي والعشرون», 1000 becomes «الألف») — anything that is not a clean number stays untouched</string>
     <string name="drs__text_tools__tool_decimal_words">Decimal in words</string>
     <string name="drs__text_tools__desc_decimal_words">Spell the field\'s decimal out digit-by-digit with no simplification (1.5 becomes «واحد فاصلة خمسة», 1.50 says «واحد فاصلة خمسة صفر») — anything that is not a clean decimal stays untouched</string>
+    <string name="drs__text_tools__tool_words_to_number">Words to number</string>
+    <string name="drs__text_tools__desc_words_to_number">Return the number from its words on the one release lexicon («ثلاثة وعشرون» becomes 23, «مائة ألف» becomes 100000) — anything that is not a clean lexical composition stays untouched</string>
     <string name="drs__text_tools__tool_normalize_punctuation">Normalize punctuation</string>
     <string name="drs__text_tools__desc_normalize_punctuation">Remove spaces before punctuation and ensure one space after</string>
     <string name="drs__text_tools__tool_clean_text">Full text clean-up</string>

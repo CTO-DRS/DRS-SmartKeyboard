@@ -279,11 +279,22 @@ enum class DrsTextTool(
     // alphabet with no simplification, and a fifteen-digit ceiling;
     // any ambiguous or invalid shape returns byte-identical, never a
     // guess.
-    DECIMAL_WORDS(-666);
+    DECIMAL_WORDS(-666),
+
+    // DRS v2.0.0: the deterministic words-to-number mirror — the sixth
+    // round closes with the words speaking back: a clean release-lexicon
+    // composition returns its number «ثلاثة وعشرون» → 23 (see
+    // [DrsWordsToNumber]): the closed lexicon of exactly the words
+    // [DrsNumberWords] emits, in both written cases never mixed (the
+    // case locks on the first inflected word), the attached waw REQUIRED
+    // at every join, segments strictly descending and every word
+    // consumed; any shape the grammar does not name returns
+    // byte-identical, never a guess.
+    WORDS_TO_NUMBER(-667);
 
     companion object {
         /** Inclusive range covering every tool code, for fast dispatch. */
-        val CODE_RANGE = -666..-601
+        val CODE_RANGE = -667..-601
 
         fun fromCode(code: Int): DrsTextTool? = entries.firstOrNull { it.code == code }
     }
@@ -416,6 +427,10 @@ object DrsTextTools {
                 // decimal field speaks its digit-by-digit words, prose
                 // stays byte-identical (see [DrsDecimalWords]).
                 DrsTextTool.DECIMAL_WORDS -> DrsDecimalWords.decimalWordsOrNull(text) ?: text
+                // DRS v2.0.0: the words-to-number mirror — a clean
+                // lexical composition returns its number, prose stays
+                // byte-identical (see [DrsWordsToNumber]).
+                DrsTextTool.WORDS_TO_NUMBER -> DrsWordsToNumber.wordsToNumberOrNull(text)?.toString() ?: text
                 // DRS v1.3.0: strip tatweel (kashida) elongation and
                 // convert digits between Western and Arabic-Indic forms.
                 // Both are per-character, lossless-for-everything-else

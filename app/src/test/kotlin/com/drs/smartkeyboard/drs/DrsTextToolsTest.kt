@@ -309,6 +309,11 @@ class DrsTextToolsTest : FunSpec({
             // a byte-identical passthrough.
             DrsTextTool.DECIMAL_WORDS -> result shouldBe input
 
+            // DRS v2.0.0: the hostile input carries no Arabic number
+            // words — the words-to-number mirror is a byte-identical
+            // passthrough.
+            DrsTextTool.WORDS_TO_NUMBER -> result shouldBe input
+
             else -> error("DRS p9 (Q3): tool ${tool.name} has no pinned hostile-input invariant")
         }
     }
