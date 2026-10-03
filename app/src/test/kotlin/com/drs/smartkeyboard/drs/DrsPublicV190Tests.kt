@@ -42,7 +42,7 @@ class DrsPublicV190Tests : FunSpec({
 
     test("clean hours speak the feminine ordinal the clock uses") {
         time("09:00") shouldBe "التاسعة"
-        time("14:00") shouldBe "الثالثة"
+        time("14:00") shouldBe "الثانية" // الثانية عصرًا — الساعة 14 هي الثانية
         time("1:00") shouldBe "الواحدة" // صيغة الساعة القياسية لا «الأولى»
         time("11:00") shouldBe "الحادية عشرة"
     }
@@ -59,7 +59,7 @@ class DrsPublicV190Tests : FunSpec({
 
     test("quarter past and half past join the same hour") {
         time("09:15") shouldBe "التاسعة والربع"
-        time("14:30") shouldBe "الثالثة والنصف"
+        time("14:30") shouldBe "الثانية والنصف"
         time("0:15") shouldBe "الثانية عشرة والربع"
         time("12:30") shouldBe "الثانية عشرة والنصف"
     }
@@ -104,8 +104,8 @@ class DrsPublicV190Tests : FunSpec({
     }
 
     test("the last minute of the clock hour speaks whole") {
-        time("09:59") shouldBe "التاسعة وتسع وتسعون دقيقة"
-        time("23:59") shouldBe "الحادية عشرة وتسع وتسعون دقيقة"
+        time("09:59") shouldBe "التاسعة وتسع وخمسون دقيقة"
+        time("23:59") shouldBe "الحادية عشرة وتسع وخمسون دقيقة"
     }
 
     // -------------------------------------------------------------
@@ -113,14 +113,14 @@ class DrsPublicV190Tests : FunSpec({
     // -------------------------------------------------------------
 
     test("the three digit systems parse — even mixed inside one time") {
-        time("١٤:٣٠") shouldBe "الثالثة والنصف"
+        time("١٤:٣٠") shouldBe "الثانية والنصف"
         time("۱۴:۴۵") shouldBe "الثالثة إلا الربع"
-        time("14:٣٠") shouldBe "الثالثة والنصف"
+        time("14:٣٠") shouldBe "الثانية والنصف"
     }
 
     test("whitespace around the field and the separator is tolerated") {
-        time(" 14:30 ") shouldBe "الثالثة والنصف"
-        time("14 : 30") shouldBe "الثالثة والنصف"
+        time(" 14:30 ") shouldBe "الثانية والنصف"
+        time("14 : 30") shouldBe "الثانية والنصف"
     }
 
     test("padding is value-based, never positional") {
