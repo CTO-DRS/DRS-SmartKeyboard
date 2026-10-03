@@ -49,6 +49,14 @@ package com.drs.smartkeyboard.drs
  * every accepted date 1..9999) — pure integer arithmetic, no platform
  * calendar, no guesswork. The weekday is a read-only projection of a
  * clean date: it never mutates the field, and prose stays untouched.
+ *
+ * DRS v2.1.0 — the closed parser, the day-ordinal table and the
+ * Gregorian-words formatter are now the module-level source of truth
+ * shared with the calendar-conversion engine [DrsHijriWords] (a
+ * behavior-preserving visibility refactor): the Hijri words speak
+ * through the SAME day ordinals, and the Hijri→Gregorian direction
+ * renders through the SAME Gregorian-words formatter — one release
+ * speaks one calendar phrase shape.
  */
 object DrsDateWords {
 
@@ -62,8 +70,12 @@ object DrsDateWords {
      * The closed day-ordinal table, 1..31, written oblique (مجرور،
      * بلا تنوين — house style): «في العاشر»، «في العشرين»،
      * «في الحادي والعشرين». Index 0 is unused padding.
+     *
+     * DRS v2.1.0: INTERNAL — the module-level source of truth shared
+     * with [DrsHijriWords] (the same day speaks the same words in
+     * both calendars).
      */
-    private val DAY_ORDINALS = listOf(
+    internal val DAY_ORDINALS = listOf(
         "", "الأول", "الثاني", "الثالث", "الرابع", "الخامس",
         "السادس", "السابع", "الثامن", "التاسع", "العاشر",
         "الحادي عشر", "الثاني عشر", "الثالث عشر", "الرابع عشر", "الخامس عشر",
@@ -112,8 +124,9 @@ object DrsDateWords {
     private fun toNumber(run: String): Int =
         run.fold(0) { acc, c -> acc * 10 + digitValue(c)!! }
 
-    /** One parsed calendar date: the year, the month, the day of month. */
-    private data class ParsedDate(val year: Int, val month: Int, val day: Int)
+    /** One parsed calendar date: the year, the month, the day of month.
+     *  DRS v2.1.0: INTERNAL — shared with [DrsHijriWords]. */
+    internal data class ParsedDate(val year: Int, val month: Int, val day: Int)
 
     /**
      * The closed date parser shared by the date-words and the weekday
@@ -123,7 +136,7 @@ object DrsDateWords {
      * (both ends or neither is ambiguous — rejected), and validation
      * is proleptic-Gregorian closed. Null for every other shape.
      */
-    private fun parseDateOrNull(text: String): ParsedDate? {
+    internal fun parseDateOrNull(text: String): ParsedDate? {
         val trimmed = text.trim()
         if (trimmed.isEmpty()) return null
         // Exactly one separator system, used twice — never mixed systems,
@@ -165,10 +178,22 @@ object DrsDateWords {
      */
     fun dateWordsOrNull(text: String): String? {
         val parsed = parseDateOrNull(text) ?: return null
+        return gregorianWordsFor(parsed.year, parsed.month, parsed.day)
+    }
+
+    /**
+     * DRS v2.1.0 — the Gregorian-words formatter, extracted verbatim
+     * from [dateWordsOrNull] (behavior-preserving) as the module-level
+     * source of truth for the documentary phrase shape: «الثالث من
+     * أكتوبر عام ألفين وستة وعشرين». The Hijri→Gregorian conversion
+     * renders through this SAME formatter so both tools speak one
+     * phrase shape. Null when the year words are unavailable.
+     */
+    internal fun gregorianWordsFor(year: Int, month: Int, day: Int): String? {
         val yearWords = DrsNumberWords.arabicWordsOrNull(
-            parsed.year.toString(), DrsNumberWords.Case.GENITIVE,
+            year.toString(), DrsNumberWords.Case.GENITIVE,
         ) ?: return null
-        return "${DAY_ORDINALS[parsed.day]} من ${MONTHS[parsed.month - 1]} عام $yearWords"
+        return "${DAY_ORDINALS[day]} من ${MONTHS[month - 1]} عام $yearWords"
     }
 
     /**

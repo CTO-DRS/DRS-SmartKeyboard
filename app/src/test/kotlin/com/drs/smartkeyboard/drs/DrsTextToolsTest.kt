@@ -314,6 +314,12 @@ class DrsTextToolsTest : FunSpec({
             // passthrough.
             DrsTextTool.WORDS_TO_NUMBER -> result shouldBe input
 
+            // DRS v2.1.0: the hostile input carries no separator from
+            // the closed date set {- / .} and no digit components —
+            // the Gregorian→Hijri conversion is a byte-identical
+            // passthrough.
+            DrsTextTool.GREGORIAN_TO_HIJRI -> result shouldBe input
+
             else -> error("DRS p9 (Q3): tool ${tool.name} has no pinned hostile-input invariant")
         }
     }

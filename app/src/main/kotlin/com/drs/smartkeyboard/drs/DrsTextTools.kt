@@ -290,11 +290,23 @@ enum class DrsTextTool(
     // at every join, segments strictly descending and every word
     // consumed; any shape the grammar does not name returns
     // byte-identical, never a guess.
-    WORDS_TO_NUMBER(-667);
+    WORDS_TO_NUMBER(-667),
+
+    // DRS v2.1.0: the deterministic Gregorian→Hijri conversion — the
+    // seventh round opens with the calendar speaking: a clean date
+    // becomes its Hijri documentary phrase «2026-02-18» → «الأول من
+    // رمضان عام ألف وأربعمائة وسبعة وأربعين هجري» (see
+    // [DrsHijriWords]): the same closed date parser as DATE_WORDS, the
+    // platform's embedded Umm al-Qura table as the named convention
+    // (the SAME source the number panel already speaks), the closed
+    // zone 1300..1600 AH, the shared day ordinals and number words;
+    // anything out of zone or out of grammar returns byte-identical,
+    // never a guess.
+    GREGORIAN_TO_HIJRI(-668);
 
     companion object {
         /** Inclusive range covering every tool code, for fast dispatch. */
-        val CODE_RANGE = -667..-601
+        val CODE_RANGE = -668..-601
 
         fun fromCode(code: Int): DrsTextTool? = entries.firstOrNull { it.code == code }
     }
@@ -431,6 +443,11 @@ object DrsTextTools {
                 // lexical composition returns its number, prose stays
                 // byte-identical (see [DrsWordsToNumber]).
                 DrsTextTool.WORDS_TO_NUMBER -> DrsWordsToNumber.wordsToNumberOrNull(text)?.toString() ?: text
+                // DRS v2.1.0: the Gregorian→Hijri conversion — a clean
+                // date speaks its Hijri phrase, prose and out-of-zone
+                // dates stay byte-identical (see [DrsHijriWords]).
+                DrsTextTool.GREGORIAN_TO_HIJRI ->
+                    DrsHijriWords.gregorianToHijriWordsOrNull(text) ?: text
                 // DRS v1.3.0: strip tatweel (kashida) elongation and
                 // convert digits between Western and Arabic-Indic forms.
                 // Both are per-character, lossless-for-everything-else

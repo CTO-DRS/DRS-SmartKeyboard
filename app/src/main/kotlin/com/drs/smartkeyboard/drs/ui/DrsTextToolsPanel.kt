@@ -24,6 +24,7 @@ import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Calculate
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Functions
 import androidx.compose.material.icons.filled.Percent
@@ -404,6 +405,15 @@ private val PANEL_SECTIONS: List<DrsTextToolsPanelSection> = listOf(
                 R.string.drs__text_tools__desc_words_to_number,
                 Icons.Default.Functions,
             ),
+            // DRS v2.1.0: the Gregorian→Hijri conversion — a clean date
+            // speaks its Hijri phrase (الأول من رمضان عام ...) on the
+            // platform's Umm al-Qura table, the zone closed 1300..1600.
+            toolItem(
+                DrsTextTool.GREGORIAN_TO_HIJRI,
+                R.string.drs__text_tools__tool_gregorian_to_hijri,
+                R.string.drs__text_tools__desc_gregorian_to_hijri,
+                Icons.Default.CalendarMonth,
+            ),
             // DRS v1.3.0: tatweel removal + digit conversions.
             toolItem(
                 DrsTextTool.REMOVE_TATWEEL,
@@ -675,6 +685,7 @@ fun textToolTitleRes(tool: DrsTextTool): Int = when (tool) {
     DrsTextTool.DECIMAL_WORDS -> R.string.drs__text_tools__tool_decimal_words
     // DRS v2.0.0: the words-to-number mirror.
     DrsTextTool.WORDS_TO_NUMBER -> R.string.drs__text_tools__tool_words_to_number
+    DrsTextTool.GREGORIAN_TO_HIJRI -> R.string.drs__text_tools__tool_gregorian_to_hijri
     DrsTextTool.REMOVE_TATWEEL -> R.string.drs__text_tools__tool_remove_tatweel
     DrsTextTool.TO_ARABIC_DIGITS -> R.string.drs__text_tools__tool_to_arabic_digits
     DrsTextTool.TO_WESTERN_DIGITS -> R.string.drs__text_tools__tool_to_western_digits
@@ -751,6 +762,7 @@ fun textToolDescRes(tool: DrsTextTool): Int = when (tool) {
     DrsTextTool.DECIMAL_WORDS -> R.string.drs__text_tools__desc_decimal_words
     // DRS v2.0.0: the words-to-number mirror.
     DrsTextTool.WORDS_TO_NUMBER -> R.string.drs__text_tools__desc_words_to_number
+    DrsTextTool.GREGORIAN_TO_HIJRI -> R.string.drs__text_tools__desc_gregorian_to_hijri
     DrsTextTool.REMOVE_TATWEEL -> R.string.drs__text_tools__desc_remove_tatweel
     DrsTextTool.TO_ARABIC_DIGITS -> R.string.drs__text_tools__desc_to_arabic_digits
     DrsTextTool.TO_WESTERN_DIGITS -> R.string.drs__text_tools__desc_to_western_digits
