@@ -138,6 +138,22 @@ object DrsArabicCorrector {
         "بريئ" to "بريء",
         "انن" to "إنن",
         "الله اكبر" to "اللهُ أكبر",
+        // DRS v1.6.0: twelve more UNIVERSALLY-wrong spellings. Every entry
+        // is orthographic certainty, not a style preference: the hamza-seat
+        // errors (ئ vs أ/ؤ after the medial position), the opening-hamza
+        // omissions (اكثر/اقل/الان) and the fused إنشاءالله.
+        "انشاءالله" to "إن شاء الله",
+        "بأذن الله" to "بإذن الله",
+        "اذن" to "إذن",
+        "الان" to "الآن",
+        "اكثر" to "أكثر",
+        "اقل" to "أقل",
+        "اولئك" to "أولئك",
+        "مسئولية" to "مسؤولية",
+        "مسئولة" to "مسؤولة",
+        "مسئلة" to "مسألة",
+        "تسئولات" to "تساؤلات",
+        "شئون" to "شؤون",
     )
 
     /** Normalized wrong-phrase → correct raw spelling. */

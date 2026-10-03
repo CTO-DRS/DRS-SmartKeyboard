@@ -288,8 +288,9 @@ class DrsV1210Tests : FunSpec({
             DrsTextTool.CODE_RANGE.contains(tool.code).shouldBeTrue()
             DrsTextTool.fromCode(tool.code) shouldBe tool
         }
-        // DRS v1.4.0 (public): the sentence vocalization extends the range.
-        DrsTextTool.CODE_RANGE.first shouldBe -658
+        // DRS v1.4.0 (public): the sentence vocalization extends the range;
+        // DRS v1.6.0 (public): the number-to-words tool extends it once more.
+        DrsTextTool.CODE_RANGE.first shouldBe -659
     }
 
     // -------------------------------------------------------------

@@ -4,8 +4,10 @@
 
 package com.drs.smartkeyboard.drs
 
+import com.drs.smartkeyboard.drs.ai.DrsArabicCorrector
 import com.drs.smartkeyboard.drs.ai.DrsArabicLetters
 import com.drs.smartkeyboard.drs.ai.DrsArabicMorphology
+import com.drs.smartkeyboard.drs.ai.LatinNormBridge
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -186,5 +188,113 @@ class DrsPublicV160Tests : FunSpec({
         val marked = DrsArabicLetters.vocalizedArticle("الشمس")
         DrsArabicLetters.vocalizedArticle(marked) shouldBe marked
         marked shouldNotBe "الشمس"
+    }
+
+    // -------------------------------------------------------------
+    // الأرقام بالكلمات — the NUMBER_WORDS tool (v1.6.0)
+    // -------------------------------------------------------------
+
+    fun numberWords(text: String) = DrsTextTools.apply(DrsTextTool.NUMBER_WORDS, text)
+
+    test("NUMBER_WORDS registers at -659 in the catalogue") {
+        val tool = DrsTextTool.NUMBER_WORDS
+        tool.code shouldBe -659
+        DrsTextTool.fromCode(-659) shouldBe tool
+        DrsTextTool.CODE_RANGE.first shouldBe -659
+        (tool.code in DrsTextTool.CODE_RANGE) shouldBe true
+        // 52 tools through v1.4.0 (public) + the number-to-words tool.
+        DrsTextTool.entries.size shouldBe 53
+        (tool.isInfoOnly) shouldBe false
+        (tool.isEditorOp) shouldBe false
+        (tool.isInsertMark) shouldBe false
+    }
+
+    test("small integers speak their words: units, teens, tens, hundreds") {
+        numberWords("0") shouldBe "صفر"
+        numberWords("5") shouldBe "خمسة"
+        numberWords("10") shouldBe "عشرة"
+        numberWords("11") shouldBe "أحد عشر"
+        numberWords("12") shouldBe "اثنا عشر"
+        numberWords("21") shouldBe "واحد وعشرون"
+        numberWords("99") shouldBe "تسعة وتسعون"
+        numberWords("100") shouldBe "مائة"
+        numberWords("101") shouldBe "مائة وواحد"
+        numberWords("200") shouldBe "مائتان"
+        numberWords("345") shouldBe "ثلاثمائة وخمسة وأربعون"
+    }
+
+    test("scales follow the documented selection: singular, dual, plural") {
+        numberWords("1000") shouldBe "ألف"
+        numberWords("2000") shouldBe "ألفان"
+        numberWords("3000") shouldBe "ثلاثة آلاف"
+        numberWords("10000") shouldBe "عشرة آلاف"
+        numberWords("11000") shouldBe "أحد عشر ألف"
+        numberWords("2100") shouldBe "ألفان ومائة"
+        numberWords("1234") shouldBe "ألف ومائتان وأربعة وثلاثون"
+    }
+
+    test("millions and billions compose group by group with the prefixed waw") {
+        numberWords("1000000") shouldBe "مليون"
+        numberWords("2000000") shouldBe "مليونان"
+        numberWords("3500000") shouldBe "ثلاثة ملايين وخمسمائة ألف"
+        numberWords("1234567") shouldBe "مليون ومائتان وأربعة وثلاثون ألف وخمسمائة وسبعة وستون"
+        numberWords("999999999999") shouldBe
+            "تسعمائة وتسعة وتسعون مليار وتسعمائة وتسعة وتسعون مليون" +
+            " وتسعمائة وتسعة وتسعون ألف وتسعمائة وتسعة وتسعون"
+    }
+
+    test("Arabic-Indic and Extended digits parse like Western digits") {
+        numberWords("١٢٣") shouldBe "مائة وثلاثة وعشرون"
+        numberWords("١٠٠") shouldBe "مائة"
+        numberWords("۵۰") shouldBe "خمسون"
+    }
+
+    test("a negative number keeps its sign as the word سالب") {
+        numberWords("-5") shouldBe "سالب خمسة"
+    }
+
+    test("surrounding whitespace is tolerated, content is not") {
+        numberWords(" 5 ") shouldBe "خمسة"
+    }
+
+    test("anything that is not a clean integer stays byte-identical") {
+        numberWords("عام 2026") shouldBe "عام 2026"
+        numberWords("12.5") shouldBe "12.5"
+        numberWords("12\n34") shouldBe "12\n34"
+        numberWords("") shouldBe ""
+        numberWords("1234567890123") shouldBe "1234567890123"
+        numberWords("-") shouldBe "-"
+    }
+
+    test("the words output is itself a fixed point (no digits to re-render)") {
+        val once = numberWords("1234")
+        numberWords(once) shouldBe once
+    }
+
+    // -------------------------------------------------------------
+    // التصحيحات الصلبة الموسّعة — the v1.6.0 hard-correction batch
+    // -------------------------------------------------------------
+
+    test("the twelve universal orthographic fixes answer on the normalized form") {
+        val norm = LatinNormBridge::basicNormalize
+        DrsArabicCorrector.hardCorrectionFor("انشاءالله", norm) shouldBe "إن شاء الله"
+        DrsArabicCorrector.hardCorrectionFor("بأذن الله", norm) shouldBe "بإذن الله"
+        DrsArabicCorrector.hardCorrectionFor("اذن", norm) shouldBe "إذن"
+        DrsArabicCorrector.hardCorrectionFor("الان", norm) shouldBe "الآن"
+        DrsArabicCorrector.hardCorrectionFor("اكثر", norm) shouldBe "أكثر"
+        DrsArabicCorrector.hardCorrectionFor("اقل", norm) shouldBe "أقل"
+        DrsArabicCorrector.hardCorrectionFor("اولئك", norm) shouldBe "أولئك"
+        DrsArabicCorrector.hardCorrectionFor("مسئولية", norm) shouldBe "مسؤولية"
+        DrsArabicCorrector.hardCorrectionFor("مسئولة", norm) shouldBe "مسؤولة"
+        DrsArabicCorrector.hardCorrectionFor("مسئلة", norm) shouldBe "مسألة"
+        DrsArabicCorrector.hardCorrectionFor("تسئولات", norm) shouldBe "تساؤلات"
+        DrsArabicCorrector.hardCorrectionFor("شئون", norm) shouldBe "شؤون"
+    }
+
+    test("correct spellings and ordinary words stay outside the table") {
+        val norm = LatinNormBridge::basicNormalize
+        DrsArabicCorrector.hardCorrectionFor("مسألة", norm) shouldBe null
+        DrsArabicCorrector.hardCorrectionFor("مدرسة", norm) shouldBe null
+        DrsArabicCorrector.hardCorrectionFor("", norm) shouldBe null
     }
 })

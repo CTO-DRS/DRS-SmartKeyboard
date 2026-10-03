@@ -206,11 +206,18 @@ enum class DrsTextTool(
     // 3000-word asset); a known word takes its canonical vocalized form,
     // an unknown word stays byte-identical — never an invented mark.
     // Pure, offline, on-device: the doctrine holds.
-    TASHKEEL_TEXT(-658);
+    TASHKEEL_TEXT(-658),
+
+    // DRS v1.6.0: the deterministic number-to-Arabic-words rendering —
+    // 1234 → «ألف ومائتان وأربعة وثلاثون». The WHOLE field must be a
+    // clean integer (Western, Arabic-Indic or Extended digits, optional
+    // leading minus); anything else returns byte-identical — the tool
+    // never rewrites prose it does not understand. See [DrsNumberWords].
+    NUMBER_WORDS(-659);
 
     companion object {
         /** Inclusive range covering every tool code, for fast dispatch. */
-        val CODE_RANGE = -658..-601
+        val CODE_RANGE = -659..-601
 
         fun fromCode(code: Int): DrsTextTool? = entries.firstOrNull { it.code == code }
     }
@@ -311,6 +318,10 @@ object DrsTextTools {
                 // [tashkeelText]): known words vocalized, unknown words
                 // byte-identical, everything else verbatim.
                 DrsTextTool.TASHKEEL_TEXT -> tashkeelText(text)
+                // DRS v1.6.0: the number-to-words rendering — a clean
+                // integer field becomes its Arabic words, anything else
+                // stays byte-identical (see [DrsNumberWords]).
+                DrsTextTool.NUMBER_WORDS -> DrsNumberWords.arabicWordsOrNull(text) ?: text
                 // DRS v1.3.0: strip tatweel (kashida) elongation and
                 // convert digits between Western and Arabic-Indic forms.
                 // Both are per-character, lossless-for-everything-else

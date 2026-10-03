@@ -112,8 +112,9 @@ class DrsPublicV140Tests : FunSpec({
         tool.code shouldBe -658
         DrsTextTool.fromCode(-658) shouldBe tool
         (tool.code in DrsTextTool.CODE_RANGE) shouldBe true
-        // 51 tools through v1.21.0 + the sentence vocalization.
-        DrsTextTool.entries.size shouldBe 52
+        // 51 tools through v1.21.0, + the sentence vocalization (v1.4.0)
+        // and + the number-to-words tool (v1.6.0).
+        DrsTextTool.entries.size shouldBe 53
         (tool.isInfoOnly) shouldBe false
         (tool.isEditorOp) shouldBe false
         (tool.isInsertMark) shouldBe false

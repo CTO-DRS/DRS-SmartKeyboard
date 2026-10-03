@@ -316,6 +316,14 @@ private val PANEL_SECTIONS: List<DrsTextToolsPanelSection> = listOf(
                 R.string.drs__text_tools__desc_tashkeel_text,
                 Icons.Default.Spellcheck,
             ),
+            // DRS v1.6.0: the number-to-words rendering — a clean integer
+            // field speaks its Arabic words, prose stays untouched.
+            toolItem(
+                DrsTextTool.NUMBER_WORDS,
+                R.string.drs__text_tools__tool_number_words,
+                R.string.drs__text_tools__desc_number_words,
+                Icons.Default.Calculate,
+            ),
             // DRS v1.3.0: tatweel removal + digit conversions.
             toolItem(
                 DrsTextTool.REMOVE_TATWEEL,
@@ -569,6 +577,8 @@ fun textToolTitleRes(tool: DrsTextTool): Int = when (tool) {
     DrsTextTool.REMOVE_DIACRITICS -> R.string.drs__text_tools__tool_remove_diacritics
     // DRS v1.4.0 (public): the sentence vocalization (REMOVE_DIACRITICS' counterpart).
     DrsTextTool.TASHKEEL_TEXT -> R.string.drs__text_tools__tool_tashkeel_text
+    // DRS v1.6.0: the number-to-words rendering.
+    DrsTextTool.NUMBER_WORDS -> R.string.drs__text_tools__tool_number_words
     DrsTextTool.REMOVE_TATWEEL -> R.string.drs__text_tools__tool_remove_tatweel
     DrsTextTool.TO_ARABIC_DIGITS -> R.string.drs__text_tools__tool_to_arabic_digits
     DrsTextTool.TO_WESTERN_DIGITS -> R.string.drs__text_tools__tool_to_western_digits
@@ -627,6 +637,8 @@ fun textToolDescRes(tool: DrsTextTool): Int = when (tool) {
     DrsTextTool.REMOVE_DIACRITICS -> R.string.drs__text_tools__desc_remove_diacritics
     // DRS v1.4.0 (public): the sentence vocalization (REMOVE_DIACRITICS' counterpart).
     DrsTextTool.TASHKEEL_TEXT -> R.string.drs__text_tools__desc_tashkeel_text
+    // DRS v1.6.0: the number-to-words rendering.
+    DrsTextTool.NUMBER_WORDS -> R.string.drs__text_tools__desc_number_words
     DrsTextTool.REMOVE_TATWEEL -> R.string.drs__text_tools__desc_remove_tatweel
     DrsTextTool.TO_ARABIC_DIGITS -> R.string.drs__text_tools__desc_to_arabic_digits
     DrsTextTool.TO_WESTERN_DIGITS -> R.string.drs__text_tools__desc_to_western_digits
