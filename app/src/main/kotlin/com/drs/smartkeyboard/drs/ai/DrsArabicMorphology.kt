@@ -32,6 +32,21 @@ import java.util.Collections
  *  4. The lemma is the BARE STEM: the core with a pattern-final ة
  *     removed (مدرسة → مدرس) — it is the unit the ranker and the
  *     personal-learning tables reason about.
+ *
+ * DRS v1.6.0 added FIVE weights (15 → 20). The additions were gated by
+ * a collision audit against the existing templates, and the one real
+ * trap resolved itself through the template constants:
+ *
+ *  - تفعّل (تفعل) shares the 4-letter shape with فاعل and فعّال — but
+ *    the template's own ف CONSTANT at index 1 means تابع (ا at index 1)
+ *    never matches تفعل, while تدرس (د at index 1) never matches فاعل.
+ *    The ordering فاعل/فعال before تفعل makes the disambiguation
+ *    automatic: تابع → root تبع (فاعل), تدرس → root درس (تفعل).
+ *  - فعّيل/فعّول carry the long vowel as a template CONSTANT at index 2
+ *    (جميل → جمل، قعود → قعد) — disjoint from every other 4-letter
+ *    template (فاعل needs ا at index 1, فعّال needs ا at index 2).
+ *  - مفعَل (مفعل) covers اسم المكان/الآلة (ملعب → لعب، مسجد → سجد).
+ *  - مُفاعلة (مفاعلة) inherits the ة/ت rotation of مفعلة.
  */
 object DrsArabicMorphology {
 
@@ -45,26 +60,35 @@ object DrsArabicMorphology {
      */
     private data class Weight(val template: String, val endsWithTaMarbuta: Boolean)
 
-    // The fifteen documented weights. Note the VOWEL-LETTER POSITIONS are
-    // the whole game: فاعل (ف ا ع ل) drops the alif at position 1, while
-    // the فعّال shape (ف ع ا ل) drops the seat alif at position 2 —
-    // swapping those two produced wrong roots for every participle.
+    // The twenty documented weights (DRS v1.6.0 added the last five
+    // families: فعّيل، فعّول، مفعَل، تفعّل، مُفاعلة). Note the
+    // VOWEL-LETTER POSITIONS are the whole game: فاعل (ف ا ع ل) drops
+    // the alif at position 1, while the فعّال shape (ف ع ا ل) drops the
+    // seat alif at position 2 — swapping those two produced wrong roots
+    // for every participle. The v1.6.0 ordering rules: فاعل/فعال sit
+    // BEFORE تفعل so the index-1 ف constant of the latter keeps تابع
+    // (فاعل-family) and تدرس (تفعل-family) disambiguated automatically.
     private val PATTERNS: List<Weight> = listOf(
         Weight("فعل", false),        // كَتَبَ — bare 3-letter core
         Weight("فاعل", false),       // كاتب (active participle)
         Weight("فعال", false),       // كتّاب normalized (ح surrounding ا = seat)
+        Weight("فعيل", false),       // جميل، سعيد (long-vowel constant at index 2)
+        Weight("فعول", false),       // قعود، هموم (long-vowel constant at index 2)
         Weight("مفاعل", false),      // مقاتل
         Weight("مفعول", false),      // مكتوب (passive participle, و)
         Weight("مفعال", false),      // مفعال
+        Weight("مفعل", false),       // ملعب، مسجد (اسم المكان/الآلة)
         Weight("تفعيل", false),      // تدوين
         Weight("تفاعل", false),      // تكاتب
         Weight("متفاعل", false),     // متكاتب
         Weight("انفعال", false),     // انكتاب
         Weight("افتعال", false),     // اجتهاد-class
         Weight("استفعال", false),    // استخراج
+        Weight("تفعل", false),       // تدرس، تقدّم (AFTER فاعل/فعال — see doc)
         Weight("فعالة", false),      // فعالة
         Weight("فاعلة", true),       // عاملة
         Weight("مفعلة", true),       // مدرسة (ة/ت rotation — see matchPattern)
+        Weight("مفاعلة", true),      // مصاحبة (ة/ت rotation, 6-letter family)
     )
 
     // Longest-first so وال wins over و and ال is not read as ا + ل. The
