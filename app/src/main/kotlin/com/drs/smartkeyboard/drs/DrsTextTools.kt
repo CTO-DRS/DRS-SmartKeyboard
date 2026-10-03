@@ -213,11 +213,18 @@ enum class DrsTextTool(
     // clean integer (Western, Arabic-Indic or Extended digits, optional
     // leading minus); anything else returns byte-identical — the tool
     // never rewrites prose it does not understand. See [DrsNumberWords].
-    NUMBER_WORDS(-659);
+    NUMBER_WORDS(-659),
+
+    // DRS v1.7.0: the deterministic financial tafqit — a clean monetary
+    // amount becomes its formal check-writing words «فقط … لا غير»
+    // (see [DrsTafqit]): closed five-currency catalog, documented
+    // counted-noun agreement, feminine subunit counting; anything that
+    // is not a clean amount returns byte-identical, never a guess.
+    TAFQIT(-660);
 
     companion object {
         /** Inclusive range covering every tool code, for fast dispatch. */
-        val CODE_RANGE = -659..-601
+        val CODE_RANGE = -660..-601
 
         fun fromCode(code: Int): DrsTextTool? = entries.firstOrNull { it.code == code }
     }
@@ -322,6 +329,10 @@ object DrsTextTools {
                 // integer field becomes its Arabic words, anything else
                 // stays byte-identical (see [DrsNumberWords]).
                 DrsTextTool.NUMBER_WORDS -> DrsNumberWords.arabicWordsOrNull(text) ?: text
+                // DRS v1.7.0: the financial tafqit — a clean amount speaks
+                // its formal check words, anything else stays byte-identical
+                // (see [DrsTafqit]).
+                DrsTextTool.TAFQIT -> DrsTafqit.tafqitOrNull(text) ?: text
                 // DRS v1.3.0: strip tatweel (kashida) elongation and
                 // convert digits between Western and Arabic-Indic forms.
                 // Both are per-character, lossless-for-everything-else

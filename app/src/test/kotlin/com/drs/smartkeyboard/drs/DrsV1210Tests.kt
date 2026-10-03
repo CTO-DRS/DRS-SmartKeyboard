@@ -289,8 +289,9 @@ class DrsV1210Tests : FunSpec({
             DrsTextTool.fromCode(tool.code) shouldBe tool
         }
         // DRS v1.4.0 (public): the sentence vocalization extends the range;
-        // DRS v1.6.0 (public): the number-to-words tool extends it once more.
-        DrsTextTool.CODE_RANGE.first shouldBe -659
+        // DRS v1.6.0 (public): the number-to-words tool extends it once more;
+        // DRS v1.7.0 (public): the financial tafqit extends it last.
+        DrsTextTool.CODE_RANGE.first shouldBe -660
     }
 
     // -------------------------------------------------------------

@@ -274,6 +274,11 @@ class DrsTextToolsTest : FunSpec({
             // anything it cannot parse as a clean integer.
             DrsTextTool.NUMBER_WORDS -> result shouldBe input
 
+            // DRS v1.7.0: the hostile input ends in «most» — no closed
+            // currency token peels from the tail and no clean amount
+            // parses, so the tafqit tool is a byte-identical passthrough.
+            DrsTextTool.TAFQIT -> result shouldBe input
+
             else -> error("DRS p9 (Q3): tool ${tool.name} has no pinned hostile-input invariant")
         }
     }

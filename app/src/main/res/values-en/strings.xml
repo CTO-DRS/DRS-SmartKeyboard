@@ -1791,6 +1791,8 @@
     <string name="drs__text_tools__desc_tashkeel_text">Add canonical harakat to every word the on-device lexicon knows — unknown words stay untouched, never guessed</string>
     <string name="drs__text_tools__tool_number_words">Numbers as words</string>
     <string name="drs__text_tools__desc_number_words">Spell the field\'s number out in formal Arabic words (1234 becomes «ألف ومائتان وأربعة وثلاثون») — anything that is not a clean integer stays untouched</string>
+    <string name="drs__text_tools__tool_tafqit">Amount in words (Tafqit)</string>
+    <string name="drs__text_tools__desc_tafqit">Spell the field\'s amount out in formal check Arabic (1234.50 becomes «فقط ألف ومائتان وأربعة وثلاثون ريال وخمسون هللة لا غير») — anything that is not a clean amount stays untouched</string>
     <string name="drs__text_tools__tool_normalize_punctuation">Normalize punctuation</string>
     <string name="drs__text_tools__desc_normalize_punctuation">Remove spaces before punctuation and ensure one space after</string>
     <string name="drs__text_tools__tool_clean_text">Full text clean-up</string>

@@ -200,10 +200,9 @@ class DrsPublicV160Tests : FunSpec({
         val tool = DrsTextTool.NUMBER_WORDS
         tool.code shouldBe -659
         DrsTextTool.fromCode(-659) shouldBe tool
-        DrsTextTool.CODE_RANGE.first shouldBe -659
         (tool.code in DrsTextTool.CODE_RANGE) shouldBe true
         // 52 tools through v1.4.0 (public) + the number-to-words tool.
-        DrsTextTool.entries.size shouldBe 53
+        DrsTextTool.entries.size shouldBe 54
         (tool.isInfoOnly) shouldBe false
         (tool.isEditorOp) shouldBe false
         (tool.isInsertMark) shouldBe false

@@ -157,4 +157,36 @@ class DrsPublicV170Tests : FunSpec({
         val once = tafqit("1234.50")!!
         tafqit(once) shouldBe null
     }
+
+    // -------------------------------------------------------------
+    // الأداة في الكتالوج — the TAFQIT tool wiring (v1.7.0)
+    // -------------------------------------------------------------
+
+    test("TAFQIT registers at -660 in the catalogue") {
+        val tool = DrsTextTool.TAFQIT
+        tool.code shouldBe -660
+        DrsTextTool.fromCode(-660) shouldBe tool
+        DrsTextTool.CODE_RANGE.first shouldBe -660
+        (tool.code in DrsTextTool.CODE_RANGE) shouldBe true
+        // 53 tools through v1.6.0 + the financial tafqit tool.
+        DrsTextTool.entries.size shouldBe 54
+        (tool.isInfoOnly) shouldBe false
+        (tool.isEditorOp) shouldBe false
+        (tool.isInsertMark) shouldBe false
+    }
+
+    fun applyTafqit(text: String) = DrsTextTools.apply(DrsTextTool.TAFQIT, text)
+
+    test("the tool converts a clean amount and passes prose byte-identical") {
+        applyTafqit("1234.50") shouldBe "فقط ألف ومائتان وأربعة وثلاثون ريال وخمسون هللة لا غير"
+        applyTafqit("12,345.60 ريال") shouldBe
+            "فقط اثنا عشر ألف وثلاثمائة وخمسة وأربعون ريال وستون هللة لا غير"
+        applyTafqit("عام 2026") shouldBe "عام 2026"
+        applyTafqit("") shouldBe ""
+    }
+
+    test("the tool output is a fixed point — applying it twice changes nothing") {
+        val once = applyTafqit("99.99")
+        applyTafqit(once) shouldBe once
+    }
 })
