@@ -263,6 +263,12 @@ class DrsTextToolsTest : FunSpec({
 
             DrsTextTool.COUNT -> result shouldBe input // the info tool never transforms
 
+            // DRS v1.4.0 (public): the hostile input carries NO Arabic
+            // LETTERS — only bare combining marks (ٍَّ), which strip to
+            // nothing and are honestly kept as-is — so nothing can be
+            // vocalized: the byte-identical passthrough IS the contract.
+            DrsTextTool.TASHKEEL_TEXT -> result shouldBe input
+
             else -> error("DRS p9 (Q3): tool ${tool.name} has no pinned hostile-input invariant")
         }
     }
