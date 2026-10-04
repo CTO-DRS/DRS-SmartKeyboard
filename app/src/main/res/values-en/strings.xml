@@ -1765,6 +1765,17 @@
     <string name="drs__text_tools__section_punctuation">Punctuation &amp; clean-up</string>
     <string name="drs__text_tools__section_lines">Line operations</string>
     <string name="drs__text_tools__section_quick">Quick actions</string>
+    <!-- DRS v2.2.0: the smart tiles — chips, favorites, recents and the
+         contextual advisory row of the text tools panel -->
+    <string name="drs__text_tools__chip_all">All</string>
+    <string name="drs__text_tools__section_favorites">Favorites</string>
+    <string name="drs__text_tools__section_recents">Most used</string>
+    <string name="drs__text_tools__section_context">Suggestions for this text</string>
+    <string name="drs__text_tools__favorites_hint">Long-press any tile to pin it here — local only, no internet</string>
+    <string name="drs__text_tools__recents_hint">Use the tiles and the most-used ones appear here automatically — local counters, never text</string>
+    <string name="drs__text_tools__favorites_full">Favorites are full — eight tiles at most. Remove one first.</string>
+    <string name="pref__panels__text_tools_smart_context__label">Text tools suggestions</string>
+    <string name="pref__panels__text_tools_smart_context__summary">A «suggestions for this text» row ranks the tools that fit the text before the cursor — deterministic, local, no guessing</string>
     <string name="drs__text_tools__tool_uppercase">Uppercase</string>
     <string name="drs__text_tools__desc_uppercase">Convert the selection - or the whole field - to upper case</string>
     <string name="drs__text_tools__tool_lowercase">Lowercase</string>

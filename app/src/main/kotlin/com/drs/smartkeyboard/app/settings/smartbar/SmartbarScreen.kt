@@ -113,6 +113,13 @@ fun SmartbarScreen() = DrsScreen {
                 title = stringRes(R.string.pref__panels__smart_order__label),
                 summary = stringRes(R.string.pref__panels__smart_order__summary),
             )
+            // DRS v2.2.0: the tiles' contextual advisory row — the
+            // deterministic «مقترحات لهذا النص» of the text tools panel.
+            SwitchPreference(
+                prefs.panels.textToolsSmartContext,
+                title = stringRes(R.string.pref__panels__text_tools_smart_context__label),
+                summary = stringRes(R.string.pref__panels__text_tools_smart_context__summary),
+            )
         }
     }
 }

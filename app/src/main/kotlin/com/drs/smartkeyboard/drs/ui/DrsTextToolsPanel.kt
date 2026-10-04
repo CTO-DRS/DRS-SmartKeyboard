@@ -5,15 +5,27 @@
 
 package com.drs.smartkeyboard.drs.ui
 
+import android.content.Context
+import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -39,6 +51,7 @@ import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Today
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.FirstPage
@@ -73,14 +86,29 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.WrapText
 import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.drs.smartkeyboard.R
+import com.drs.smartkeyboard.app.DrsPreferenceStore
 import com.drs.smartkeyboard.drs.DrsAdaptationEngine
+import com.drs.smartkeyboard.drs.DrsStore
+import com.drs.smartkeyboard.drs.DrsSystems
 import com.drs.smartkeyboard.drs.DrsTextTool
+import com.drs.smartkeyboard.drs.DrsTileContextAdvisor
+import com.drs.smartkeyboard.drs.DrsTileFavorites
+import com.drs.smartkeyboard.drs.PanelUsageTracker
+import com.drs.smartkeyboard.editorInstance
 import com.drs.smartkeyboard.ime.ImeUiMode
 import com.drs.smartkeyboard.ime.keyboard.DrsImeSizing
 import com.drs.smartkeyboard.ime.text.key.KeyCode
@@ -88,6 +116,10 @@ import com.drs.smartkeyboard.ime.text.key.KeyType
 import com.drs.smartkeyboard.ime.text.keyboard.TextKeyData
 import com.drs.smartkeyboard.ime.theme.DrsImeUi
 import com.drs.smartkeyboard.keyboardManager
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.json.Json
+import org.drs.jetpref.datastore.model.collectAsState
 import org.drs.lib.compose.rippleClickable
 import org.drs.lib.compose.stringRes
 import org.drs.lib.snygg.ui.SnyggBox
@@ -118,6 +150,49 @@ private data class DrsTextToolsPanelSection(
 /** Builds a panel item for a [DrsTextTool] from its string resources. */
 private fun toolItem(tool: DrsTextTool, labelRes: Int, descRes: Int, icon: ImageVector) =
     DrsTextToolsPanelItem(code = tool.code, labelRes = labelRes, descRes = descRes, icon = icon)
+
+/** The persisted namespace of the tiles' per-tile usage counters. */
+private const val USAGE_PANEL_TEXT_TOOLS = "text_tools"
+
+/** The tiles' filter state behind the chips row. */
+private sealed interface TileFilter {
+
+    /** Everything: the advisory row, the favorites, then all sections. */
+    data object All : TileFilter
+
+    /** The pinned tiles only, in pin order. */
+    data object Favorites : TileFilter
+
+    /** The most-used tiles only, by the local counters. */
+    data object Recents : TileFilter
+
+    /** One catalogue section only. */
+    data class Section(val index: Int) : TileFilter
+}
+
+/**
+ * DRS v2.2.0: the favorites' local persistence — the same SharedPreferences
+ * file the panel counters live in (`drs_panel_usage`), a JSON list of tile
+ * codes under its own key. Local only; the stored values are CODES of the
+ * tiles the user pinned — never any text, on the house doctrine.
+ */
+private object DrsTileFavoritesStore {
+    private const val PREFS_NAME = "drs_panel_usage"
+    private const val KEY = "text_tools_favorites"
+    private val json = Json { ignoreUnknownKeys = true }
+    private val serializer = ListSerializer(Int.serializer())
+
+    private fun prefs(context: Context) =
+        context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+    fun load(context: Context): List<Int> = runCatching {
+        json.decodeFromString(serializer, prefs(context).getString(KEY, "[]") ?: "[]")
+    }.getOrDefault(emptyList())
+
+    fun save(context: Context, codes: List<Int>) {
+        prefs(context).edit().putString(KEY, json.encodeToString(serializer, codes)).apply()
+    }
+}
 
 private val PANEL_SECTIONS: List<DrsTextToolsPanelSection> = listOf(
     DrsTextToolsPanelSection(
@@ -637,6 +712,18 @@ private val PANEL_SECTIONS: List<DrsTextToolsPanelSection> = listOf(
 )
 
 /**
+ * DRS v2.2.0 — the flat tile catalogue shared by the recents engine and
+ * the favorites resolution: every tile the panel renders, in panel order.
+ * Declared AFTER [PANEL_SECTIONS] on purpose — top-level initializers run
+ * in file order, and a forward reference would see a null catalogue.
+ */
+private val ALL_ITEMS: List<DrsTextToolsPanelItem> =
+    PANEL_SECTIONS.flatMap { section -> section.items }
+
+private val ITEMS_BY_CODE: Map<Int, DrsTextToolsPanelItem> =
+    ALL_ITEMS.associateBy { it.code }
+
+/**
  * DRS v1.5.0: the panel title of every text tool, shared with the smart
  * bar's most-used tiles so a heavy text-tool user sees real names instead
  * of the invalid-fatal placeholder. Mirrors [PANEL_SECTIONS] labels.
@@ -797,32 +884,99 @@ fun textToolDescRes(tool: DrsTextTool): Int = when (tool) {
 }
 
 /**
- * DRS v1.0.6: the technical text tools panel, shown when the keyboard UI
- * mode is [ImeUiMode.TEXT_TOOLS]. Every row dispatches a real key event
- * through the input pipeline; transformations run inside the editor's
- * batch-edit against the actual input connection of the focused field.
+ * DRS v2.2.0 — الجولة الثامنة «البلاطة الذكية»: the technical text tools
+ * panel, rebuilt around its TILES. Shown when the keyboard UI mode is
+ * [ImeUiMode.TEXT_TOOLS]. Every tile dispatches a real key event through
+ * the input pipeline; transformations run inside the editor's batch-edit
+ * against the actual input connection of the focused field.
+ *
+ * The modern anatomy, on top of the classic sections:
+ *  - شريط الرقائق (the chips bar): الكل · المفضلة · الأكثر استخدامًا ·
+ *    then every catalogue section — one tap filters the tiles.
+ *  - صف «مقترحات لهذا النص»: the deterministic tiles' brain
+ *    ([DrsTileContextAdvisor]) ranks the tools that make sense for the
+ *    text before the cursor — closed reasons only, honest silence when
+ *    there is no signal, gated by the textToolsSmartContext switch.
+ *  - المفضلة: long-press any tile to pin it (bounded by
+ *    [DrsTileFavorites.MAX_FAVORITES] with an honest refusal toast on a
+ *    full board); the favorites lead the «الكل» view in pin order.
+ *  - الأكثر استخدامًا: per-tile LOCAL counters (codes only, never text)
+ *    through [DrsPanelUsageStore] — nothing at all in incognito, on the
+ *    doctrine every other panel follows.
+ *  - شبكة ثنائية الأعمدة: the «الكل» browse view renders compact
+ *    two-column tiles; every focused filter keeps the rich rows with
+ *    descriptions.
  *
  * Transformation tools act on the current selection, or on the whole field
  * when nothing is selected. Nothing is ever stored, logged or transmitted -
  * the host app's own undo remains the way back.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DrsTextToolsPanel(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val keyboardManager by context.keyboardManager()
+    val editorInstance by context.editorInstance()
+    val prefs by DrsPreferenceStore
+
+    val recentsEnabled by prefs.panels.panelRecents.collectAsState()
+    val contextEnabled by prefs.panels.textToolsSmartContext.collectAsState()
+
+    var favorites by remember { mutableStateOf(DrsTileFavoritesStore.load(context)) }
+    var recents by remember { mutableStateOf(DrsPanelUsageStore.load(context, USAGE_PANEL_TEXT_TOOLS)) }
+    var filter by remember { mutableStateOf<TileFilter>(TileFilter.All) }
+    var commitStamp by remember { mutableIntStateOf(0) }
 
     fun dispatch(code: Int) {
         keyboardManager.inputEventDispatcher.sendDownUp(
             TextKeyData(type = KeyType.FUNCTION, code = code, label = "drs_text_tool"),
         )
         DrsAdaptationEngine.recordTechToolUse()
+        // DRS v2.2.0: the per-tile LOCAL counter (the tile's code only —
+        // never text). The incognito mode records nothing, exactly like
+        // the harakat/symbols/letters panels' counters.
+        if (!keyboardManager.activeState.isIncognitoMode) {
+            DrsPanelUsageStore.record(context, USAGE_PANEL_TEXT_TOOLS, code.toString())
+            recents = DrsPanelUsageStore.load(context, USAGE_PANEL_TEXT_TOOLS)
+        }
+        commitStamp++
     }
+
+    fun toggleFavorite(code: Int) {
+        when (val result = DrsTileFavorites.toggled(favorites, code)) {
+            is DrsTileFavorites.ToggleResult.Ok -> {
+                favorites = result.favorites
+                DrsTileFavoritesStore.save(context, result.favorites)
+            }
+            DrsTileFavorites.ToggleResult.Full -> Toast.makeText(
+                context,
+                context.getString(R.string.drs__text_tools__favorites_full),
+                Toast.LENGTH_SHORT,
+            ).show()
+        }
+    }
+
+    // The contextual advisory picks — recomputed after every commit the
+    // same way the harakat board's advisor refreshes.
+    val contextPicks = remember(contextEnabled, commitStamp) {
+        if (contextEnabled) {
+            val before = editorInstance.run { activeContent.getTextBeforeCursor(48) }
+            DrsTileContextAdvisor.advise(before)
+        } else {
+            emptyList()
+        }
+    }
+
+    val systemSpec = DrsSystems.specOfName(DrsStore.state.value.userPath)
+    val accent = if (isSystemInDarkTheme()) systemSpec.accentNight else systemSpec.accent
+    val favoriteSet = remember(favorites) { favorites.toHashSet() }
 
     SnyggColumn(
         modifier = modifier
             .fillMaxWidth()
             .height(DrsImeSizing.imeUiHeight()),
     ) {
+        // ---------------- header (unchanged anatomy) ----------------
         SnyggRow(
             DrsImeUi.ClipboardHeader.elementName,
             modifier = Modifier
@@ -874,6 +1028,44 @@ fun DrsTextToolsPanel(modifier: Modifier = Modifier) {
             }
         }
 
+        // ---------------- شريط الرقائق (the chips bar) ----------------
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            FilterChip(
+                label = stringRes(R.string.drs__text_tools__chip_all),
+                selected = filter is TileFilter.All,
+                accent = accent,
+                onClick = { filter = TileFilter.All },
+            )
+            FilterChip(
+                label = stringRes(R.string.drs__text_tools__section_favorites),
+                selected = filter is TileFilter.Favorites,
+                accent = accent,
+                onClick = { filter = TileFilter.Favorites },
+            )
+            FilterChip(
+                label = stringRes(R.string.drs__text_tools__section_recents),
+                selected = filter is TileFilter.Recents,
+                accent = accent,
+                onClick = { filter = TileFilter.Recents },
+            )
+            PANEL_SECTIONS.forEachIndexed { index, section ->
+                FilterChip(
+                    label = stringRes(section.titleRes),
+                    selected = (filter as? TileFilter.Section)?.index == index,
+                    accent = accent,
+                    onClick = { filter = TileFilter.Section(index) },
+                )
+            }
+        }
+
+        // ---------------- body ----------------
         SnyggBox(
             DrsImeUi.ClipboardContent.elementName,
             modifier = Modifier.fillMaxWidth(),
@@ -883,14 +1075,110 @@ fun DrsTextToolsPanel(modifier: Modifier = Modifier) {
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState()),
             ) {
-                PANEL_SECTIONS.forEach { section ->
-                    SnyggText(
-                        elementName = DrsImeUi.ClipboardSubheader.elementName,
-                        modifier = Modifier.padding(start = 16.dp, top = 14.dp, bottom = 2.dp),
-                        text = stringRes(section.titleRes),
-                    )
-                    section.items.forEach { item ->
-                        ToolRow(item = item, onApply = ::dispatch)
+                when (val current = filter) {
+                    TileFilter.All -> {
+                        // 1) مقترحات لهذا النص — the deterministic advisory row.
+                        if (contextPicks.isNotEmpty()) {
+                            SectionSubheader(R.string.drs__text_tools__section_context)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .horizontalScroll(rememberScrollState())
+                                    .padding(horizontal = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            ) {
+                                contextPicks.forEach { tool ->
+                                    FilterChip(
+                                        label = stringRes(textToolTitleRes(tool)),
+                                        selected = false,
+                                        accent = accent,
+                                        onClick = { dispatch(tool.code) },
+                                    )
+                                }
+                            }
+                        }
+                        // 2) المفضلة — rich rows leading the browse view.
+                        if (favorites.isNotEmpty()) {
+                            SectionSubheader(R.string.drs__text_tools__section_favorites)
+                            favorites.mapNotNull { ITEMS_BY_CODE[it] }.forEach { item ->
+                                ToolRow(
+                                    item = item,
+                                    isFavorite = true,
+                                    onApply = ::dispatch,
+                                    onToggleFavorite = ::toggleFavorite,
+                                )
+                            }
+                        }
+                        // 3) كل الأقسام — the compact two-column grid.
+                        PANEL_SECTIONS.forEach { section ->
+                            SectionSubheader(section.titleRes)
+                            section.items.chunked(2).forEach { rowItems ->
+                                SnyggRow(modifier = Modifier.fillMaxWidth()) {
+                                    rowItems.forEach { item ->
+                                        ToolTile(
+                                            item = item,
+                                            isFavorite = item.code in favoriteSet,
+                                            onApply = ::dispatch,
+                                            onToggleFavorite = ::toggleFavorite,
+                                            modifier = Modifier.weight(1f),
+                                        )
+                                    }
+                                    if (rowItems.size == 1) {
+                                        Spacer(modifier = Modifier.weight(1f))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    TileFilter.Favorites -> {
+                        if (favorites.isEmpty()) {
+                            HintText(stringRes(R.string.drs__text_tools__favorites_hint))
+                        } else {
+                            favorites.mapNotNull { ITEMS_BY_CODE[it] }.forEach { item ->
+                                ToolRow(
+                                    item = item,
+                                    isFavorite = true,
+                                    onApply = ::dispatch,
+                                    onToggleFavorite = ::toggleFavorite,
+                                )
+                            }
+                        }
+                    }
+                    TileFilter.Recents -> {
+                        // The recents engine works on the CODE catalogue; the
+                        // panelRecents switch owns the whole row on/off.
+                        val top = if (recentsEnabled) {
+                            PanelUsageTracker.topRecents(
+                                recents,
+                                ALL_ITEMS.map { it.code.toString() },
+                            ).mapNotNull { it.toIntOrNull() }
+                        } else {
+                            emptyList()
+                        }
+                        if (top.isEmpty()) {
+                            HintText(stringRes(R.string.drs__text_tools__recents_hint))
+                        } else {
+                            top.mapNotNull { ITEMS_BY_CODE[it] }.forEach { item ->
+                                ToolRow(
+                                    item = item,
+                                    isFavorite = item.code in favoriteSet,
+                                    onApply = ::dispatch,
+                                    onToggleFavorite = ::toggleFavorite,
+                                )
+                            }
+                        }
+                    }
+                    is TileFilter.Section -> {
+                        val section = PANEL_SECTIONS[current.index]
+                        SectionSubheader(section.titleRes)
+                        section.items.forEach { item ->
+                            ToolRow(
+                                item = item,
+                                isFavorite = item.code in favoriteSet,
+                                onApply = ::dispatch,
+                                onToggleFavorite = ::toggleFavorite,
+                            )
+                        }
                     }
                 }
                 Spacer(modifier = Modifier.height(12.dp))
@@ -899,17 +1187,130 @@ fun DrsTextToolsPanel(modifier: Modifier = Modifier) {
     }
 }
 
+/** A catalogue-section title inside the scrollable body. */
+@Composable
+private fun SectionSubheader(titleRes: Int) {
+    SnyggText(
+        elementName = DrsImeUi.ClipboardSubheader.elementName,
+        modifier = Modifier.padding(start = 16.dp, top = 14.dp, bottom = 2.dp),
+        text = stringRes(titleRes),
+    )
+}
+
+/** The honest empty-state hint of the favorites and recents filters. */
+@Composable
+private fun HintText(text: String) {
+    SnyggText(
+        elementName = DrsImeUi.ClipboardItemDescription.elementName,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+        text = text,
+    )
+}
+
+/**
+ * One chip of the tiles' filter bar — the shared accent-pill pattern the
+ * panel switcher chips established (v1.16.0); a tap filters, the selected
+ * chip carries the stronger accent wash.
+ */
+@Composable
+private fun FilterChip(
+    label: String,
+    selected: Boolean,
+    accent: Color,
+    onClick: () -> Unit,
+) {
+    SnyggText(
+        elementName = DrsImeUi.ClipboardSubheader.elementName,
+        modifier = Modifier
+            .clip(CircleShape)
+            .background(if (selected) accent.copy(alpha = 0.22f) else accent.copy(alpha = 0.06f))
+            .rippleClickable { onClick() }
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        text = label,
+    )
+}
+
+/**
+ * The compact two-column grid tile: the icon plus a one-line label. A tap
+ * dispatches the tool; a LONG-PRESS pins or unpins it (the favorites).
+ */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun ToolTile(
+    item: DrsTextToolsPanelItem,
+    isFavorite: Boolean,
+    onApply: (Int) -> Unit,
+    onToggleFavorite: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    SnyggBox(
+        elementName = DrsImeUi.ClipboardItem.elementName,
+        modifier = modifier
+            .padding(horizontal = 3.dp, vertical = 2.dp),
+        clickAndSemanticsModifier = Modifier.combinedClickable(
+            onClick = { onApply(item.code) },
+            onLongClick = { onToggleFavorite(item.code) },
+        ),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp, vertical = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Box {
+                SnyggIconButton(
+                    elementName = DrsImeUi.ClipboardHeaderButton.elementName,
+                    onClick = { onApply(item.code) },
+                    modifier = Modifier
+                        .sizeIn(minWidth = 40.dp)
+                        .height(40.dp),
+                ) {
+                    SnyggIcon(
+                        imageVector = item.icon,
+                        // DRS a11y/i18n/ux (r0-I): the tile's icon button is
+                        // icon-only; it announces the tool it dispatches.
+                        contentDescription = stringRes(item.labelRes),
+                    )
+                }
+                if (isFavorite) {
+                    SnyggIcon(
+                        imageVector = Icons.Default.Star,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .size(12.dp),
+                        contentDescription = null,
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            SnyggText(text = stringRes(item.labelRes))
+        }
+    }
+}
+
+/**
+ * One rich row of the panel: the icon, the label and its description.
+ * A tap dispatches the tool; a LONG-PRESS pins or unpins it (the
+ * favorites) — and a starred tile carries its badge honestly.
+ */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ToolRow(
     item: DrsTextToolsPanelItem,
+    isFavorite: Boolean,
     onApply: (Int) -> Unit,
+    onToggleFavorite: (Int) -> Unit,
 ) {
     SnyggBox(
         elementName = DrsImeUi.ClipboardItem.elementName,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 2.dp),
-        clickAndSemanticsModifier = Modifier.rippleClickable { onApply(item.code) },
+        clickAndSemanticsModifier = Modifier.combinedClickable(
+            onClick = { onApply(item.code) },
+            onLongClick = { onToggleFavorite(item.code) },
+        ),
     ) {
         SnyggRow(
             modifier = Modifier
@@ -940,6 +1341,13 @@ private fun ToolRow(
                 SnyggText(
                     elementName = DrsImeUi.ClipboardItemDescription.elementName,
                     text = stringRes(item.descRes),
+                )
+            }
+            if (isFavorite) {
+                SnyggIcon(
+                    imageVector = Icons.Default.Star,
+                    modifier = Modifier.padding(start = 8.dp),
+                    contentDescription = stringRes(R.string.drs__text_tools__section_favorites),
                 )
             }
         }

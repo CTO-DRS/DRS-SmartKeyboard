@@ -959,6 +959,16 @@ abstract class DrsPreferenceModel : PreferenceModel() {
             key = "panels__harakat_smart_advice",
             default = true,
         )
+        /**
+         * DRS v2.2.0: the text tools panel's contextual advisory row —
+         * the deterministic tiles' brain (DrsTileContextAdvisor) ranks
+         * the tools that make sense for the text before the cursor.
+         * Off = a plain panel without the advisory row.
+         */
+        val textToolsSmartContext = boolean(
+            key = "panels__text_tools_smart_context",
+            default = true,
+        )
     }
 
     val spelling = Spelling()

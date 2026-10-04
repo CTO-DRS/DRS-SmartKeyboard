@@ -1683,6 +1683,17 @@
     <string name="drs__text_tools__section_punctuation">الترقيم والتنظيف</string>
     <string name="drs__text_tools__section_lines">عمليات الأسطر</string>
     <string name="drs__text_tools__section_quick">إجراءات سريعة</string>
+    <!-- DRS v2.2.0: the smart tiles — chips, favorites, recents and the
+         contextual advisory row of the text tools panel -->
+    <string name="drs__text_tools__chip_all">الكل</string>
+    <string name="drs__text_tools__section_favorites">المفضلة</string>
+    <string name="drs__text_tools__section_recents">الأكثر استخدامًا</string>
+    <string name="drs__text_tools__section_context">مقترحات لهذا النص</string>
+    <string name="drs__text_tools__favorites_hint">اضغط مطولًا على أي بلاطة لتثبيتها هنا — محليًا فقط، بلا إنترنت</string>
+    <string name="drs__text_tools__recents_hint">استعمل البلاطات وسيظهر الأكثر استخدامًا هنا تلقائيًا — عدّادات محلية لا نصوص</string>
+    <string name="drs__text_tools__favorites_full">امتلأت المفضلة — ثماني بلاطات على الأكثر. أزل واحدة أولًا.</string>
+    <string name="pref__panels__text_tools_smart_context__label">توصيات لوحة الأدوات</string>
+    <string name="pref__panels__text_tools_smart_context__summary">صف «مقترحات لهذا النص» يرشّح الأدوات المناسبة من النص قبل المؤشر — حتمي محلي بلا تخمين</string>
     <string name="drs__text_tools__tool_uppercase">أحرف كبيرة (UPPERCASE)</string>
     <string name="drs__text_tools__desc_uppercase">تحويل النص المحدد أو الحقل كاملًا إلى أحرف كبيرة</string>
     <string name="drs__text_tools__tool_lowercase">أحرف صغيرة (lowercase)</string>

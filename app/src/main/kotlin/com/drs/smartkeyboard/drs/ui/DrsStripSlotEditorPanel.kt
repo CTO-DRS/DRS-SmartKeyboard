@@ -4,7 +4,10 @@
 
 package com.drs.smartkeyboard.drs.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,15 +18,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.drs.smartkeyboard.R
@@ -67,6 +74,9 @@ fun DrsStripSlotEditorPanel(modifier: Modifier = Modifier) {
     val index = slotIndex ?: return
 
     val view = DrsUnifiedTools.viewForSystem(drsState.userPath, drsState.hybridViewMode)
+
+    // DRS v2.2.0: the group chips filter — null means الكل.
+    var groupFilter by remember { mutableStateOf<DrsToolGroup?>(null) }
 
     val systemSpec = DrsSystems.specOfName(drsState.userPath)
     val accent = if (isSystemInDarkTheme()) systemSpec.accentNight else systemSpec.accent
@@ -128,6 +138,33 @@ fun DrsStripSlotEditorPanel(modifier: Modifier = Modifier) {
             text = stringRes(R.string.drs__strip_slot__hint),
         )
 
+        // ---------------- رقائق المجموعات (DRS v2.2.0) ----------------
+        // فلتر المجموعات: الكل · الأدوات · التحرير · المؤشر — لمسة واحدة
+        // تقفز إلى المجموعة بدل تمرير الكتالوج كله. Same accent-pill
+        // pattern the panel switcher chips established.
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            slotGroupChip(
+                label = stringRes(R.string.drs__text_tools__chip_all),
+                selected = groupFilter == null,
+                accent = accent,
+                onClick = { groupFilter = null },
+            )
+            DrsToolGroup.entries.forEach { group ->
+                slotGroupChip(
+                    label = stringRes(groupTitleRes(group)),
+                    selected = groupFilter == group,
+                    accent = accent,
+                    onClick = { groupFilter = group },
+                )
+            }
+        }
+
         // ---------------- body ----------------
         SnyggBox(
             DrsImeUi.ClipboardContent.elementName,
@@ -139,6 +176,7 @@ fun DrsStripSlotEditorPanel(modifier: Modifier = Modifier) {
                     .verticalScroll(rememberScrollState()),
             ) {
                 DrsToolGroup.entries.forEach { group ->
+                    if (groupFilter != null && groupFilter != group) return@forEach
                     val groupTools = DrsUnifiedTools.ALL.filter { it.group == group }
                     if (groupTools.isEmpty()) return@forEach
                     SnyggText(
@@ -207,4 +245,33 @@ private fun SlotCandidateRow(
             )
         }
     }
+}
+
+/**
+ * DRS v2.2.0: one group chip of the slot editor's filter bar — the same
+ * accent-pill pattern the panel switcher chips established (v1.16.0).
+ */
+@Composable
+private fun slotGroupChip(
+    label: String,
+    selected: Boolean,
+    accent: androidx.compose.ui.graphics.Color,
+    onClick: () -> Unit,
+) {
+    SnyggText(
+        elementName = DrsImeUi.ClipboardSubheader.elementName,
+        modifier = Modifier
+            .clip(CircleShape)
+            .background(if (selected) accent.copy(alpha = 0.22f) else accent.copy(alpha = 0.06f))
+            .rippleClickable { onClick() }
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        text = label,
+    )
+}
+
+/** The title of a catalogue group (the chips and the subheaders share it). */
+private fun groupTitleRes(group: DrsToolGroup): Int = when (group) {
+    DrsToolGroup.TOOLS -> R.string.drs__unified__group_tools
+    DrsToolGroup.EDITING -> R.string.drs__unified__group_editing
+    DrsToolGroup.CURSOR -> R.string.drs__unified__group_cursor
 }
