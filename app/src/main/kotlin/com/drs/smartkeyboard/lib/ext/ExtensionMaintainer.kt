@@ -57,7 +57,10 @@ data class ExtensionMaintainer(
     }
 }
 
-private class ExtensionMaintainerSerializer : KSerializer<ExtensionMaintainer> {
+// DRS v2.1.1: internal لا private — مُجمِّع 2.4.20 يحذر من مُسلسِل أضيق
+// رؤية من نوعه (CUSTOM_SERIALIZER_MAY_BE_INACCESSIBLE) لأنه قد يسبب
+// «serializer not found» في مواضع الاستخدام خارج الملف.
+internal class ExtensionMaintainerSerializer : KSerializer<ExtensionMaintainer> {
     override val descriptor = PrimitiveSerialDescriptor("ExtensionMaintainer", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: ExtensionMaintainer) {

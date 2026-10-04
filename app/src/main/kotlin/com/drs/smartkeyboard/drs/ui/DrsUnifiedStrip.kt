@@ -237,7 +237,12 @@ fun DrsUnifiedStrip(modifier: Modifier = Modifier) {
             autocorrect = suggestionEnabled,
             numberRow = numberRowEnabled,
             smartbarVisible = smartbarEnabled,
-            floatingWindow = windowSpec.props is ImeWindowSpec.Floating,
+            // DRS v2.1.1: افحص التخصيص لا خصائصه — القديم كان يخلط التسلسلين
+            // المغلقين (ImeWindowProps مقابل ImeWindowSpec) فصار الفحص خطأً
+            // ثابتًا بالبرهان، ومُجمِّع 2.4.20 يرفضه IMPOSSIBLE_IS_CHECK_ERROR،
+            // وكانت نقطة floating_mode عاجزة عن الإضاءة أبدًا — بنفس اتفاقية
+            // ImeWindow/ImeSystemUi/ImeWindowEditorHandles كلها.
+            floatingWindow = windowSpec is ImeWindowSpec.Floating,
             // DRS v1.22.0: the revived CTRL/ALT latches show the truth —
             // the tile dot reads the same latch state the input pipeline
             // arms and consumes.
