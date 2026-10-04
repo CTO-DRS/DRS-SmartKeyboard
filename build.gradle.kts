@@ -44,3 +44,55 @@ buildscript {
         }
     }
 }
+
+// ---------------------------------------------------------------------------
+// DRS — تحصين رسم تبعيات المشاريع (project-graph hardening, v2.1.1).
+//
+// خريطة الحل الكاملة (كل قابلة للحل × كل مشروع، أداة deps_map.init.gradle)
+// أظهرت أن الثغرات الـ54 المفتوحة في Dependabot تتركز في مصدرين، كلاهما
+// خارج APK المستخدم:
+//   1) قوابل AGP الداخلية لمنصة الاختبار الموحدة (_internal-unified-test-
+//      platform-*) في كل الوحدات: netty 4.1.93/4.1.110، bouncycastle 1.79،
+//      protobuf 3.24.4، httpclient 4.5.6، commons-lang3 3.16.0 — وقت بناء
+//      واختبار آلة المطور/CI حصرًا.
+//   2) وحدة benchmark: wire-runtime-jvm 5.2.1 (عبريًا من androidx.benchmark)
+//      في قوابل التشغيل/الترجمة الخاصة بها — APK قياس مستقل لا يوزَّع.
+// القوى أدناه ترفع كل عائلة إلى أول إصدار مرقّع وفق تقرير Dependabot:
+//   netty-*        4.1.137.Final — يطفئ critical (handler <= 4.1.136) + high/medium/low
+//   bcprov/bcpkix/bcutil 1.85     — يطفئ critical×2 + high + medium (اتساقًا مع classpath أعلاه)
+//   protobuf-*     3.25.5         — يطفئ high (java/kotlin < 3.25.5)
+//   httpclient     4.5.13         — يطفئ medium
+//   commons-lang3  3.18.0         — يطفئ medium (اتساقًا مع classpath أعلاه)
+//   wire-runtime-jvm 6.4.5        — يطفئ high×3 (wire-runtime <= 6.4.4 / <= 6.2.0)
+// التنبيه الوحيد المتبقي عمدًا: kotlin-gradle-plugin (medium) — الرقعة
+// الأولى 2.4.20-Beta1 بلا إصدار مستقر، وإجبار أداة البناء نفسها على بيتا
+// أضرّ منها؛ تُقبل كمخاطرة وقت بناء موثقة حتى صدور رقعة مستقرة.
+// تحقق لاحق: ./gradlew -I deps_map.init.gradle drsDepMap — صفر مطابقات
+// ضمن النطاقات الثغرة، و:app:releaseRuntimeClasspath خالٍ من العائلات كلها.
+// ---------------------------------------------------------------------------
+subprojects {
+    configurations.configureEach {
+        resolutionStrategy.force(
+            "io.netty:netty-buffer:4.1.137.Final",
+            "io.netty:netty-codec:4.1.137.Final",
+            "io.netty:netty-codec-http:4.1.137.Final",
+            "io.netty:netty-codec-http2:4.1.137.Final",
+            "io.netty:netty-codec-socks:4.1.137.Final",
+            "io.netty:netty-common:4.1.137.Final",
+            "io.netty:netty-handler:4.1.137.Final",
+            "io.netty:netty-handler-proxy:4.1.137.Final",
+            "io.netty:netty-resolver:4.1.137.Final",
+            "io.netty:netty-transport:4.1.137.Final",
+            "io.netty:netty-transport-native-unix-common:4.1.137.Final",
+            "org.bouncycastle:bcprov-jdk18on:1.85",
+            "org.bouncycastle:bcpkix-jdk18on:1.85",
+            "org.bouncycastle:bcutil-jdk18on:1.85",
+            "com.google.protobuf:protobuf-java:3.25.5",
+            "com.google.protobuf:protobuf-kotlin:3.25.5",
+            "com.google.protobuf:protobuf-java-util:3.25.5",
+            "org.apache.httpcomponents:httpclient:4.5.13",
+            "org.apache.commons:commons-lang3:3.18.0",
+            "com.squareup.wire:wire-runtime-jvm:6.4.5",
+        )
+    }
+}
