@@ -63,7 +63,8 @@ buildscript {
 //   protobuf-*     3.25.5         — يطفئ high (java/kotlin < 3.25.5)
 //   httpclient     4.5.13         — يطفئ medium
 //   commons-lang3  3.18.0         — يطفئ medium (اتساقًا مع classpath أعلاه)
-//   wire-runtime-jvm 6.4.5        — يطفئ high×3 (wire-runtime <= 6.4.4 / <= 6.2.0)
+//   wire-runtime(-jvm) 6.4.5      — يطفئ high×3 (خاصة benchmark) + high×2 (عبر
+//                                    androidx.benchmark نفسها: wire-runtime غير المجارية 5.2.1)
 // التنبيه الأخير (kotlin-gradle-plugin، medium، GHSA-r937-wjx7-w2jp /
 // CVE-2026-53914) أُطفئ من مصدره لا بقوة إجبارية: الرقعة المستقرة 2.4.20
 // صدرت على Maven Central (نافذة الإصلاح تبدأ من 2.4.20-Beta1 وفق OSV) فرُقّيت
@@ -96,6 +97,11 @@ subprojects {
             "org.apache.httpcomponents:httpclient:4.5.13",
             "org.apache.commons:commons-lang3:3.18.0",
             "com.squareup.wire:wire-runtime-jvm:6.4.5",
+            // DRS v2.1.1: قطعة الإحداثيات غير المجارية — عائلة androidx.benchmark
+            // تجّر wire-runtime بلا لاحقة -jvm (نطاق POM الخام 5.2.1) فلم تلمسها
+            // قوة -jvm وبقيت تنبيها CVE-2026-63126/CVE-2026-45799 مفتوحين على
+            // الرسم المُرسل — القوة هنا تطفئهما من المصدر نفسه.
+            "com.squareup.wire:wire-runtime:6.4.5",
         )
     }
 }
