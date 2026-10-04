@@ -57,7 +57,9 @@ private val DOT_BEFORE_ARABIC = Regex("\\.(?=[\\u0600-\\u06FF])")
 /** DRS v1.5.0: zero-width / invisible formatting characters that carry no
  *  visible content and break search and copy. U+200C (ZWNJ) is deliberately
  *  NOT here: نصف المسافة is a real Arabic keyboard character with meaning. */
-private val ZERO_WIDTH_CHARS = Regex("[\\u200B\\u200D\\u200E\\u200F\\uFEFF\\u2066-\\u2069]")
+// DRS v2.2.0: internal — the tiles' context advisor (DrsTileSmart) shares
+// the SAME closed mark class instead of re-spelling it (مصدر حقيقة واحد).
+internal val ZERO_WIDTH_CHARS = Regex("[\\u200B\\u200D\\u200E\\u200F\\uFEFF\\u2066-\\u2069]")
 
 /** DRS v1.5.0: sentence ender followed by horizontal whitespace — the
  *  boundary where SENTENCE_PER_LINE inserts the line break. The lookahead
@@ -75,7 +77,9 @@ private val WHITESPACE_RUN = Regex("\\s+")
  *  NOTE: the supplementary-plane bounds use \x{...} — Java/Kotlin \uXXXX
  *  is exactly four digits, so \u1F000 would silently parse as U+1F00+"0"
  *  and corrupt the whole class (this really broke the first draft). */
-private val EMOJI_CHARS = Regex(
+// DRS v2.2.0: internal — shared with the tiles' context advisor
+// (DrsTileSmart) so the emoji signal has one closed definition.
+internal val EMOJI_CHARS = Regex(
     "[\\u2600-\\u27BF\\uFE0F\\u200D\\uD83C-\\uD83E\\uDC00-\\uDFFF\\x{1F000}-\\x{1FAFF}]",
 )
 
