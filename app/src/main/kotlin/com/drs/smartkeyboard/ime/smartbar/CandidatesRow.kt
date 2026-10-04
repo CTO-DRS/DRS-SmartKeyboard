@@ -4,6 +4,8 @@
 
 package com.drs.smartkeyboard.ime.smartbar
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationException
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
@@ -34,8 +38,10 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.drs.smartkeyboard.app.DrsPreferenceStore
+import com.drs.smartkeyboard.drs.DrsMotion
 import com.drs.smartkeyboard.ime.nlp.ClipboardSuggestionCandidate
 import com.drs.smartkeyboard.ime.nlp.SuggestionCandidate
+import com.drs.smartkeyboard.ime.input.LocalInputFeedbackController
 import com.drs.smartkeyboard.ime.theme.DrsImeUi
 import com.drs.smartkeyboard.keyboardManager
 import com.drs.smartkeyboard.nlpManager
@@ -63,6 +69,18 @@ fun CandidatesRow(modifier: Modifier = Modifier) {
 
     val displayMode by prefs.suggestion.displayMode.collectAsState()
     val candidates by nlpManager.activeCandidatesFlow.collectAsState()
+
+    // DRS v2.2.1 «مرشحون أحياء»: haptics at the interaction site — the
+    // candidates row was silent on commit AND on long-press removal,
+    // while the quick actions beside it always spoke (QuickActionButton).
+    val feedback = LocalInputFeedbackController.current
+    // DRS v2.2.1: the entrance wave replays ONLY when the candidate SET
+    // changes — the signature keys the per-item animation below, so a
+    // re-emission of the same suggestions (e.g. a re-rank with identical
+    // order) never re-runs the wave.
+    val entranceKey = remember(candidates) {
+        candidates.joinToString(separator = "|") { it.text.toString() }
+    }
 
     SnyggRow(
         elementName = DrsImeUi.SmartbarCandidatesRow.elementName,
@@ -110,18 +128,23 @@ fun CandidatesRow(modifier: Modifier = Modifier) {
                     modifier = candidateModifier,
                     candidate = candidate,
                     displayMode = displayMode,
+                    entranceIndex = n,
+                    entranceKey = entranceKey,
                     onClick = {
                         // Can't use candidate directly
+                        feedback.keyPress()
                         keyboardManager.commitCandidate(candidates[n])
                     },
                     onLongPress = {
                         // Can't use candidate directly
                         val candidateItem = candidates[n]
-                        if (candidateItem.isEligibleForUserRemoval) {
+                        val removed = if (candidateItem.isEligibleForUserRemoval) {
                             nlpManager.removeSuggestion(subtypeManager.activeSubtype, candidateItem)
                         } else {
                             false
                         }
+                        if (removed) feedback.keyLongPress()
+                        removed
                     },
                     longPressDelay = prefs.keyboard.longPressDelay.get().toLong(),
                 )
@@ -138,8 +161,29 @@ private fun CandidateItem(
     onClick: () -> Unit = { },
     onLongPress: () -> Boolean = { false },
     longPressDelay: Long,
+    entranceIndex: Int = 0,
+    entranceKey: String = "",
 ) = with(LocalDensity.current) {
     var isPressed by remember { mutableStateOf(false) }
+
+    // DRS v2.2.1: the deterministic entrance wave (مرشحون أحياء). Each
+    // candidate fades/slides in with the capped DrsMotion stagger so the
+    // row reads as one quick start-to-end wave, never a pop-in. The
+    // remember keys on the row's signature: re-renders with the same set
+    // keep `entered = true` and stay static; a NEW set re-runs the wave.
+    // DRAW-ONLY (graphicsLayer): no re-measurement, no layout shift —
+    // the 5dp slide is a draw translate, and the pointer/semantics
+    // bounds are untouched.
+    var entered by remember(entranceKey) { mutableStateOf(false) }
+    val entrance by animateFloatAsState(
+        targetValue = if (entered) 1f else 0f,
+        animationSpec = tween(
+            durationMillis = DrsMotion.ENTRANCE_DURATION_MS,
+            delayMillis = DrsMotion.staggerFor(entranceIndex),
+        ),
+        label = "drsCandidateEntrance",
+    )
+    LaunchedEffect(entranceKey) { entered = true }
 
     val elementName = if (candidate is ClipboardSuggestionCandidate) {
         DrsImeUi.SmartbarCandidateClip
@@ -154,6 +198,10 @@ private fun CandidateItem(
         attributes = attributes,
         selector = selector,
         modifier = modifier
+            .graphicsLayer {
+                alpha = entrance
+                translationY = (1f - entrance) * 5.dp.toPx()
+            }
             // DRS Phase 2 (roadmap task 14): the candidate row was INVISIBLE
             // to TalkBack — a custom pointerInput gesture chain with no
             // semantics node means screen-reader users heard nothing and

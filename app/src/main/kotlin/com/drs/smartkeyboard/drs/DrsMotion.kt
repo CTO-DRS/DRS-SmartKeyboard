@@ -11,9 +11,11 @@ package com.drs.smartkeyboard.drs
  * back slower ([PULSE_RELEASE_DURATION_MS]) — the asymmetry is what makes
  * the tap feel physical instead of mechanical.
  *
- * The pulse is DRAW-ONLY (graphicsLayer scale): layout is never
- * re-measured per frame, so a 60fps pulse costs nothing to the row
- * geometry. Pinned by DrsM2DesignTests.
+ * DRS v2.2.1 — the same source of truth now owns the two strips above
+ * the keyboard too: the toggle-dot grow/shrink contract and the
+ * candidates' capped stagger entrance. All contracts are DRAW-ONLY
+ * (graphicsLayer): layout is never re-measured per frame. Pinned by
+ * DrsM2DesignTests and DrsV2210Tests.
  */
 object DrsMotion {
 
@@ -36,4 +38,57 @@ object DrsMotion {
     /** The target scale for a given pressed state. */
     fun scaleFor(pressed: Boolean): Float =
         if (pressed) PULSE_PRESSED_SCALE else PULSE_IDLE_SCALE
+
+    // DRS v2.2.1 — «الشريطان الحيّان»: عقدا الحركة للشريطين أعلى اللوحة
+    // (شريط المهام الموحد وشريط الاقتراحات). نقيّان بنيويًا مثل عقد النبضة
+    // أعلاه: بلا UI ولا Context، فيُثبتهما المُجمِّع والاختبار معًا.
+
+    /**
+     * The toggle dot contract (نقطة التفعيل): the dot GROWS into place
+     * when a toggle turns on and shrinks away when it turns off — an
+     * appearing state must feel additive, a disappearing one must feel
+     * cheaper than the appearance. Draw-only (graphicsLayer scale).
+     */
+    const val DOT_IDLE_SCALE = 0f
+
+    /** The grown dot scale (the active target). */
+    const val DOT_ACTIVE_SCALE = 1f
+
+    /** Appear direction: quick enough to feel attached to the tap. */
+    const val DOT_APPEAR_DURATION_MS = 140
+
+    /** Disappear direction: faster than the appear — states fade, not linger. */
+    const val DOT_DISAPPEAR_DURATION_MS = 90
+
+    /** The dot scale for a given active state. */
+    fun dotScaleFor(active: Boolean): Float =
+        if (active) DOT_ACTIVE_SCALE else DOT_IDLE_SCALE
+
+    /** The dot animation duration for a given active state. */
+    fun dotDurationFor(active: Boolean): Int =
+        if (active) DOT_APPEAR_DURATION_MS else DOT_DISAPPEAR_DURATION_MS
+
+    /**
+     * The candidate entrance contract (دخول المرشحين): suggestions in the
+     * Smartbar fade/slide in with a fixed per-index step so the row reads
+     * left-to-right (start-to-end) in one quick wave, never a pop-in.
+     * The step is small (one frame-and-a-half class) and the total wait
+     * is CAPPED — a deep index must never feel laggy; the cap keeps the
+     * whole wave inside ~1/5 of a second no matter how wide the row is.
+     */
+    const val ENTRANCE_DURATION_MS = 130
+
+    /** Delay added per candidate index. */
+    const val ENTRANCE_STAGGER_STEP_MS = 28
+
+    /** The hard ceiling on any single candidate's delay. */
+    const val ENTRANCE_STAGGER_MAX_MS = 112
+
+    /**
+     * The deterministic entrance delay for [index]: 0 for the first
+     * candidate (and defensively for any negative index), stepping by
+     * [ENTRANCE_STAGGER_STEP_MS] and clamped at [ENTRANCE_STAGGER_MAX_MS].
+     */
+    fun staggerFor(index: Int): Int =
+        (index.coerceAtLeast(0) * ENTRANCE_STAGGER_STEP_MS).coerceAtMost(ENTRANCE_STAGGER_MAX_MS)
 }

@@ -5,8 +5,12 @@
 
 package com.drs.smartkeyboard.drs.ui
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -70,6 +74,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -77,6 +82,7 @@ import com.drs.smartkeyboard.R
 import com.drs.smartkeyboard.drs.DrsAdaptationEngine
 import com.drs.smartkeyboard.drs.DrsContextMode
 import com.drs.smartkeyboard.drs.DrsHybridViewMode
+import com.drs.smartkeyboard.drs.DrsMotion
 import com.drs.smartkeyboard.drs.DrsProfileManager
 import com.drs.smartkeyboard.drs.DrsRuntimeState
 import com.drs.smartkeyboard.drs.DrsSmartbarShape
@@ -89,6 +95,7 @@ import com.drs.smartkeyboard.drs.DrsUnifiedTools
 import com.drs.smartkeyboard.drs.DrsUserPath
 import com.drs.smartkeyboard.app.DrsPreferenceStore
 import com.drs.smartkeyboard.ime.ImeUiMode
+import com.drs.smartkeyboard.ime.input.LocalInputFeedbackController
 import com.drs.smartkeyboard.ime.keyboard.DrsImeSizing
 import com.drs.smartkeyboard.ime.smartbar.quickaction.SmartToolCodes
 import com.drs.smartkeyboard.ime.text.keyboard.TextKeyData
@@ -125,7 +132,17 @@ import org.drs.lib.snygg.ui.SnyggRow
  * / per-level visibility) is persisted in DrsState.
  */
 
-/** Resolves the icon for a catalogue tool (all ids covered, shared with the slot editor). */
+/**
+ * DRS v2.2.1 «الشريطان الحيّان» — the shared press-pulse wiring of the
+ * tasks bar. Every strip button hoists an interaction source, reads the
+ * pressed state from it and drives the SAME DrsMotion pulse the keyboard
+ * keys use (M2.2) — one motion language across the whole IME surface.
+ * The scale rides graphicsLayer (draw-only), so the row geometry is
+ * never re-measured per frame. Feedback (haptics/sound) fires at the
+ * interaction site exactly like the keyboard keys (TextKeyboardLayout)
+ * and the quick actions (QuickActionButton) — the strip was SILENT
+ * before this round: the dispatcher pipeline owns no feedback.
+ */
 internal fun iconForTool(id: String) = when (id) {
     "emoji" -> Icons.Default.EmojiEmotions
     "clipboard" -> Icons.Default.ContentPaste
@@ -193,6 +210,13 @@ internal fun iconForTool(id: String) = when (id) {
 fun DrsUnifiedStrip(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val keyboardManager by context.keyboardManager()
+
+    // DRS v2.2.1: the strip finally speaks — haptics/sound fire at the
+    // interaction site (same convention as the keyboard keys and the
+    // quick actions). The buttons dispatch through the input event
+    // dispatcher, which owns NO feedback, so every button was silent
+    // before this round.
+    val feedback = LocalInputFeedbackController.current
 
     val drsState by DrsStore.state.collectAsState()
     val contextMode by DrsRuntimeState.contextMode.collectAsState()
@@ -338,9 +362,19 @@ fun DrsUnifiedStrip(modifier: Modifier = Modifier) {
         // 0) the side-pull handle (زر السحب الجانبي). Always first so the
         //    pinned-tools drawer stays reachable — the drawer is where
         //    tasks are reordered (up/down), pinned and unpinned.
+        //    DRS v2.2.1: pulse + feedback — the handle used to be the
+        //    only silent control on the bar (no KeyCode to dispatch).
+        val handleInteraction = remember { MutableInteractionSource() }
+        val handlePressed by handleInteraction.collectIsPressedAsState()
+        val handlePulse by animateFloatAsState(
+            targetValue = DrsMotion.scaleFor(handlePressed),
+            animationSpec = tween(durationMillis = DrsMotion.durationFor(handlePressed)),
+            label = "drsStripHandlePulse",
+        )
         SnyggIconButton(
             elementName = DrsImeUi.SmartbarActionKey.elementName,
             onClick = {
+                feedback.keyPress()
                 // Writes go through the OBSERVABLE state instance (mutating a
                 // flow snapshot would write into a discarded bitfield); only
                 // composition READS use the subscribed snapshot (E3-3).
@@ -349,7 +383,14 @@ fun DrsUnifiedStrip(modifier: Modifier = Modifier) {
                 state.isActionsOverflowVisible = false
                 state.isToolsDrawerVisible = !state.isToolsDrawerVisible
             },
-            modifier = Modifier.sizeIn(minWidth = 40.dp).height(stripHeight),
+            interactionSource = handleInteraction,
+            modifier = Modifier
+                .sizeIn(minWidth = 40.dp)
+                .height(stripHeight)
+                .graphicsLayer {
+                    scaleX = handlePulse
+                    scaleY = handlePulse
+                },
         ) {
             SnyggIcon(
                 imageVector = Icons.Default.DragHandle,
@@ -361,10 +402,30 @@ fun DrsUnifiedStrip(modifier: Modifier = Modifier) {
         // 1) the ten FIXED task slots — every slot dispatches its real
         //    KeyCode, and a LONG-PRESS opens the slot editor (change the
         //    task occupying that slot, «إمكانية تغييرها»).
+        //    DRS v2.2.1: every slot lives — the same press pulse the keys
+        //    use, an honest halo behind ACTIVE toggles, a dot that grows
+        //    in and shrinks out instead of popping, and feedback on both
+        //    click (keyPress) and long-press (keyLongPress, slot editor).
         slots.forEachIndexed { index, toolId ->
             val tool = DrsUnifiedTools.byId(toolId) ?: return@forEachIndexed
             val isTextTools = tool.code == KeyCode.IME_UI_MODE_TEXT_TOOLS
             val toggleOn = DrsUnifiedTools.toggleStateOf(tool.id, toggleStates)
+            val slotInteraction = remember(toolId) { MutableInteractionSource() }
+            val slotPressed by slotInteraction.collectIsPressedAsState()
+            val slotPulse by animateFloatAsState(
+                targetValue = DrsMotion.scaleFor(slotPressed),
+                animationSpec = tween(durationMillis = DrsMotion.durationFor(slotPressed)),
+                label = "drsStripSlotPulse",
+            )
+            // The toggle dot breathes: it GROWS into place when the tool
+            // turns on and shrinks away when it turns off (DrsMotion dot
+            // contract). Draw-only — the 6.dp slot it occupies never
+            // changes, so the row geometry is untouched while it animates.
+            val dotScale by animateFloatAsState(
+                targetValue = DrsMotion.dotScaleFor(toggleOn == true),
+                animationSpec = tween(durationMillis = DrsMotion.dotDurationFor(toggleOn == true)),
+                label = "drsStripSlotDot",
+            )
             val slotModifier = if (techKeys.isEmpty()) {
                 Modifier.weight(1f).height(stripHeight)
             } else {
@@ -373,6 +434,7 @@ fun DrsUnifiedStrip(modifier: Modifier = Modifier) {
             SnyggIconButton(
                 elementName = DrsImeUi.SmartbarActionKey.elementName,
                 onClick = {
+                    feedback.keyPress()
                     keyboardManager.inputEventDispatcher.sendDownUp(
                         TextKeyData(type = tool.type, code = tool.code, label = tool.id),
                     )
@@ -392,15 +454,33 @@ fun DrsUnifiedStrip(modifier: Modifier = Modifier) {
                     }
                 },
                 onLongClick = {
+                    feedback.keyLongPress()
                     keyboardManager.activeState.isToolsDrawerVisible = false
                     keyboardManager.activeState.isActionsOverflowVisible = false
                     DrsRuntimeState.openStripSlotEditor(index)
                 },
-                modifier = slotModifier,
+                interactionSource = slotInteraction,
+                modifier = slotModifier.graphicsLayer {
+                    scaleX = slotPulse
+                    scaleY = slotPulse
+                },
             ) {
                 androidx.compose.foundation.layout.Box(
                     contentAlignment = androidx.compose.ui.Alignment.Center,
                 ) {
+                    // DRS v2.2.1: هالة التفعيل الصادقة — a soft accent disc
+                    // behind the icon of an ACTIVE toggle, same accent the
+                    // dot uses, so «مفعّل» reads at a glance from arm's
+                    // length. matchParentSize keeps it behind the icon and
+                    // OUT of the layout math (zero geometry change).
+                    if (toggleOn == true) {
+                        androidx.compose.foundation.layout.Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .clip(androidx.compose.foundation.shape.CircleShape)
+                                .background(accentColor.copy(alpha = 0.14f)),
+                        )
+                    }
                     when {
                         isTextTools -> SnyggIcon(
                             imageVector = if (isTextToolsOpen) Icons.Default.Close else Icons.Default.Build,
@@ -417,16 +497,21 @@ fun DrsUnifiedStrip(modifier: Modifier = Modifier) {
                     // DRS v1.8.0: the real on/off state of toggle tools
                     // (incognito/autocorrect/number row/smartbar/floating)
                     // as a small accent dot — the tile shows the truth.
-                    if (toggleOn == true) {
-                        androidx.compose.foundation.layout.Box(
-                            modifier = Modifier
-                                .align(androidx.compose.ui.Alignment.TopEnd)
-                                .padding(top = 6.dp, end = 5.dp)
-                                .size(6.dp)
-                                .clip(androidx.compose.foundation.shape.CircleShape)
-                                .background(accentColor),
-                        )
-                    }
+                    // DRS v2.2.1: the dot now BREATHES (grows in / shrinks
+                    // out via DrsMotion's dot contract) instead of popping
+                    // in and out of existence. Always composed, draw-only.
+                    androidx.compose.foundation.layout.Box(
+                        modifier = Modifier
+                            .align(androidx.compose.ui.Alignment.TopEnd)
+                            .padding(top = 6.dp, end = 5.dp)
+                            .size(6.dp)
+                            .graphicsLayer {
+                                scaleX = dotScale
+                                scaleY = dotScale
+                            }
+                            .clip(androidx.compose.foundation.shape.CircleShape)
+                            .background(accentColor),
+                    )
                 }
             }
         }
@@ -441,9 +526,25 @@ fun DrsUnifiedStrip(modifier: Modifier = Modifier) {
                 "alt" -> toggleStates.altArmed
                 else -> null
             }
+            // DRS v2.2.1: the same living treatment as the task slots —
+            // pulse, honest halo on armed latches, breathing dot, and
+            // feedback (the tail keys used to be silent too).
+            val keyInteraction = remember(key.id) { MutableInteractionSource() }
+            val keyPressed by keyInteraction.collectIsPressedAsState()
+            val keyPulse by animateFloatAsState(
+                targetValue = DrsMotion.scaleFor(keyPressed),
+                animationSpec = tween(durationMillis = DrsMotion.durationFor(keyPressed)),
+                label = "drsStripTechPulse",
+            )
+            val dotScale by animateFloatAsState(
+                targetValue = DrsMotion.dotScaleFor(latchOn == true),
+                animationSpec = tween(durationMillis = DrsMotion.dotDurationFor(latchOn == true)),
+                label = "drsStripTechDot",
+            )
             SnyggIconButton(
                 elementName = DrsImeUi.SmartbarActionKey.elementName,
                 onClick = {
+                    feedback.keyPress()
                     keyboardManager.inputEventDispatcher.sendDownUp(
                         TextKeyData(type = key.type, code = key.code, label = key.label),
                     )
@@ -456,26 +557,43 @@ fun DrsUnifiedStrip(modifier: Modifier = Modifier) {
                         DrsAdaptationEngine.recordTechToolUse()
                     }
                 },
-                modifier = Modifier.sizeIn(minWidth = 38.dp).height(stripHeight),
+                interactionSource = keyInteraction,
+                modifier = Modifier
+                    .sizeIn(minWidth = 38.dp)
+                    .height(stripHeight)
+                    .graphicsLayer {
+                        scaleX = keyPulse
+                        scaleY = keyPulse
+                    },
             ) {
                 androidx.compose.foundation.layout.Box(
                     contentAlignment = androidx.compose.ui.Alignment.Center,
                 ) {
+                    if (latchOn == true) {
+                        androidx.compose.foundation.layout.Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .clip(androidx.compose.foundation.shape.CircleShape)
+                                .background(accentColor.copy(alpha = 0.14f)),
+                        )
+                    }
                     Text(
                         text = key.label,
                         fontSize = 14.sp,
                         maxLines = 1,
                     )
-                    if (latchOn == true) {
-                        androidx.compose.foundation.layout.Box(
-                            modifier = Modifier
-                                .align(androidx.compose.ui.Alignment.TopEnd)
-                                .padding(top = 6.dp, end = 5.dp)
-                                .size(6.dp)
-                                .clip(androidx.compose.foundation.shape.CircleShape)
-                                .background(accentColor),
-                        )
-                    }
+                    androidx.compose.foundation.layout.Box(
+                        modifier = Modifier
+                            .align(androidx.compose.ui.Alignment.TopEnd)
+                            .padding(top = 6.dp, end = 5.dp)
+                            .size(6.dp)
+                            .graphicsLayer {
+                                scaleX = dotScale
+                                scaleY = dotScale
+                            }
+                            .clip(androidx.compose.foundation.shape.CircleShape)
+                            .background(accentColor),
+                    )
                 }
             }
         }
