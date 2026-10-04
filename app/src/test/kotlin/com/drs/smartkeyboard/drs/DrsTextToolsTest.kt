@@ -326,6 +326,32 @@ class DrsTextToolsTest : FunSpec({
             // passthrough.
             DrsTextTool.HIJRI_TO_GREGORIAN -> result shouldBe input
 
+            // DRS v2.2.0: the natural sort is a pure PERMUTATION of the
+            // lines — every line in, every line out, none invented and
+            // none lost (the collator may order them either way on a
+            // hostile pair; the multiset may never change). Both sides
+            // read through lines() — its \r handling is the tool's own.
+            DrsTextTool.SORT_LINES_NATURAL ->
+                result.lines().sorted() shouldBe input.lines().sorted()
+
+            // DRS v2.2.0: the slug is never empty (the punctuation-only
+            // passthrough keeps the input verbatim) and never carries
+            // whitespace — every run became one dash or fell away.
+            DrsTextTool.SLUGIFY -> {
+                result.isEmpty().shouldBeFalse()
+                result.none { it.isWhitespace() }.shouldBeTrue()
+            }
+
+            // DRS v2.2.0: snake_case owns the whitespace — every run is
+            // a word boundary, so the result carries none.
+            DrsTextTool.TO_SNAKE_CASE ->
+                result.none { it.isWhitespace() }.shouldBeTrue()
+
+            // DRS v2.2.0: the hostile tokens carry emoji and fullwidth
+            // marks (non-ASCII) — the camel transform refuses the whole
+            // text byte-identically, the honest sibling.
+            DrsTextTool.TO_CAMEL_CASE -> result shouldBe input
+
             else -> error("DRS p9 (Q3): tool ${tool.name} has no pinned hostile-input invariant")
         }
     }

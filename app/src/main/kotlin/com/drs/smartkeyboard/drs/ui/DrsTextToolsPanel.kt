@@ -229,6 +229,21 @@ private val PANEL_SECTIONS: List<DrsTextToolsPanelSection> = listOf(
                 R.string.drs__text_tools__desc_toggle_case,
                 Icons.Default.SwapVert,
             ),
+            // DRS v2.2.0: the code-style case pair — snake joins with
+            // underscores (Arabic words join too, no case invented),
+            // camel refuses non-ASCII tokens byte-identically.
+            toolItem(
+                DrsTextTool.TO_SNAKE_CASE,
+                R.string.drs__text_tools__tool_to_snake_case,
+                R.string.drs__text_tools__desc_to_snake_case,
+                Icons.Default.Code,
+            ),
+            toolItem(
+                DrsTextTool.TO_CAMEL_CASE,
+                R.string.drs__text_tools__tool_to_camel_case,
+                R.string.drs__text_tools__desc_to_camel_case,
+                Icons.Default.TextFields,
+            ),
         ),
     ),
     DrsTextToolsPanelSection(
@@ -366,6 +381,15 @@ private val PANEL_SECTIONS: List<DrsTextToolsPanelSection> = listOf(
                 R.string.drs__text_tools__tool_sort_lines_by_length,
                 R.string.drs__text_tools__desc_sort_lines_by_length,
                 Icons.Default.FormatLineSpacing,
+            ),
+            // DRS v2.2.0: the natural sort — numbers the way a human
+            // reads them (file2 قبل file10، قائمة 2 قبل قائمة 10)،
+            // بأرقام عشوائية الدقة لا تفيض أبدًا.
+            toolItem(
+                DrsTextTool.SORT_LINES_NATURAL,
+                R.string.drs__text_tools__tool_sort_lines_natural,
+                R.string.drs__text_tools__desc_sort_lines_natural,
+                Icons.Default.Sort,
             ),
             // DRS v1.5.0: word-level dedup (first occurrence wins).
             toolItem(
@@ -517,6 +541,14 @@ private val PANEL_SECTIONS: List<DrsTextToolsPanelSection> = listOf(
                 R.string.drs__text_tools__tool_to_western_digits,
                 R.string.drs__text_tools__desc_to_western_digits,
                 Icons.Default.SwapHoriz,
+            ),
+            // DRS v2.2.0: the link-safe slug — العربية تحتفظ بحروفها
+            // المطوية لا بنقل صوتي مخترَع، والترقيم الصافي يعود كما هو.
+            toolItem(
+                DrsTextTool.SLUGIFY,
+                R.string.drs__text_tools__tool_slugify,
+                R.string.drs__text_tools__desc_slugify,
+                Icons.Default.Link,
             ),
             // DRS v1.4.0: unify Arabic letter variants for copy/search.
             toolItem(
@@ -784,6 +816,11 @@ fun textToolTitleRes(tool: DrsTextTool): Int = when (tool) {
     DrsTextTool.WORDS_TO_NUMBER -> R.string.drs__text_tools__tool_words_to_number
     DrsTextTool.GREGORIAN_TO_HIJRI -> R.string.drs__text_tools__tool_gregorian_to_hijri
     DrsTextTool.HIJRI_TO_GREGORIAN -> R.string.drs__text_tools__tool_hijri_to_gregorian
+    // DRS v2.2.0: the four new tiles.
+    DrsTextTool.SORT_LINES_NATURAL -> R.string.drs__text_tools__tool_sort_lines_natural
+    DrsTextTool.SLUGIFY -> R.string.drs__text_tools__tool_slugify
+    DrsTextTool.TO_SNAKE_CASE -> R.string.drs__text_tools__tool_to_snake_case
+    DrsTextTool.TO_CAMEL_CASE -> R.string.drs__text_tools__tool_to_camel_case
     DrsTextTool.REMOVE_TATWEEL -> R.string.drs__text_tools__tool_remove_tatweel
     DrsTextTool.TO_ARABIC_DIGITS -> R.string.drs__text_tools__tool_to_arabic_digits
     DrsTextTool.TO_WESTERN_DIGITS -> R.string.drs__text_tools__tool_to_western_digits
@@ -862,6 +899,11 @@ fun textToolDescRes(tool: DrsTextTool): Int = when (tool) {
     DrsTextTool.WORDS_TO_NUMBER -> R.string.drs__text_tools__desc_words_to_number
     DrsTextTool.GREGORIAN_TO_HIJRI -> R.string.drs__text_tools__desc_gregorian_to_hijri
     DrsTextTool.HIJRI_TO_GREGORIAN -> R.string.drs__text_tools__desc_hijri_to_gregorian
+    // DRS v2.2.0: the four new tiles.
+    DrsTextTool.SORT_LINES_NATURAL -> R.string.drs__text_tools__desc_sort_lines_natural
+    DrsTextTool.SLUGIFY -> R.string.drs__text_tools__desc_slugify
+    DrsTextTool.TO_SNAKE_CASE -> R.string.drs__text_tools__desc_to_snake_case
+    DrsTextTool.TO_CAMEL_CASE -> R.string.drs__text_tools__desc_to_camel_case
     DrsTextTool.REMOVE_TATWEEL -> R.string.drs__text_tools__desc_remove_tatweel
     DrsTextTool.TO_ARABIC_DIGITS -> R.string.drs__text_tools__desc_to_arabic_digits
     DrsTextTool.TO_WESTERN_DIGITS -> R.string.drs__text_tools__desc_to_western_digits

@@ -134,11 +134,11 @@ class DrsPublicV1100Tests : FunSpec({
         val tool = DrsTextTool.FRACTION_WORDS
         tool.code shouldBe -663
         DrsTextTool.fromCode(-663) shouldBe tool
-        DrsTextTool.CODE_RANGE.first shouldBe -669
+        DrsTextTool.CODE_RANGE.first shouldBe -673
         (tool.code in DrsTextTool.CODE_RANGE) shouldBe true
         // 56 tools through v1.9.0 + the v1.10.0 fraction, weekday and
         // ordinal tools.
-        DrsTextTool.entries.size shouldBe 63
+        DrsTextTool.entries.size shouldBe 67
         (tool.isInfoOnly) shouldBe false
         (tool.isEditorOp) shouldBe false
         (tool.isInsertMark) shouldBe false
@@ -203,10 +203,10 @@ class DrsPublicV1100Tests : FunSpec({
         val tool = DrsTextTool.WEEKDAY
         tool.code shouldBe -664
         DrsTextTool.fromCode(-664) shouldBe tool
-        DrsTextTool.CODE_RANGE.first shouldBe -669
+        DrsTextTool.CODE_RANGE.first shouldBe -673
         (tool.code in DrsTextTool.CODE_RANGE) shouldBe true
         // 57 tools after the fraction tool + the weekday tool.
-        DrsTextTool.entries.size shouldBe 63
+        DrsTextTool.entries.size shouldBe 67
         (tool.isInfoOnly) shouldBe false
         (tool.isEditorOp) shouldBe false
         (tool.isInsertMark) shouldBe false
@@ -290,10 +290,10 @@ class DrsPublicV1100Tests : FunSpec({
         val tool = DrsTextTool.ORDINAL_WORDS
         tool.code shouldBe -665
         DrsTextTool.fromCode(-665) shouldBe tool
-        DrsTextTool.CODE_RANGE.first shouldBe -669
+        DrsTextTool.CODE_RANGE.first shouldBe -673
         (tool.code in DrsTextTool.CODE_RANGE) shouldBe true
         // 58 tools after the weekday tool + the ordinal-words tool.
-        DrsTextTool.entries.size shouldBe 63
+        DrsTextTool.entries.size shouldBe 67
         (tool.isInfoOnly) shouldBe false
         (tool.isEditorOp) shouldBe false
         (tool.isInsertMark) shouldBe false

@@ -318,11 +318,45 @@ enum class DrsTextTool(
     // 1300..1600 AH, month lengths the platform's own, and one
     // phrase shape for one calendar; anything out of zone or out of
     // grammar returns byte-identical, never a guess.
-    HIJRI_TO_GREGORIAN(-669);
+    HIJRI_TO_GREGORIAN(-669),
+
+    // DRS v2.2.0: the natural line sort — the eighth round opens with
+    // the tiles speaking: the line sort that reads NUMBERS the way a
+    // human does (file2 before file10, قائمة 2 before قائمة 10),
+    // digit chunks compared numerically at arbitrary precision (no
+    // Long overflow — length then lexicographic on the trimmed form),
+    // letter chunks through the same locale Collator as SORT_LINES,
+    // and digits-before-letters when a chunk pair mixes. Stable,
+    // deterministic, no locale surprises beyond the collator.
+    SORT_LINES_NATURAL(-670),
+
+    // DRS v2.2.0: the deterministic URL slug — a text becomes its
+    // link-safe path: diacritics, tatweel and invisible marks stripped,
+    // hamza carriers folded (أإآٱ→ا، ة→ه، ى→ي)، spaces and underscores
+    // to one dash, everything outside letters/digits/dashes removed,
+    // dashes collapsed and trimmed. Arabic keeps its folded letters
+    // (never transliterated — never invented); a text of nothing but
+    // punctuation returns byte-identical, never an empty slug.
+    SLUGIFY(-671),
+
+    // DRS v2.2.0: the deterministic snake_case — words separated by
+    // spaces, underscores or dashes (plus lower→upper camel boundaries
+    // inside each word) join with one underscore, lowercased; Arabic
+    // words join the same way with no case invented. Anything that
+    // would not change returns byte-identical, never a rewrite.
+    TO_SNAKE_CASE(-672),
+
+    // DRS v2.2.0: the deterministic camelCase — the honest sibling:
+    // tokens join with NO separator, the first lowercased and the rest
+    // capitalized — and any token carrying a non-ASCII letter REFUSES
+    // the whole transform byte-identically (camelCase is a Latin code
+    // convention; inventing letter shapes for Arabic is a guess). The
+    // same closed honesty: no change returns byte-identical.
+    TO_CAMEL_CASE(-673);
 
     companion object {
         /** Inclusive range covering every tool code, for fast dispatch. */
-        val CODE_RANGE = -669..-601
+        val CODE_RANGE = -673..-601
 
         fun fromCode(code: Int): DrsTextTool? = entries.firstOrNull { it.code == code }
     }
@@ -470,6 +504,25 @@ object DrsTextTools {
                 // stay byte-identical (see [DrsHijriWords]).
                 DrsTextTool.HIJRI_TO_GREGORIAN ->
                     DrsHijriWords.hijriToGregorianWordsOrNull(text) ?: text
+                // DRS v2.2.0: the natural line sort — numbers the way a
+                // human reads them, letter chunks through the same locale
+                // collator as SORT_LINES (see [compareNaturalLines]).
+                DrsTextTool.SORT_LINES_NATURAL -> {
+                    val trailingNewline = text.endsWith("\n")
+                    val collator = Collator.getInstance(locale)
+                    val sorted = text.lines()
+                        .let { if (trailingNewline) it.dropLast(1) else it }
+                        .sortedWith { a, b -> compareNaturalLines(a, b, collator) }
+                        .joinToString("\n")
+                    if (trailingNewline) "$sorted\n" else sorted
+                }
+                // DRS v2.2.0: the link-safe slug (see [slugify]).
+                DrsTextTool.SLUGIFY -> slugify(text)
+                // DRS v2.2.0: the snake_case / camelCase pair (see the
+                // two helpers — the camel one refuses non-ASCII tokens
+                // byte-identically, the honest sibling).
+                DrsTextTool.TO_SNAKE_CASE -> toSnakeCase(text)
+                DrsTextTool.TO_CAMEL_CASE -> toCamelCase(text)
                 // DRS v1.3.0: strip tatweel (kashida) elongation and
                 // convert digits between Western and Arabic-Indic forms.
                 // Both are per-character, lossless-for-everything-else
@@ -889,5 +942,125 @@ object DrsTextTools {
         out = out.replace(SPACE_AFTER_PUNCT, "$1 ")
         out = out.replace(DOT_BEFORE_ARABIC, ". ")
         return out
+    }
+
+    // ------------------------------------------------------------
+    // DRS v2.2.0 — the four new tiles' pure helpers
+    // ------------------------------------------------------------
+
+    /** The natural-sort chunking: digit runs vs non-digit runs. */
+    private val NATURAL_CHUNKS = Regex("\\d+|\\D+")
+
+    /**
+     * The natural comparison of two lines: digit chunks compare
+     * numerically at arbitrary precision ([compareNumericChunks] — no
+     * Long overflow, file10 sorts after file9 whatever the magnitude),
+     * letter chunks through the same locale Collator as SORT_LINES,
+     * and a mixed pair puts digits first — one closed convention.
+     */
+    private fun compareNaturalLines(a: String, b: String, collator: Collator): Int {
+        val ac = NATURAL_CHUNKS.findAll(a).map { it.value }.toList()
+        val bc = NATURAL_CHUNKS.findAll(b).map { it.value }.toList()
+        val n = minOf(ac.size, bc.size)
+        for (i in 0 until n) {
+            val x = ac[i]
+            val y = bc[i]
+            val xd = x.first().isDigit()
+            val yd = y.first().isDigit()
+            val cmp = when {
+                xd && yd -> compareNumericChunks(x, y)
+                xd -> -1
+                yd -> 1
+                else -> collator.compare(x, y)
+            }
+            if (cmp != 0) return cmp
+        }
+        return ac.size.compareTo(bc.size)
+    }
+
+    /**
+     * Arbitrary-precision numeric chunk comparison: leading zeros
+     * trimmed, then length decides, then lexicographic — never a Long.
+     */
+    private fun compareNumericChunks(x: String, y: String): Int {
+        val xn = x.trimStart('0')
+        val yn = y.trimStart('0')
+        val byLen = xn.length.compareTo(yn.length)
+        return if (byLen != 0) byLen else xn.compareTo(yn)
+    }
+
+    /** The slug's strip class: harakat, tatweel and the invisible marks. */
+    private val SLUG_STRIP =
+        Regex("[\u064B-\u0652\u0670\u0640\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]")
+
+    /** Runs of whitespace/underscores become ONE dash, then the rest is
+     *  narrowed to letters/digits/dashes, dashes collapsed and trimmed. */
+    private val SLUG_SEPARATORS = Regex("[\\s_]+")
+    private val SLUG_KEEP = Regex("[^\\p{L}\\p{Nd}-]")
+    private val SLUG_DASH_RUNS = Regex("-{2,}")
+
+    /**
+     * The link-safe slug: Arabic keeps its FOLDED letters (never
+     * transliterated — never invented), everything outside letters/
+     * digits/dashes falls away, and a text of nothing but punctuation
+     * returns byte-identical — never an empty slug.
+     */
+    private fun slugify(text: String): String {
+        var s = SLUG_STRIP.replace(text, "")
+        for (ch in "أإآٱ") s = s.replace(ch, 'ا')
+        s = s.replace('ة', 'ه')
+            .replace('ى', 'ي')
+            .replace('ؤ', 'و')
+            .replace('ئ', 'ي')
+            .lowercase(Locale.ROOT)
+        s = SLUG_SEPARATORS.replace(s, "-")
+        s = SLUG_KEEP.replace(s, "")
+        s = SLUG_DASH_RUNS.replace(s, "-")
+        s = s.trim('-')
+        return if (s.isEmpty()) text else s
+    }
+
+    /** Word boundaries of the snake/camel pair: spaces, underscores, dashes. */
+    private val CASE_WORD_SPLIT = Regex("[\\s_\\-]+")
+
+    /** The two camel boundaries: a lowercase letter or digit before an
+     *  uppercase (get|HTTP), and an uppercase before UPPER+lower (HTTP|Response). */
+    private val CAMEL_BOUNDARY =
+        Regex("(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])")
+
+    /**
+     * snake_case: words (split on spaces/underscores/dashes, then on
+     * lower→upper camel boundaries) join with one underscore, lowercased.
+     * Arabic words join the same way with no case invented.
+     */
+    private fun toSnakeCase(text: String): String {
+        val tokens = ArrayList<String>()
+        for (raw in CASE_WORD_SPLIT.split(text.trim())) {
+            if (raw.isEmpty()) continue
+            tokens += CAMEL_BOUNDARY.split(raw).filter { it.isNotEmpty() }
+        }
+        if (tokens.isEmpty()) return text
+        val joined = tokens.joinToString("_") { it.lowercase(Locale.ROOT) }
+        return if (joined == text) text else joined
+    }
+
+    /**
+     * camelCase — the honest sibling: tokens join with NO separator,
+     * the first lowercased and the rest capitalized — and any token
+     * carrying a non-ASCII letter refuses the whole transform
+     * byte-identically (camelCase is a Latin code convention; inventing
+     * letter shapes for Arabic is a guess).
+     */
+    private fun toCamelCase(text: String): String {
+        val tokens = CASE_WORD_SPLIT.split(text.trim()).filter { it.isNotEmpty() }
+        // One token has no join to perform — the honest no-op.
+        if (tokens.size <= 1) return text
+        if (tokens.any { token -> token.any { it.code > 127 } }) return text
+        val first = tokens.first().lowercase(Locale.ROOT)
+        val rest = tokens.drop(1).joinToString("") { token ->
+            token.lowercase(Locale.ROOT).replaceFirstChar { it.uppercase(Locale.ROOT) }
+        }
+        val joined = first + rest
+        return if (joined == text) text else joined
     }
 }

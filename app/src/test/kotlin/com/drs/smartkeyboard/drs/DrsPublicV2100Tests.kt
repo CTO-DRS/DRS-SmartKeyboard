@@ -72,10 +72,10 @@ class DrsPublicV2100Tests : FunSpec({
         val tool = DrsTextTool.GREGORIAN_TO_HIJRI
         tool.code shouldBe -668
         DrsTextTool.fromCode(-668) shouldBe tool
-        DrsTextTool.CODE_RANGE.first shouldBe -669
+        DrsTextTool.CODE_RANGE.first shouldBe -673
         (tool.code in DrsTextTool.CODE_RANGE) shouldBe true
         // 61 tools through v2.0.0 + the calendar-conversion tool.
-        DrsTextTool.entries.size shouldBe 63
+        DrsTextTool.entries.size shouldBe 67
         (tool.isInfoOnly) shouldBe false
         (tool.isEditorOp) shouldBe false
         (tool.isInsertMark) shouldBe false
@@ -194,10 +194,10 @@ class DrsPublicV2100Tests : FunSpec({
         val tool = DrsTextTool.HIJRI_TO_GREGORIAN
         tool.code shouldBe -669
         DrsTextTool.fromCode(-669) shouldBe tool
-        DrsTextTool.CODE_RANGE.first shouldBe -669
+        DrsTextTool.CODE_RANGE.first shouldBe -673
         (tool.code in DrsTextTool.CODE_RANGE) shouldBe true
         // 62 tools after the Gregorian→Hijri tool + the inverse.
-        DrsTextTool.entries.size shouldBe 63
+        DrsTextTool.entries.size shouldBe 67
         (tool.isInfoOnly) shouldBe false
         (tool.isEditorOp) shouldBe false
         (tool.isInsertMark) shouldBe false

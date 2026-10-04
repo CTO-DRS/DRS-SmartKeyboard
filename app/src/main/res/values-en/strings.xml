@@ -1822,6 +1822,14 @@
     <string name="drs__text_tools__desc_gregorian_to_hijri">Convert a clean Gregorian date into its formal Hijri phrase in words (2026-02-18 becomes «الأول من رمضان عام ألف وأربعمائة وسبعة وأربعين هجري») on the platform-embedded Umm al-Qura calendar, the zone closed 1300..1600 AH — anything that is not a clean date or is out of zone stays untouched</string>
     <string name="drs__text_tools__tool_hijri_to_gregorian">Hijri to Gregorian</string>
     <string name="drs__text_tools__desc_hijri_to_gregorian">Convert a clean Hijri date into its formal Gregorian phrase in words (1447/9/1 becomes «الثامن عشر من فبراير عام ألفين وستة وعشرين») on the platform-embedded Umm al-Qura calendar, the zone closed 1300..1600 AH — anything that is not a clean date or is out of zone stays untouched</string>
+    <string name="drs__text_tools__tool_sort_lines_natural">Natural line sort</string>
+    <string name="drs__text_tools__desc_sort_lines_natural">Sort lines the way humans read numbers: file2 before file10 and قائمة 2 before قائمة 10, with arbitrary-precision numeric comparison that never overflows and letters through the same device locale — incomparable lines keep their order</string>
+    <string name="drs__text_tools__tool_slugify">URL slug</string>
+    <string name="drs__text_tools__desc_slugify">Turn text into a link-safe path: diacritics, tatweel and invisible marks stripped, hamza carriers folded (أإآٱ→ا، ة→ه), spaces to one dash, everything outside letters/digits dropped — Arabic keeps its letters, never transliterated, and punctuation-only text stays untouched</string>
+    <string name="drs__text_tools__tool_to_snake_case">snake_case</string>
+    <string name="drs__text_tools__desc_to_snake_case">Join words with one underscore, lowercased (my variable becomes my_variable, lower-to-upper camel boundaries split) — Arabic words join with no case invented, and anything that would not change stays untouched</string>
+    <string name="drs__text_tools__tool_to_camel_case">camelCase</string>
+    <string name="drs__text_tools__desc_to_camel_case">Join words with no separator, capitalizing every word after the first (my variable becomes myVariable) — any token carrying a non-ASCII letter refuses the whole transform honestly: camelCase is a Latin code convention</string>
     <string name="drs__text_tools__tool_normalize_punctuation">Normalize punctuation</string>
     <string name="drs__text_tools__desc_normalize_punctuation">Remove spaces before punctuation and ensure one space after</string>
     <string name="drs__text_tools__tool_clean_text">Full text clean-up</string>

@@ -36,6 +36,8 @@ import io.kotest.matchers.shouldBe
  */
 class DrsV2200Tests : FunSpec({
 
+    val ar = java.util.Locale.forLanguageTag("ar")
+
     // ------------------------------------------------------------
     // 1) التطبيع العربي الواعي
     // ------------------------------------------------------------
@@ -168,11 +170,68 @@ class DrsV2200Tests : FunSpec({
     }
 
     // ------------------------------------------------------------
-    // 6) الأختام قبل إضافات الدفعة C
+    // 6) الأختام بعد إضافات الدفعة C
     // ------------------------------------------------------------
-    test("v2.2.0 batch A seals — the catalogue is still 63 over -669") {
-        DrsTextTool.entries.size shouldBe 63
-        DrsTextTool.CODE_RANGE.first shouldBe -669
+    test("v2.2.0 seals — the catalogue is 67 tools over -673") {
+        DrsTextTool.entries.size shouldBe 67
+        DrsTextTool.CODE_RANGE.first shouldBe -673
         DrsTextTool.CODE_RANGE.last shouldBe -601
+        // round-trip من الكود إلى الأداة ومعهRegistration للأربعة الجدد.
+        DrsTextTool.fromCode(-670) shouldBe DrsTextTool.SORT_LINES_NATURAL
+        DrsTextTool.fromCode(-671) shouldBe DrsTextTool.SLUGIFY
+        DrsTextTool.fromCode(-672) shouldBe DrsTextTool.TO_SNAKE_CASE
+        DrsTextTool.fromCode(-673) shouldBe DrsTextTool.TO_CAMEL_CASE
+    }
+
+    // ------------------------------------------------------------
+    // 7) الأدوات الأربع الجديدة — عقودها المغلقة
+    // ------------------------------------------------------------
+    test("SORT_LINES_NATURAL reads numbers the way humans do") {
+        fun nat(s: String) = DrsTextTools.apply(DrsTextTool.SORT_LINES_NATURAL, s, ar)
+        nat("file10\nfile2\nfile1") shouldBe "file1\nfile2\nfile10"
+        nat("قائمة 10\nقائمة 2") shouldBe "قائمة 2\nقائمة 10"
+        // دقة عشوائية: مفاضلة الطول قبل المعجمية — لا فيض Long أبدًا.
+        nat("100000000000000000000\n99999999999999999999") shouldBe
+            "99999999999999999999\n100000000000000000000"
+        // الصفر القائد لا يخدع المقارنة.
+        nat("a007\na8\na10") shouldBe "a007\na8\na10"
+        // السطر الجديد الختامي محفوظ كسائر أسرة الفرز.
+        nat("b\na\n") shouldBe "a\nb\n"
+    }
+
+    test("SLUGIFY builds a link-safe path and refuses an empty one honestly") {
+        fun slug(s: String) = DrsTextTools.apply(DrsTextTool.SLUGIFY, s, ar)
+        slug("مرحبا بالعالم!") shouldBe "مرحبا-بالعالم"
+        slug("كِتَابُ الْحَدِيث") shouldBe "كتاب-الحديث"
+        slug("علم_الحاسوب") shouldBe "علم-الحاسوب"
+        slug("Drs   Smart--Keyboard!!") shouldBe "drs-smart-keyboard"
+        slug("دَرس      مطوَّل") shouldBe "درس-مطول"
+        // لا شرطات زائدة في الطرفين، والرموز تسقط.
+        slug("--عنوان *** خاص--") shouldBe "عنوان-خاص"
+        // ترقيم صافٍ يعود بايتيًا — لا slug فارغ مختلق.
+        slug("!!!") shouldBe "!!!"
+    }
+
+    test("TO_SNAKE_CASE joins with underscores and no invented case") {
+        fun snake(s: String) = DrsTextTools.apply(DrsTextTool.TO_SNAKE_CASE, s, ar)
+        snake("my variable name") shouldBe "my_variable_name"
+        snake("MyVariableName") shouldBe "my_variable_name"
+        snake("my-variable") shouldBe "my_variable"
+        snake("getHTTPResponse") shouldBe "get_http_response"
+        snake("متجر آب") shouldBe "متجر_آب"
+        // ما هو snake أصلًا يبقى بايتيًا.
+        snake("my_variable") shouldBe "my_variable"
+    }
+
+    test("TO_CAMEL_CASE joins latin tokens and refuses non-ASCII honestly") {
+        fun camel(s: String) = DrsTextTools.apply(DrsTextTool.TO_CAMEL_CASE, s, ar)
+        camel("my variable name") shouldBe "myVariableName"
+        camel("MY VAR") shouldBe "myVar"
+        camel("my-variable") shouldBe "myVariable"
+        camel("get_http_response") shouldBe "getHttpResponse"
+        // الحرف غير اللاتيني يرفض التحويل كله بايتيًا — لا اختراع.
+        camel("my متجر") shouldBe "my متجر"
+        // camel أصلًا يبقى كما هو.
+        camel("myVar") shouldBe "myVar"
     }
 })
