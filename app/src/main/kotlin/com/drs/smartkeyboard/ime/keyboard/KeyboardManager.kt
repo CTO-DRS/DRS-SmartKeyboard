@@ -1708,6 +1708,15 @@ class KeyboardManager(context: Context) : InputKeyEventReceiver {
                 KeyCode.LANGUAGE_SWITCH -> {
                     subtypeManager.subtypes.size > 1
                 }
+                // DRS v2.2.2 «الشريطان الصادقان سياقيًا»: مع اكتساح المهام
+                // الموحدة على evaluator سياقي، بقي ImeNextSubtype/ImePrevSubtype
+                // بلا بوابة — مع نوع فرعي وحيد ينتهيان إلى لا شيء صامت
+                // (switchToNext/PrevSubtype يدوران في المكان). نفس شرط
+                // LANGUAGE_SWITCH حرفيًا: مصدر حقيقة واحد للثلاثة.
+                KeyCode.IME_NEXT_SUBTYPE,
+                KeyCode.IME_PREV_SUBTYPE -> {
+                    subtypeManager.subtypes.size > 1
+                }
                 else -> true
             }
         }

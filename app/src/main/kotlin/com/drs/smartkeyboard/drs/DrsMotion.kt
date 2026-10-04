@@ -91,4 +91,36 @@ object DrsMotion {
      */
     fun staggerFor(index: Int): Int =
         (index.coerceAtLeast(0) * ENTRANCE_STAGGER_STEP_MS).coerceAtMost(ENTRANCE_STAGGER_MAX_MS)
+
+    // DRS v2.2.2 — «الشريطان الصادقان سياقيًا»: عقدا الإتاحة والإيقاع.
+    // نقيا بنيويًا كأسلافهما: بلا UI ولا Context، فيُثبتهما المُجمِّع
+    // والاختبار معًا.
+
+    /**
+     * The honest-disabled visual contract (عقد الخانة المعطَّلة سياقيًا):
+     * a context-gated slot renders at this alpha so «غير متاح الآن» reads
+     * at a glance WITHOUT pretending the slot vanished — the tile stays
+     * in place, keeps its slot-editor long-press, and merely refuses to
+     * act. Draw-only (graphicsLayer alpha), zero geometry change.
+     */
+    const val DISABLED_SLOT_ALPHA = 0.38f
+
+    /**
+     * The motion-respect contract (عقد احترام الإيقاع): when the system
+     * «remove animations» accessibility switch is on (ANIMATOR_DURATION_SCALE
+     * = 0), every DrsMotion duration SNAPS to 0 — states still land on the
+     * same final targets, they just stop animating. The contract is a pure
+     * passthrough while motion is enabled, so the pinned v2.2.1 timings
+     * are untouched in the default world.
+     */
+    fun durationOrSnap(durationMs: Int, motionEnabled: Boolean): Int =
+        if (motionEnabled) durationMs else 0
+
+    /**
+     * The motion-respect twin of [staggerFor]: the capped entrance delay
+     * for [index], or a full snap to 0 when motion is disabled — the wave
+     * collapses to an instant, ordered-nothing appearance.
+     */
+    fun staggerOrSnap(index: Int, motionEnabled: Boolean): Int =
+        if (motionEnabled) staggerFor(index) else 0
 }

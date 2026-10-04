@@ -39,6 +39,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.drs.smartkeyboard.app.DrsPreferenceStore
 import com.drs.smartkeyboard.drs.DrsMotion
+import com.drs.smartkeyboard.drs.rememberDrsMotionEnabled
 import com.drs.smartkeyboard.ime.nlp.ClipboardSuggestionCandidate
 import com.drs.smartkeyboard.ime.nlp.SuggestionCandidate
 import com.drs.smartkeyboard.ime.input.LocalInputFeedbackController
@@ -165,6 +166,10 @@ private fun CandidateItem(
     entranceKey: String = "",
 ) = with(LocalDensity.current) {
     var isPressed by remember { mutableStateOf(false) }
+    // DRS v2.2.2 «عقد احترام الإيقاع»: the system «remove animations»
+    // accessibility switch collapses the entrance wave below to an
+    // instant, target-identical appearance.
+    val motionEnabled = rememberDrsMotionEnabled()
 
     // DRS v2.2.1: the deterministic entrance wave (مرشحون أحياء). Each
     // candidate fades/slides in with the capped DrsMotion stagger so the
@@ -178,8 +183,11 @@ private fun CandidateItem(
     val entrance by animateFloatAsState(
         targetValue = if (entered) 1f else 0f,
         animationSpec = tween(
-            durationMillis = DrsMotion.ENTRANCE_DURATION_MS,
-            delayMillis = DrsMotion.staggerFor(entranceIndex),
+            // DRS v2.2.2: duration AND stagger snap to 0 under the system
+            // «remove animations» switch — candidates appear instantly at
+            // full alpha, identical final state, zero animation time.
+            durationMillis = DrsMotion.durationOrSnap(DrsMotion.ENTRANCE_DURATION_MS, motionEnabled),
+            delayMillis = DrsMotion.staggerOrSnap(entranceIndex, motionEnabled),
         ),
         label = "drsCandidateEntrance",
     )

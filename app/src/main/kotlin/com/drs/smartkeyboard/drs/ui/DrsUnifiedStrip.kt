@@ -76,6 +76,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.drs.smartkeyboard.R
@@ -89,6 +93,7 @@ import com.drs.smartkeyboard.drs.DrsSmartbarShape
 import com.drs.smartkeyboard.drs.DrsStore
 import com.drs.smartkeyboard.drs.DrsSystems
 import com.drs.smartkeyboard.drs.DrsTechToolbarKeys
+import com.drs.smartkeyboard.drs.rememberDrsMotionEnabled
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.drs.smartkeyboard.drs.DrsUnified
 import com.drs.smartkeyboard.drs.DrsUnifiedTools
@@ -217,6 +222,19 @@ fun DrsUnifiedStrip(modifier: Modifier = Modifier) {
     // dispatcher, which owns NO feedback, so every button was silent
     // before this round.
     val feedback = LocalInputFeedbackController.current
+
+    // DRS v2.2.2 «الشريطان الصادقان سياقيًا»: the ten slots dispatch raw
+    // KeyCodes with NO context gate — a paste slot on an empty clipboard,
+    // a copy/cut slot with no selection and a language slot with a single
+    // subtype all end in a silent no-op, and the strip 2 quick actions
+    // beside us already refuse such lies through evaluateEnabled. The
+    // strip joins the same single source of truth: the LIVE smartbar
+    // evaluator (the same instance Smartbar.kt hands QuickActionButton).
+    val evaluator by keyboardManager.activeSmartbarEvaluator.collectAsState()
+    // DRS v2.2.2: the motion-respect gate — the system «remove animations»
+    // accessibility switch snaps every pulse/dot below to its final target
+    // (same durations contract, zero animation time).
+    val motionEnabled = rememberDrsMotionEnabled()
 
     val drsState by DrsStore.state.collectAsState()
     val contextMode by DrsRuntimeState.contextMode.collectAsState()
@@ -368,7 +386,9 @@ fun DrsUnifiedStrip(modifier: Modifier = Modifier) {
         val handlePressed by handleInteraction.collectIsPressedAsState()
         val handlePulse by animateFloatAsState(
             targetValue = DrsMotion.scaleFor(handlePressed),
-            animationSpec = tween(durationMillis = DrsMotion.durationFor(handlePressed)),
+            // DRS v2.2.2: snaps to 0ms under the system «remove animations»
+            // switch — same targets, zero animation time.
+            animationSpec = tween(durationMillis = DrsMotion.durationOrSnap(DrsMotion.durationFor(handlePressed), motionEnabled)),
             label = "drsStripHandlePulse",
         )
         SnyggIconButton(
@@ -410,11 +430,19 @@ fun DrsUnifiedStrip(modifier: Modifier = Modifier) {
             val tool = DrsUnifiedTools.byId(toolId) ?: return@forEachIndexed
             val isTextTools = tool.code == KeyCode.IME_UI_MODE_TEXT_TOOLS
             val toggleOn = DrsUnifiedTools.toggleStateOf(tool.id, toggleStates)
+            // DRS v2.2.2 «الخانة الصادقة سياقيًا»: the same single-source
+            // truth QuickActionButton uses. Toggles, settings and navigation
+            // tools evaluate true (always meaningful); clipboard/language
+            // tools evaluate the REAL editor context. The evaluator is the
+            // live smartbar one — recomputed by KeyboardManager as the
+            // editor/prefs state moves, so the dim tracks reality.
+            val slotData = TextKeyData(type = tool.type, code = tool.code, label = tool.id)
+            val contextEnabled = evaluator.evaluateEnabled(slotData)
             val slotInteraction = remember(toolId) { MutableInteractionSource() }
             val slotPressed by slotInteraction.collectIsPressedAsState()
             val slotPulse by animateFloatAsState(
                 targetValue = DrsMotion.scaleFor(slotPressed),
-                animationSpec = tween(durationMillis = DrsMotion.durationFor(slotPressed)),
+                animationSpec = tween(durationMillis = DrsMotion.durationOrSnap(DrsMotion.durationFor(slotPressed), motionEnabled)),
                 label = "drsStripSlotPulse",
             )
             // The toggle dot breathes: it GROWS into place when the tool
@@ -423,7 +451,7 @@ fun DrsUnifiedStrip(modifier: Modifier = Modifier) {
             // changes, so the row geometry is untouched while it animates.
             val dotScale by animateFloatAsState(
                 targetValue = DrsMotion.dotScaleFor(toggleOn == true),
-                animationSpec = tween(durationMillis = DrsMotion.dotDurationFor(toggleOn == true)),
+                animationSpec = tween(durationMillis = DrsMotion.durationOrSnap(DrsMotion.dotDurationFor(toggleOn == true), motionEnabled)),
                 label = "drsStripSlotDot",
             )
             val slotModifier = if (techKeys.isEmpty()) {
@@ -434,6 +462,14 @@ fun DrsUnifiedStrip(modifier: Modifier = Modifier) {
             SnyggIconButton(
                 elementName = DrsImeUi.SmartbarActionKey.elementName,
                 onClick = {
+                    // DRS v2.2.2: the honest refusal — when the context says
+                    // the action would be a silent no-op, the slot says so
+                    // visually (dimmed) and semantically (disabled()), and
+                    // the tap does NOTHING: no fake haptic, no usage record,
+                    // no dispatch. The long-press slot editor below stays
+                    // alive either way — re-configuring a slot is always
+                    // meaningful, even when its action is not.
+                    if (!contextEnabled) return@SnyggIconButton
                     feedback.keyPress()
                     keyboardManager.inputEventDispatcher.sendDownUp(
                         TextKeyData(type = tool.type, code = tool.code, label = tool.id),
@@ -460,11 +496,26 @@ fun DrsUnifiedStrip(modifier: Modifier = Modifier) {
                     DrsRuntimeState.openStripSlotEditor(index)
                 },
                 interactionSource = slotInteraction,
-                modifier = slotModifier.graphicsLayer {
-                    scaleX = slotPulse
-                    scaleY = slotPulse
-                },
+                modifier = slotModifier
+                    .semantics {
+                        role = Role.Button
+                        // DRS v2.2.2: TalkBack hears the truth too — the
+                        // gated slot is announced disabled, and its label
+                        // carries the localized reason suffix.
+                        if (!contextEnabled) disabled()
+                    }
+                    .graphicsLayer {
+                        scaleX = slotPulse
+                        scaleY = slotPulse
+                        alpha = if (contextEnabled) 1f else DrsMotion.DISABLED_SLOT_ALPHA
+                    },
             ) {
+                // DRS v2.2.2: the a11y label carries the honest reason —
+                // computed once per slot composition (stringRes needs
+                // composition, the gate value is already in scope).
+                val slotLabel = if (contextEnabled) toolTitle(tool.id) else {
+                    toolTitle(tool.id) + " — " + stringRes(R.string.drs__unified__a11y_unavailable)
+                }
                 androidx.compose.foundation.layout.Box(
                     contentAlignment = androidx.compose.ui.Alignment.Center,
                 ) {
@@ -485,13 +536,17 @@ fun DrsUnifiedStrip(modifier: Modifier = Modifier) {
                         isTextTools -> SnyggIcon(
                             imageVector = if (isTextToolsOpen) Icons.Default.Close else Icons.Default.Build,
                             // DRS a11y/i18n/ux (r0-I): the tile is icon-only.
-                            contentDescription = toolTitle(tool.id),
+                            // DRS v2.2.2: the label carries the honest
+                            // unavailable suffix when the gate is closed.
+                            contentDescription = slotLabel,
                         )
                         tool.id == "symbols" -> Text(text = "&#", fontSize = 14.sp, maxLines = 1)
                         else -> SnyggIcon(
                             imageVector = iconForTool(tool.id),
                             // DRS a11y/i18n/ux (r0-I): the tile is icon-only.
-                            contentDescription = toolTitle(tool.id),
+                            // DRS v2.2.2: the label carries the honest
+                            // unavailable suffix when the gate is closed.
+                            contentDescription = slotLabel,
                         )
                     }
                     // DRS v1.8.0: the real on/off state of toggle tools
@@ -533,12 +588,12 @@ fun DrsUnifiedStrip(modifier: Modifier = Modifier) {
             val keyPressed by keyInteraction.collectIsPressedAsState()
             val keyPulse by animateFloatAsState(
                 targetValue = DrsMotion.scaleFor(keyPressed),
-                animationSpec = tween(durationMillis = DrsMotion.durationFor(keyPressed)),
+                animationSpec = tween(durationMillis = DrsMotion.durationOrSnap(DrsMotion.durationFor(keyPressed), motionEnabled)),
                 label = "drsStripTechPulse",
             )
             val dotScale by animateFloatAsState(
                 targetValue = DrsMotion.dotScaleFor(latchOn == true),
-                animationSpec = tween(durationMillis = DrsMotion.dotDurationFor(latchOn == true)),
+                animationSpec = tween(durationMillis = DrsMotion.durationOrSnap(DrsMotion.dotDurationFor(latchOn == true), motionEnabled)),
                 label = "drsStripTechDot",
             )
             SnyggIconButton(

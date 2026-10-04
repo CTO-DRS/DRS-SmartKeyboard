@@ -2726,6 +2726,7 @@
     <string name="clipboard__a11y_search" comment="Accessibility label of the clipboard panel header search toggle (ClipboardInputLayout)">Search clipboard</string>
     <string name="clipboard__a11y_filter" comment="Accessibility label of the clipboard panel header type-filter toggle (ClipboardInputLayout)">Filter history</string>
     <string name="drs__unified__a11y_open_drawer" comment="Accessibility label for the tasks-bar side-pull handle that opens the pinned-tools drawer (DRS a11y/i18n/ux r0-I)">Open tools drawer</string>
+    <string name="drs__unified__a11y_unavailable" comment="Suffix appended to a task-slot accessibility label when the editor context makes the action a silent no-op — the strip tells the truth instead of acting fake (DRS v2.2.2)">Unavailable now</string>
     <string name="action__more_options" comment="UserDictionaryScreen: contentDescription of the app-bar overflow (MoreVert) icon button">More options</string>
     <string name="db__error_null_handle_fmt" comment="UserDictionaryScreen: toast when the dictionary database handle is null; {op} is filled with db__op_import / db__op_export / db__op_clear">Database handle is null, failed to {op}</string>
     <string name="db__op_import" comment="UserDictionaryScreen: operation name inside db__error_null_handle_fmt">import</string>
