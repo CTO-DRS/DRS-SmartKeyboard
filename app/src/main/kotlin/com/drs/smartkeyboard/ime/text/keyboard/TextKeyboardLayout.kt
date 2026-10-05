@@ -70,6 +70,7 @@ import com.drs.smartkeyboard.ime.editor.OperationScope
 import com.drs.smartkeyboard.ime.editor.OperationUnit
 import com.drs.smartkeyboard.ime.input.InputEventDispatcher
 import com.drs.smartkeyboard.ime.input.InputShiftState
+import com.drs.smartkeyboard.ime.input.LocalInputFeedbackController
 import com.drs.smartkeyboard.ime.keyboard.ComputingEvaluator
 import com.drs.smartkeyboard.ime.keyboard.DrsImeSizing
 import com.drs.smartkeyboard.ime.keyboard.KeyboardMode
@@ -336,6 +337,18 @@ fun TextKeyboardLayout(
         )
         popupUiController.evaluator = evaluator
         popupUiController.keyHintConfiguration = prefs.keyboard.keyHintConfiguration()
+        // DRS v2.6.0 «المنبثق الحي الصادق»: sliding between extended-popup
+        // elements now ticks the existing gestureMovingSwipe feedback
+        // contract — the same one the spacebar cursor-slide already uses.
+        // The last silent surface of the board finally speaks, reusing
+        // preferences that already exist instead of minting new ones. The
+        // controller is read from the CompositionLocal (provided at the
+        // IME root) because this composable sits outside the touch-loop
+        // class that owns the service-locator getter.
+        val inputFeedback = LocalInputFeedbackController.current
+        popupUiController.onActiveElementChanged = { data ->
+            inputFeedback?.gestureMovingSwipe(data)
+        }
         controller.popupUiController = popupUiController
         val debugShowTouchBoundaries by prefs.devtools.showKeyTouchBoundaries.collectAsState()
         // DRS v2.4.0: the motion-respect signal is read ONCE for the whole

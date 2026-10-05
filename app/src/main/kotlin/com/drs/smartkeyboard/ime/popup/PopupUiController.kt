@@ -31,6 +31,7 @@ import com.drs.smartkeyboard.ime.text.key.KeyHintConfiguration
 import com.drs.smartkeyboard.ime.text.keyboard.TextKey
 import com.drs.smartkeyboard.ime.text.keyboard.TextKeyData
 import com.drs.smartkeyboard.ime.theme.DrsImeUi
+import com.drs.smartkeyboard.drs.DrsPopupMotion
 import com.drs.smartkeyboard.lib.DrsRect
 import com.drs.smartkeyboard.lib.toIntOffset
 
@@ -70,6 +71,16 @@ class PopupUiController(
     private var extRenderInfo by mutableStateOf<ExtRenderInfo?>(null)
 
     private var activeElementIndex by mutableIntStateOf(-1)
+
+    /**
+     * DRS v2.6.0 «المنبثق الحي الصادق» — fired exactly when the active
+     * extended-popup element CHANGES during a finger slide (gated by
+     * [DrsPopupMotion.shouldAnnounceHover]: never on extend() init, never
+     * on re-hovering the same element, never on slide-out). The keyboard
+     * wires this to the existing gestureMovingSwipe feedback contract —
+     * reuse, not new preferences.
+     */
+    var onActiveElementChanged: ((KeyData) -> Unit)? = null
     var evaluator: ComputingEvaluator = DefaultComputingEvaluator
     var keyHintConfiguration: KeyHintConfiguration = KeyHintConfiguration.HINTS_DISABLED
 
@@ -323,6 +334,11 @@ class PopupUiController(
             return false
         }
 
+        // DRS v2.6.0: capture the previous active index BEFORE the move so
+        // the honest hover gate (DrsPopupMotion.shouldAnnounceHover) can
+        // tell a real element change from a re-hover or an init.
+        val previousElementIndex = activeElementIndex
+
         extRenderInfo.apply {
             activeElementIndex = when {
                 anchorLeft -> when {
@@ -368,6 +384,15 @@ class PopupUiController(
                     }
                 }
                 else -> -1
+            }
+        }
+
+        // DRS v2.6.0 «المنبثق الحي الصادق»: a real move between popup
+        // elements is announced through the feedback contract — once per
+        // change, never on init, never on re-hover, never on slide-out.
+        if (DrsPopupMotion.shouldAnnounceHover(previousElementIndex, activeElementIndex)) {
+            getElementOrNull(extRenderInfo.elements, activeElementIndex)?.data?.let { data ->
+                onActiveElementChanged?.invoke(data)
             }
         }
 
