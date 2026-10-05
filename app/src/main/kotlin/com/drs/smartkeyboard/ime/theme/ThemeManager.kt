@@ -111,6 +111,25 @@ class ThemeManager(context: Context) {
         ) {}.collectIn(scope) {
             updateActiveTheme()
         }
+        // DRS v2.8.0 «خلفيتك من ألبومك»: the user background image is patched
+        // into the stylesheet AT LOAD TIME, so any change must evict the cached
+        // theme infos (same eviction pattern as the extension-driven reset
+        // above) — the next updateActiveTheme re-loads and re-patches.
+        combine(
+            prefs.theme.backgroundImage.asFlow(),
+            prefs.theme.backgroundDimness.asFlow(),
+        ) { _, _ ->
+            updateActiveTheme {
+                cachedThemeInfos.forEach { info ->
+                    runCatching {
+                        info.loadedDir?.let { dir ->
+                            java.io.File(dir.canonicalPath).deleteRecursively()
+                        }
+                    }
+                }
+                cachedThemeInfos.clear()
+            }
+        }.collectIn(scope) { }
     }
 
     /**
@@ -174,7 +193,15 @@ class ThemeManager(context: Context) {
                 )
             }
             val stylesheetJson = stylesheetFile.readText()
-            SnyggStylesheet.fromJson(stylesheetJson).getOrThrow()
+            val parsed = SnyggStylesheet.fromJson(stylesheetJson).getOrThrow()
+            // DRS v2.8.0: inject the user background image IN MEMORY — the theme
+            // file on disk is never modified, and the total patcher means a
+            // broken preference value can never fail a theme load.
+            DrsThemeBackgroundPatcher.apply(
+                parsed,
+                prefs.theme.backgroundImage.get(),
+                prefs.theme.backgroundDimness.get(),
+            )
         }.fold(
             onSuccess = { newStylesheet ->
                 val newInfo = ThemeInfo(activeName, themeConfig, newStylesheet, loadedDir, null)

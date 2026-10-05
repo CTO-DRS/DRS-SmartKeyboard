@@ -1176,6 +1176,17 @@ abstract class DrsPreferenceModel : PreferenceModel() {
             key = "theme__editor_level",
             default = SnyggLevel.ADVANCED,
         )
+        // DRS v2.8.0 «خلفيتك من ألبومك»: one user background image, injected
+        // in-memory into the active theme's window rule at load time. The value
+        // is the stored file name (SHA-256 prefix of the content) or "" for none.
+        val backgroundImage = string(
+            key = "theme__background_image",
+            default = "",
+        )
+        val backgroundDimness = int(
+            key = "theme__background_dimness",
+            default = com.drs.smartkeyboard.ime.theme.DrsThemeBackground.DEFAULT_DIMNESS,
+        )
     }
 
     override fun migrate(entry: PreferenceMigrationEntry): PreferenceMigrationEntry {

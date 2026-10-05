@@ -206,6 +206,18 @@
     <string name="pref__theme__theme_accent_color__label" comment="Label of accent color preference in Theme">
         Accent color (Material You themes)
     </string>
+    <!-- DRS v2.8.0: user background image for the keyboard theme -->
+    <string name="pref__theme__group_background__label" comment="Theme screen group title for the user background image">Background image</string>
+    <string name="pref__theme__background_image__label" comment="Preference title: pick a background image">Keyboard background image</string>
+    <string name="pref__theme__background_image__summary_none" comment="Summary when no image is set">No image — the background comes from the current theme. Tap to pick one from your device</string>
+    <string name="pref__theme__background_image__summary_set" comment="Summary when an image is set">Image applied to the theme — tap to pick another one</string>
+    <string name="pref__theme__background_dimness__label" comment="Preference title: dimness slider">Background image dimness</string>
+    <string name="pref__theme__background_image__remove__label" comment="Preference title: remove the image">Remove image</string>
+    <string name="pref__theme__background_image__remove__summary" comment="Preference summary: remove the image">Restore the theme\'s original background color</string>
+    <string name="pref__theme__background_image__toast_success" comment="Toast after successful import">Image applied to the theme</string>
+    <string name="pref__theme__background_image__toast_too_large" comment="Toast: image too large">Image exceeds 10 MB — pick a smaller one</string>
+    <string name="pref__theme__background_image__toast_not_an_image" comment="Toast: file not decodable as image">The file is not a valid image</string>
+    <string name="pref__theme__background_image__toast_failed" comment="Toast: generic import failure">Could not import the image</string>
     <string name="settings__theme_manager__title_manage" comment="Title of the theme manager screen for managing installed and custom themes">Manage installed themes</string>
     <string name="pref__theme__source_assets" comment="Label for the theme source field">DRS Smart Keyboard App Assets</string>
     <string name="pref__theme__source_internal" comment="Label for the theme source field">Internal Storage</string>
@@ -548,6 +560,20 @@
     <string name="pref__dictionary__learn_from_suggestions__summary" comment="DRS: Preference summary">Words you pick from the suggestion row are remembered and suggested first next time (stored on this device only)</string>
     <string name="pref__dictionary__learn_typed_words__label" comment="DRS: Preference title">Learn words you type</string>
     <string name="pref__dictionary__learn_typed_words__summary" comment="DRS: Preference summary">Words you type and commit with space are remembered locally so the keyboard grows with your vocabulary</string>
+    <!-- DRS v2.8.0: external dictionary import -->
+    <string name="pref__external_dict__group__label" comment="Dictionary screen group title for external dictionaries">External dictionaries</string>
+    <string name="pref__external_dict__import__label" comment="Preference title: import external dictionary">Import a dictionary from a file</string>
+    <string name="pref__external_dict__import__summary" comment="Preference summary: accepted formats">JSON shaped {“word”: freq} or “word,freq” lines — merged INTO the language dictionary, never replacing it</string>
+    <string name="pref__external_dict__choose_language__title" comment="Dialog title: pick the language of the imported dictionary">Dictionary language</string>
+    <string name="pref__external_dict__toast_read_failed_fmt" comment="Toast: file read failure; {error} is a short reason">Could not read the file: {error}</string>
+    <string name="pref__external_dict__toast_imported_fmt" comment="Toast: import success; {count} words, {lang} language">Imported {count} words for {lang} — live in suggestions right away</string>
+    <string name="pref__external_dict__toast_malformed_json" comment="Toast: malformed JSON file">Malformed JSON file — use the {“word”: freq} shape</string>
+    <string name="pref__external_dict__toast_no_words" comment="Toast: no valid words found">No valid words found in the file</string>
+    <string name="pref__external_dict__toast_removed" comment="Toast: dictionary removed">Dictionary removed</string>
+    <string name="pref__external_dict__toast_failed" comment="Toast: generic failure">Operation failed</string>
+    <string name="pref__external_dict__entry__summary_fmt" comment="Imported dictionary row summary; {lang} language, {count} words">{lang} · {count} words · tap to remove</string>
+    <string name="pref__external_dict__note__label" comment="Static note row title">How it works</string>
+    <string name="pref__external_dict__note__summary" comment="Static note row summary: honest merge semantics">Words extend the chosen language\'s dictionary, they never replace it; duplicates keep the higher frequency; everything stays in app-private storage and never leaves your device</string>
     <string name="settings__udm__title_drs" comment="Title of the User Dictionary Manager activity for internal">Internal user dictionary</string>
     <string name="settings__udm__title_system" comment="Title of the User Dictionary Manager activity for system">System user dictionary</string>
     <string name="settings__udm__no_words_in_dictionary" comment="String to show if no words are present in the dictionary">This user dictionary does not contain any words.</string>

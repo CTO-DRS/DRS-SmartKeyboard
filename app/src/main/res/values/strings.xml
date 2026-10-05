@@ -194,6 +194,18 @@
     <string name="pref__theme__day" comment="Label of the day group (day means light theme)">نسق نهاري</string>
     <string name="pref__theme__night" comment="Label of the night group (night means dark theme)">نسق ليلي</string>
     <string name="pref__theme__theme_accent_color__label" comment="Label of accent color preference in Theme">لون التمييز (سمات Material You)</string>
+    <!-- DRS v2.8.0 «خلفيتك من ألبومك»: user background image for the keyboard theme -->
+    <string name="pref__theme__group_background__label" comment="Theme screen group title for the user background image">صورة الخلفية</string>
+    <string name="pref__theme__background_image__label" comment="Preference title: pick a background image">صورة خلفية الكيبورد</string>
+    <string name="pref__theme__background_image__summary_none" comment="Summary when no image is set">لا صورة — الخلفية من الثيم الحالي. انقر لاختيار صورة من جهازك</string>
+    <string name="pref__theme__background_image__summary_set" comment="Summary when an image is set">صورة مطبقة على الثيم — انقر لاختيار صورة أخرى</string>
+    <string name="pref__theme__background_dimness__label" comment="Preference title: dimness slider">تعتيم صورة الخلفية</string>
+    <string name="pref__theme__background_image__remove__label" comment="Preference title: remove the image">إزالة الصورة</string>
+    <string name="pref__theme__background_image__remove__summary" comment="Preference summary: remove the image">إعادة الخلفية إلى لون الثيم الأصلي</string>
+    <string name="pref__theme__background_image__toast_success" comment="Toast after successful import">تم تطبيق الصورة على الثيم</string>
+    <string name="pref__theme__background_image__toast_too_large" comment="Toast: image too large">الصورة أكبر من 10 ميغابايت — اختر صورة أصغر</string>
+    <string name="pref__theme__background_image__toast_not_an_image" comment="Toast: file not decodable as image">الملف ليس صورة صالحة</string>
+    <string name="pref__theme__background_image__toast_failed" comment="Toast: generic import failure">تعذر استيراد الصورة</string>
     <string name="settings__theme_manager__title_manage" comment="Title of the theme manager screen for managing installed and custom themes">إدارة السمات المثبتة</string>
     <string name="pref__theme__source_assets" comment="Label for the theme source field">أصول تطبيق DRS Smart Keyboard</string>
     <string name="pref__theme__source_internal" comment="Label for the theme source field">الذاكرة الداخلية</string>
@@ -509,6 +521,20 @@
     <string name="pref__dictionary__learn_from_suggestions__summary" comment="DRS: Preference summary">الكلمات التي تختارها من شريط الاقتراحات تُحفظ وتُقترح أولاً لاحقاً (تُخزن على هذا الجهاز فقط)</string>
     <string name="pref__dictionary__learn_typed_words__label" comment="DRS: Preference title">تعلّم الكلمات التي تكتبها</string>
     <string name="pref__dictionary__learn_typed_words__summary" comment="DRS: Preference summary">الكلمات التي تكتبها وتُنهيها بمسافة تُحفظ محلياً لتتوسع اللوحة مع مفرداتك</string>
+    <!-- DRS v2.8.0 «قاموسك من ملفك»: external dictionary import -->
+    <string name="pref__external_dict__group__label" comment="Dictionary screen group title for external dictionaries">القواميس الخارجية</string>
+    <string name="pref__external_dict__import__label" comment="Preference title: import external dictionary">استيراد قاموس من ملف</string>
+    <string name="pref__external_dict__import__summary" comment="Preference summary: accepted formats">JSON بالشكل {“كلمة”: تردد} أو أسطر «كلمة,تردد» — تُدمج مع قاموس اللغة ولا تُستبدل به</string>
+    <string name="pref__external_dict__choose_language__title" comment="Dialog title: pick the language of the imported dictionary">لغة القاموس المستورد</string>
+    <string name="pref__external_dict__toast_read_failed_fmt" comment="Toast: file read failure; {error} is a short reason">تعذرت قراءة الملف: {error}</string>
+    <string name="pref__external_dict__toast_imported_fmt" comment="Toast: import success; {count} words, {lang} language">تم استيراد {count} كلمة للغة {lang} — تعمل الآن في الاقتراحات مباشرة</string>
+    <string name="pref__external_dict__toast_malformed_json" comment="Toast: malformed JSON file">ملف JSON تالف — استخدم الشكل {“كلمة”: تردد}</string>
+    <string name="pref__external_dict__toast_no_words" comment="Toast: no valid words found">لم يُعثر على أي كلمة صالحة في الملف</string>
+    <string name="pref__external_dict__toast_removed" comment="Toast: dictionary removed">تمت إزالة القاموس</string>
+    <string name="pref__external_dict__toast_failed" comment="Toast: generic failure">تعذرت العملية</string>
+    <string name="pref__external_dict__entry__summary_fmt" comment="Imported dictionary row summary; {lang} language, {count} words">{lang} · {count} كلمة · انقر للحذف</string>
+    <string name="pref__external_dict__note__label" comment="Static note row title">كيف تعمل؟</string>
+    <string name="pref__external_dict__note__summary" comment="Static note row summary: honest merge semantics">الكلمات تُضاف إلى قاموس اللغة المختار ولا تُستبدل أبداً؛ الكلمة المكررة تحتفظ بالتردد الأعلى، وتُحفظ في تخزين خاص بالتطبيق ولا تغادر جهازك</string>
     <string name="settings__udm__title_drs" comment="Title of the User Dictionary Manager activity for internal">القاموس الداخلي للمستخدم</string>
     <string name="settings__udm__title_system" comment="Title of the User Dictionary Manager activity for system">قاموس مستخدم النظام</string>
     <string name="settings__udm__no_words_in_dictionary" comment="String to show if no words are present in the dictionary">ملف القاموس هذا لا يحتوي على اي كلمات.</string>

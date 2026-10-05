@@ -65,6 +65,12 @@ class DrsApplication : Application() {
     val subtypeManager = lazy { SubtypeManager(this) }
     val themeManager = lazy { ThemeManager(this) }
 
+    // DRS v2.8.0: app-private store of the user's picked background image and
+    // of imported external dictionaries — same-process singletons, instantly
+    // visible to both the settings UI and the live IME.
+    val backgroundStore = lazy { com.drs.smartkeyboard.ime.theme.DrsBackgroundImageStore(this) }
+    val externalDictStore = lazy { com.drs.smartkeyboard.ime.nlp.DrsExternalDictStore(this) }
+
     override fun onCreate() {
         super.onCreate()
         DrsApplicationReference = WeakReference(this)
@@ -228,3 +234,7 @@ fun Context.nlpManager() = this.drsApplication().nlpManager
 fun Context.subtypeManager() = this.drsApplication().subtypeManager
 
 fun Context.themeManager() = this.drsApplication().themeManager
+
+fun Context.backgroundStore() = this.drsApplication().backgroundStore
+
+fun Context.externalDictStore() = this.drsApplication().externalDictStore

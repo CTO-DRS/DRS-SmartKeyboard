@@ -60,8 +60,11 @@ import com.drs.smartkeyboard.ime.media.MediaInputLayout
 import com.drs.smartkeyboard.ime.sheet.BottomSheetWindow
 import com.drs.smartkeyboard.ime.text.TextInputLayout
 import com.drs.smartkeyboard.ime.theme.DrsImeUi
+import com.drs.smartkeyboard.ime.theme.DrsThemeBackground
+import com.drs.smartkeyboard.app.DrsPreferenceStore
 import com.drs.smartkeyboard.keyboardManager
 import kotlinx.coroutines.delay
+import org.drs.jetpref.datastore.model.collectAsState as jetprefCollectAsState
 import org.drs.lib.compose.ProvideActualLayoutDirection
 import org.drs.lib.compose.conditional
 import org.drs.lib.compose.drawBorder
@@ -138,6 +141,12 @@ fun BoxScope.ImeWindow() {
     val density = LocalDensity.current
     val windowController = LocalWindowController.current
 
+    // DRS v2.8.0 «خلفيتك من ألبومك»: readability scrim strength for the user
+    // background image. Injected at the composition level exactly like the
+    // dynamic accent color — outside the stylesheet contract.
+    val prefs by DrsPreferenceStore
+    val backgroundDimness by prefs.theme.backgroundDimness.jetprefCollectAsState()
+
     val windowSpec by windowController.activeWindowSpec.collectAsState()
     val windowConfig by windowController.activeWindowConfig.collectAsState()
 
@@ -170,6 +179,7 @@ fun BoxScope.ImeWindow() {
                 windowController.updateWindowInsets(newInsets)
             },
         supportsBackgroundImage = true,
+        backgroundImageDim = DrsThemeBackground.dimnessToAlpha(backgroundDimness),
         allowClip = false,
     ) {
         OneHandedPanel()

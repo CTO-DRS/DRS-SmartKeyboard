@@ -9,38 +9,55 @@ import androidx.compose.material.icons.filled.Brightness2
 import androidx.compose.material.icons.filled.BrightnessAuto
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Wallpaper
 import androidx.compose.material.icons.filled.WbTwilight
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import com.drs.smartkeyboard.R
+import com.drs.smartkeyboard.app.DrsPreferenceStore
+import com.drs.smartkeyboard.backgroundStore
 import com.drs.smartkeyboard.app.LocalNavController
 import com.drs.smartkeyboard.app.Routes
 import com.drs.smartkeyboard.app.enumDisplayEntriesOf
 import com.drs.smartkeyboard.app.ext.AddonManagementReferenceBox
 import com.drs.smartkeyboard.app.ext.ExtensionListScreenType
+import com.drs.smartkeyboard.ime.theme.DrsBackgroundImageStore
+import com.drs.smartkeyboard.ime.theme.DrsThemeBackground
 import com.drs.smartkeyboard.ime.theme.ThemeManager
 import com.drs.smartkeyboard.ime.theme.ThemeMode
 import com.drs.smartkeyboard.lib.compose.DrsScreen
 import com.drs.smartkeyboard.lib.ext.ExtensionComponentName
 import com.drs.smartkeyboard.themeManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.drs.jetpref.datastore.model.collectAsState
 import org.drs.jetpref.datastore.ui.ColorPickerPreference
+import org.drs.jetpref.datastore.ui.DialogSliderPreference
+import org.drs.jetpref.datastore.ui.ExperimentalJetPrefDatastoreUi
 import org.drs.jetpref.datastore.ui.ListPreference
 import org.drs.jetpref.datastore.ui.LocalTimePickerPreference
 import org.drs.jetpref.datastore.ui.Preference
 import org.drs.jetpref.datastore.ui.PreferenceGroup
 import org.drs.jetpref.datastore.ui.isMaterialYou
+import org.drs.lib.android.showLongToastSync
 import org.drs.lib.android.showShortToastSync
+import org.drs.lib.android.stringRes
 import org.drs.lib.color.ColorMappings
 import org.drs.lib.compose.stringRes
 
+@OptIn(ExperimentalJetPrefDatastoreUi::class)
 @Composable
 fun ThemeScreen() = DrsScreen {
     title = stringRes(R.string.settings__theme__title)
@@ -54,6 +71,39 @@ fun ThemeScreen() = DrsScreen {
     // real label (null = fewer than two themes installed).
     val scope = rememberCoroutineScope()
     val themeManager by context.themeManager()
+    val prefs by DrsPreferenceStore
+
+    // DRS v2.8.0 «خلفيتك من ألبومك»: pick ONE image from the device; it is
+    // copied app-privately, named after its own SHA-256, and injected into the
+    // active theme's window rule IN MEMORY at load time. Honest toasts for
+    // every outcome — no silent failures.
+    val backgroundStore = remember<com.drs.smartkeyboard.ime.theme.DrsBackgroundImageStore> { context.backgroundStore().value }
+    var bgVersion by remember { mutableIntStateOf(0) }
+    val currentBackgroundName = remember(bgVersion) { backgroundStore.currentName() }
+
+    val pickBackgroundImage = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri ->
+            if (uri == null) return@rememberLauncherForActivityResult
+            scope.launch(Dispatchers.IO) {
+                backgroundStore.importFromUri(uri)
+                    .onSuccess { storedName ->
+                        prefs.theme.backgroundImage.set(storedName)
+                        bgVersion++
+                        context.showShortToastSync(R.string.pref__theme__background_image__toast_success)
+                    }
+                    .onFailure { error ->
+                        context.showLongToastSync(
+                            when (error.message) {
+                                "TOO_LARGE" -> context.stringRes(R.string.pref__theme__background_image__toast_too_large)
+                                "NOT_AN_IMAGE" -> context.stringRes(R.string.pref__theme__background_image__toast_not_an_image)
+                                else -> context.stringRes(R.string.pref__theme__background_image__toast_failed)
+                            }
+                        )
+                    }
+            }
+        },
+    )
 
     @Composable
     fun ThemeManager.getThemeLabel(id: ExtensionComponentName): String {
@@ -146,6 +196,41 @@ fun ThemeScreen() = DrsScreen {
                     it
                 }
             }
+        )
+        }
+
+        PreferenceGroup(title = stringRes(R.string.pref__theme__group_background__label)) {
+        Preference(
+            icon = Icons.Default.Wallpaper,
+            title = stringRes(R.string.pref__theme__background_image__label),
+            summary = if (currentBackgroundName == null) {
+                stringRes(R.string.pref__theme__background_image__summary_none)
+            } else {
+                stringRes(R.string.pref__theme__background_image__summary_set)
+            },
+            onClick = { pickBackgroundImage.launch("image/*") },
+        )
+        DialogSliderPreference(
+            prefs.theme.backgroundDimness,
+            title = stringRes(R.string.pref__theme__background_dimness__label),
+            valueLabel = { dim -> "$dim%" },
+            min = 0,
+            max = DrsThemeBackground.MAX_DIMNESS,
+            stepIncrement = 5,
+            enabledIf = { prefs.theme.backgroundImage isNotEqualTo "" },
+        )
+        Preference(
+            icon = Icons.Default.Delete,
+            title = stringRes(R.string.pref__theme__background_image__remove__label),
+            summary = stringRes(R.string.pref__theme__background_image__remove__summary),
+            enabledIf = { prefs.theme.backgroundImage isNotEqualTo "" },
+            onClick = {
+                scope.launch(Dispatchers.IO) {
+                    backgroundStore.clear()
+                    prefs.theme.backgroundImage.set("")
+                    bgVersion++
+                }
+            },
         )
         }
     }

@@ -168,6 +168,20 @@ class NlpManager(context: Context) {
     }
 
     /**
+     * DRS v2.8.0 «قاموسك من ملفك»: drops the cached dictionary index for [lang]
+     * so the next suggestion pass re-loads it merged with the user's currently
+     * imported external dictionaries. Called by the settings screen (same
+     * process) right after an import or a removal — the change reaches the live
+     * keyboard without any restart.
+     */
+    fun invalidateDictCaches(lang: String) {
+        scope.launch {
+            val latin = providers.withLock { it[LatinLanguageProvider.ProviderId] }?.provider
+            (latin as? LatinLanguageProvider)?.invalidateDict(lang)
+        }
+    }
+
+    /**
      * Spell wrapper helper which calls the spelling provider and returns the result. Coroutine management must be done
      * by the source spell checker service.
      */

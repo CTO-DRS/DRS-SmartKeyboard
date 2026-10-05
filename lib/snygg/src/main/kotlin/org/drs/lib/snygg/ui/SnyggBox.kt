@@ -4,12 +4,14 @@
 
 package org.drs.lib.snygg.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -35,6 +37,10 @@ import org.drs.lib.snygg.SnyggStylesheet
  * @param contentAlignment The default alignment inside the Box.
  * @param propagateMinConstraints Whether the incoming min constraints should be passed to content.
  * @param supportsBackgroundImage controls if this Box supports background images.
+ * @param backgroundImageDim An optional dimming scrim (alpha 0..1) drawn between the background
+ *   image and the content, so keys/text stay readable over bright pictures. Only applies when a
+ *   background image is actually rendered. DRS v2.8.0: wired to the user background-image
+ *   preference (see ImeWindow), the same injection pattern as the dynamic accent color.
  * @param backgroundImageDescription The content description of the background image.
  * @param allowClip If clipping should be allowed on this box.
  * @param content The content of the Box
@@ -53,6 +59,7 @@ fun SnyggBox(
     contentAlignment: Alignment = Alignment.TopStart,
     propagateMinConstraints: Boolean = false,
     supportsBackgroundImage: Boolean = false,
+    backgroundImageDim: Float = 0f,
     backgroundImageDescription: String? = null,
     allowClip: Boolean = true,
     content: @Composable BoxScope.() -> Unit,
@@ -92,6 +99,17 @@ fun SnyggBox(
                     contentScale = style.contentScale(),
                     contentDescription = backgroundImageDescription,
                 )
+                // DRS v2.8.0: honest readability scrim — sits between the image and the
+                // content, never over the content itself.
+                val scrimAlpha = backgroundImageDim.coerceIn(0f, 1f)
+                if (scrimAlpha > 0f) {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .clip(style.shape())
+                            .background(Color.Black.copy(alpha = scrimAlpha)),
+                    )
+                }
             }
             content()
         }

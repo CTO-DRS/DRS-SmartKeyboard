@@ -8,11 +8,13 @@ import android.content.Context
 import android.os.SystemClock
 import com.drs.smartkeyboard.app.DrsPreferenceStore
 import com.drs.smartkeyboard.appContext
+import com.drs.smartkeyboard.externalDictStore
 import com.drs.smartkeyboard.ime.core.Subtype
 import com.drs.smartkeyboard.ime.dictionary.DictionaryManager
 import com.drs.smartkeyboard.ime.dictionary.UserDictionaryEntry
 import com.drs.smartkeyboard.ime.editor.EditorContent
 import com.drs.smartkeyboard.ime.nlp.AutocorrectDecider
+import com.drs.smartkeyboard.ime.nlp.DrsExternalDictMerger
 import com.drs.smartkeyboard.ime.nlp.SpellingProvider
 import com.drs.smartkeyboard.ime.nlp.SpellingResult
 import com.drs.smartkeyboard.ime.nlp.SuggestionCandidate
@@ -315,10 +317,26 @@ class LatinLanguageProvider(context: Context) : SpellingProvider, SuggestionProv
         val asset = dictAssetFor(lang)
         val rawData = appContext.assets.readText(asset)
         val data = json.decodeFromString(wordDataSerializer, rawData)
-        val entries = data
+        // DRS v2.8.0 «قاموسك من ملفك»: user-imported external dictionaries for
+        // this language extend the bundled one (max frequency wins on dupes).
+        // The store lives in the same process — the settings screen drops this
+        // cache entry via NlpManager.invalidateDictCaches right after an
+        // import/remove, so the next suggest() re-loads with the new words.
+        val external = appContext.externalDictStore().value.wordsFor(lang)
+        val merged = DrsExternalDictMerger.merge(data, external)
+        val entries = merged
             .map { (word, freq) -> DictEntry(normalize(word), word, freq) }
             .sortedBy { it.norm }
         return DictIndex(entries)
+    }
+
+    /**
+     * DRS v2.8.0: external-dictionary import/remove hook — drops the cached
+     * dictionary index for [lang] so the next suggestion pass rebuilds it with
+     * the current external words. Cheap, idempotent, lock-guarded.
+     */
+    suspend fun invalidateDict(lang: String) {
+        dictCache.withLock { it.remove(lang) }
     }
 
     // DRS v1.18.0: bundled per-language dictionaries live in the pure

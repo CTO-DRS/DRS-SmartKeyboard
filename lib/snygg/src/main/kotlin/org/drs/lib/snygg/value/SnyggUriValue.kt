@@ -11,8 +11,11 @@ data class SnyggUriValue(val uri: String) : SnyggValue {
     companion object : SnyggValueEncoder {
         private const val EnclosedUriFunction = "uri"
         private const val EnclosedUriId = "enclosedUri"
-        // TODO: evaluate the pattern for the URI
-        private val EnclosedUriPattern = """`flex:/[^` ]+`""".toRegex()
+        // DRS v2.8.0: `flex:/` stays the theme-package scheme (assets inside the
+        // unzipped theme dir); `drsimg:/` addresses the app-private user background
+        // image dir (noBackupFilesDir/drs_background), resolved by DrsAssetResolver.
+        // Both schemes are anchored at the URI root (no authority, single slash).
+        private val EnclosedUriPattern = """`(?:flex|drsimg):/[^` ]+`""".toRegex()
 
         override val spec = SnyggValueSpec {
             function(name = EnclosedUriFunction) {
