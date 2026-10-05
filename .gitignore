@@ -2,6 +2,8 @@
 *.apk
 *.aab
 *.ap_
+# Exception: APK المستضاف على موقع التوثيق نفسه (GitHub Pages بلا وسيط)
+!docs/apk/*.apk
 
 # dotenv
 .env
