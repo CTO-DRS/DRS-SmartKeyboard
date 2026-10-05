@@ -5,12 +5,15 @@
 package com.drs.smartkeyboard.ime.text.keyboard
 
 import com.drs.smartkeyboard.drs.DrsMotion
+import com.drs.smartkeyboard.drs.rememberDrsMotionEnabled
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.animateFloatAsState
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
+import android.provider.Settings
 import android.view.MotionEvent
 import android.view.animation.AccelerateInterpolator
 import androidx.compose.foundation.border
@@ -19,8 +22,12 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Circle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -51,6 +58,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
@@ -61,12 +69,14 @@ import com.drs.smartkeyboard.glideTypingManager
 import com.drs.smartkeyboard.ime.editor.OperationScope
 import com.drs.smartkeyboard.ime.editor.OperationUnit
 import com.drs.smartkeyboard.ime.input.InputEventDispatcher
+import com.drs.smartkeyboard.ime.input.InputShiftState
 import com.drs.smartkeyboard.ime.keyboard.ComputingEvaluator
 import com.drs.smartkeyboard.ime.keyboard.DrsImeSizing
 import com.drs.smartkeyboard.ime.keyboard.KeyboardMode
 import com.drs.smartkeyboard.ime.keyboard.SpaceBarMode
 import com.drs.smartkeyboard.ime.keyboard.computeLabel
 import com.drs.smartkeyboard.ime.keyboard.keyA11yLabelRes
+import com.drs.smartkeyboard.ime.keyboard.shiftStateA11yRes
 import com.drs.smartkeyboard.ime.popup.ExceptionsForKeyCodes
 import com.drs.smartkeyboard.ime.popup.PopupUiController
 import com.drs.smartkeyboard.ime.popup.rememberPopupUiController
@@ -92,6 +102,7 @@ import org.drs.jetpref.datastore.model.collectAsState
 import com.drs.smartkeyboard.ime.window.ImeWindowSpec
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.onFailure
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import org.drs.lib.android.isOrientationLandscape
 import org.drs.lib.compose.DisposableLifecycleEffect
@@ -327,11 +338,23 @@ fun TextKeyboardLayout(
         popupUiController.keyHintConfiguration = prefs.keyboard.keyHintConfiguration()
         controller.popupUiController = popupUiController
         val debugShowTouchBoundaries by prefs.devtools.showKeyTouchBoundaries.collectAsState()
-        for (textKey in keyboard.keys()) {
-            TextKeyButton(
-                textKey, evaluator, desiredKey,
-                debugShowTouchBoundaries,
-            )
+        // DRS v2.4.0: the motion-respect signal is read ONCE for the whole
+        // board and handed to every key — the pulse, the caps-lock dot and
+        // the row-entrance wave all snap together when the system removes
+        // animations (same contract the two strips have honored since
+        // v2.2.2 — the board itself is the last surface to join).
+        val motionEnabled = rememberDrsMotionEnabled()
+        // DRS v2.4.0: rows (not a flat key stream) drive the composition
+        // order — each key carries its row index so the entrance wave can
+        // stagger deterministically.
+        for ((rowIndex, row) in keyboard.arrangement.withIndex()) {
+            for (textKey in row) {
+                TextKeyButton(
+                    textKey, evaluator, desiredKey,
+                    debugShowTouchBoundaries,
+                    motionEnabled, rowIndex,
+                )
+            }
         }
 
         popupUiController.RenderPopups()
@@ -364,6 +387,8 @@ private fun TextKeyButton(
     evaluator: ComputingEvaluator,
     desiredKey: TextKey,
     debugShowTouchBoundaries: Boolean,
+    motionEnabled: Boolean,
+    rowIndex: Int,
 ) = with(LocalDensity.current) {
     // DRS (B9): the attributes map was rebuilt on EVERY recomposition of
     // every key (press ripple, trail draw, …) although its content only
@@ -400,11 +425,36 @@ private fun TextKeyButton(
     // DRS M2.2 — the Design-2030 key-tap pulse: pressed compresses to
     // 0.94 fast (60ms), release springs back slower (140ms). DRAW-ONLY:
     // the scale rides graphicsLayer so layout is never re-measured.
+    // DRS v2.4.0: the pulse finally respects the system rhythm — when
+    // «remove animations» zeroes ANIMATOR_DURATION_SCALE the durations
+    // snap to 0 and the states still land on identical final targets.
     val pulseScale by animateFloatAsState(
         targetValue = DrsMotion.scaleFor(key.isPressed),
-        animationSpec = tween(durationMillis = DrsMotion.durationFor(key.isPressed)),
+        animationSpec = tween(
+            durationMillis = DrsMotion.durationOrSnap(
+                DrsMotion.durationFor(key.isPressed),
+                motionEnabled,
+            ),
+        ),
         label = "drsKeyPulse",
     )
+    // DRS v2.4.0 — «موجة دخول اللوحة»: whenever the arrangement identity
+    // changes (mode switch, subtype switch, number-row toggle, IME reopen)
+    // the rows enter with the same capped wave the candidates row uses:
+    // alpha 0→1 plus a 5dp settle, delayed per row by the pinned stagger
+    // contract. Total wave ≤ stagger cap (112ms) + 130ms. Draw-only and
+    // motion-gated: with animations off the Animatable STARTS at 1 so no
+    // frame is ever an empty board.
+    val entranceDropPx = 5.dp.toPx()
+    val entrance = remember(key) { Animatable(if (motionEnabled) 0f else 1f) }
+    LaunchedEffect(key, motionEnabled) {
+        if (!motionEnabled) {
+            entrance.snapTo(1f)
+        } else if (entrance.value < 1f) {
+            delay(DrsMotion.staggerFor(rowIndex).toLong())
+            entrance.animateTo(1f, tween(durationMillis = DrsMotion.ENTRANCE_DURATION_MS))
+        }
+    }
     // DRS v1.17.0: every key finally speaks to TalkBack. Icon-only keys
     // (shift/backspace/enter/arrows…) get a localized spoken label from
     // the pure [keyA11yLabelRes] mapping; all other keys fall back to the
@@ -414,6 +464,14 @@ private fun TextKeyButton(
         spoken
             ?: evaluator.computeLabel(key.computedData)
             ?: key.computedData.asString(isForDisplay = true)
+    }
+    // DRS v2.4.0: the shift key speaks its STATE — lowercase / shifted /
+    // caps-locked — via the pure shiftStateA11yRes mapping; until now all
+    // three states announced identically to TalkBack.
+    val shiftStateDescription = if (key.computedData.code == KeyCode.SHIFT) {
+        evaluator.context()?.getString(shiftStateA11yRes(evaluator.state.inputShiftState))
+    } else {
+        null
     }
     SnyggBox(
         DrsImeUi.Key.elementName,
@@ -429,6 +487,7 @@ private fun TextKeyButton(
             .semantics {
                 role = Role.Button
                 contentDescription = a11yDescription
+                shiftStateDescription?.let { stateDescription = it }
             },
     ) {
         val isTelPadKey = key.computedData.type == KeyType.NUMERIC && evaluator.keyboard.mode == KeyboardMode.PHONE
@@ -468,6 +527,38 @@ private fun TextKeyButton(
                 contentDescription = null,
             )
         }
+        // DRS v2.4.0 — «نقطة قفل الأحرف الصادقة»: caps lock stops riding a
+        // silent theme attribute alone. The shift key carries a small dot
+        // driven by the EXACT v2.2.1 toggle-dot contract (grow 140ms in,
+        // shrink 90ms out), rendered as a theme-styled SnyggIcon so the
+        // color follows the stylesheet's foreground for the key — which
+        // the base theme already recolors in caps lock. Draw-only: scale
+        // on graphicsLayer, zero geometry change, motion-gated.
+        if (key.computedData.code == KeyCode.SHIFT) {
+            val capsLockActive = evaluator.state.inputShiftState == InputShiftState.CAPS_LOCK
+            val dotScale by animateFloatAsState(
+                targetValue = DrsMotion.dotScaleFor(capsLockActive),
+                animationSpec = tween(
+                    durationMillis = DrsMotion.durationOrSnap(
+                        DrsMotion.dotDurationFor(capsLockActive),
+                        motionEnabled,
+                    ),
+                ),
+                label = "drsCapsLockDot",
+            )
+            SnyggIcon(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 5.dp)
+                    .size(5.dp)
+                    .graphicsLayer {
+                        scaleX = dotScale
+                        scaleY = dotScale
+                    },
+                imageVector = Icons.Filled.Circle,
+                contentDescription = null,
+            )
+        }
     }
     if (debugShowTouchBoundaries) {
         Box(
@@ -481,7 +572,10 @@ private fun TextKeyButton(
 
 @Suppress("unused_parameter")
 private class TextKeyboardLayoutController(
-    context: Context,
+    // DRS v2.4.0: promoted to a property — the glide-trail fade reads the
+    // system animator scale from it at cancel time (one cheap read per
+    // gesture end, more accurate than a cached composition value).
+    private val context: Context,
 ) : SwipeGesture.Listener, GlideTypingGesture.Listener {
     private val prefs by DrsPreferenceStore
     private val editorInstance by context.editorInstance()
@@ -1036,7 +1130,23 @@ private class TextKeyboardLayoutController(
 
             val animator = ValueAnimator.ofFloat(1.0f, 0.0f)
             animator.interpolator = AccelerateInterpolator()
-            animator.duration = prefs.glide.trailDuration.get().toLong()
+            // DRS v2.4.0: the trail fade respects the system rhythm too —
+            // when animations are removed system-wide the fade collapses
+            // to a 0ms jump to the same final target (fraction 0, trail
+            // gone); the state machine below is untouched either way.
+            val motionEnabled = try {
+                Settings.Global.getFloat(
+                    context.contentResolver,
+                    Settings.Global.ANIMATOR_DURATION_SCALE,
+                    1f,
+                ) != 0f
+            } catch (_: Throwable) {
+                true
+            }
+            animator.duration = DrsMotion.durationOrSnap(
+                prefs.glide.trailDuration.get(),
+                motionEnabled,
+            ).toLong()
             animator.addUpdateListener {
                 fadingGlideFraction = it.animatedValue as Float
             }

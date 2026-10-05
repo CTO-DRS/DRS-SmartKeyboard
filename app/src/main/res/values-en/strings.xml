@@ -1938,6 +1938,8 @@
     <string name="clip__copy_item_again">Copy item again</string>
     <string name="clip__copied_item_again">Item copied back to the clipboard</string>
     <string name="pref__keyboard__key_repeat_rate__label">Key repeat rate</string>
+    <string name="pref__keyboard__accelerated_delete__label">Accelerating delete</string>
+    <string name="pref__keyboard__accelerated_delete__summary">Keeps your repeat rate for the first six repeats, then descends a fixed three-gear deterministic ladder — erase paragraphs without waiting</string>
 
     <!-- DRS v1.0.7: unified "Both" system -->
     <string name="drs__unified__dashboard_title">Unified Dashboard</string>
@@ -2600,6 +2602,9 @@
     <string name="pref__panels__harakat_advice__label">Smart haraka advice</string>
     <string name="pref__panels__harakat_advice__summary">A strip suggesting the haraka that fits the text before the cursor, plus lexicon-based word vocalization — on-device only</string>
     <string name="key__a11y_shift">Shift key</string>
+    <string name="key__a11y_shift_state__unshifted">lowercase</string>
+    <string name="key__a11y_shift_state__shifted">shift on</string>
+    <string name="key__a11y_shift_state__caps_lock">caps lock on</string>
     <string name="key__a11y_caps_lock">Caps lock</string>
     <string name="key__a11y_delete">Delete</string>
     <string name="key__a11y_forward_delete">Forward delete</string>

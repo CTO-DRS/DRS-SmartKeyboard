@@ -728,6 +728,15 @@ abstract class DrsPreferenceModel : PreferenceModel() {
             key = "keyboard__key_repeat_rate_percent",
             default = 100,
         )
+        // DRS v2.4.0: accelerating delete ladder — holding delete keeps the
+        // user's repeat rate for the first six repeats, then descends a
+        // fixed three-gear ladder (×1.5 → ×2 → ×2.5). Real behavior change:
+        // InputEventDispatcher feeds the repeat count through
+        // DrsAcceleratedRepeat.delayFor. Delete-family codes only.
+        val acceleratedDelete = boolean(
+            key = "keyboard__accelerated_delete",
+            default = true,
+        )
         // DRS v1.0.8: keyboard HEIGHT scale as a percentage of the baseline
         // height. 100 = default. Real behavior change: ImeWindowController
         // feeds it into ImeWindowSpec.UserPreferredOptions.heightScale and

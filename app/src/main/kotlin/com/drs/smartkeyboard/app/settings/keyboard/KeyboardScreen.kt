@@ -164,6 +164,15 @@ fun KeyboardScreen() = DrsScreen {
                 max = 300,
                 stepIncrement = 10,
             )
+            // DRS v2.4.0: the accelerating delete ladder — the repeat rate
+            // above stays the base speed; this toggle lets the delay descend
+            // a fixed three-gear ladder while delete is held. Delete-family
+            // keys only, pure deterministic contract, no guessing.
+            SwitchPreference(
+                prefs.keyboard.acceleratedDelete,
+                title = stringRes(R.string.pref__keyboard__accelerated_delete__label),
+                summary = stringRes(R.string.pref__keyboard__accelerated_delete__summary),
+            )
             SwitchPreference(
                 prefs.keyboard.spaceBarSwitchesToCharacters,
                 title = stringRes(R.string.pref__keyboard__space_bar_switches_to_characters__label),

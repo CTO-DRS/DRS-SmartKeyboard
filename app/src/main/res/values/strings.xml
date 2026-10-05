@@ -1856,6 +1856,8 @@
     <string name="clip__copy_item_again">نسخ العنصر مجددًا</string>
     <string name="clip__copied_item_again">تم نسخ العنصر إلى الحافظة</string>
     <string name="pref__keyboard__key_repeat_rate__label">سرعة تكرار المفاتيح</string>
+    <string name="pref__keyboard__accelerated_delete__label">الحذف المتسارع عند الاستمرار</string>
+    <string name="pref__keyboard__accelerated_delete__summary">يُبقي سرعة التكرار كما هي في أول ست تكرارات، ثم ينزل سلّمًا حتميًا ثابتًا من ثلاث سرعات — لحذف الفقرات دون انتظار</string>
 
     <!-- DRS v1.0.7: نظام «كلاهما» الموحد -->
     <string name="drs__unified__dashboard_title">لوحة كلاهما</string>
@@ -2546,6 +2548,9 @@
     <string name="pref__panels__harakat_advice__label">التوصية الذكية بالحركة</string>
     <string name="pref__panels__harakat_advice__summary">شريط يقترح الحركة الأنسب لما قبل المؤشر، وتشكيل الكلمة الشائعة قاموسيًا — على الجهاز فقط</string>
     <string name="key__a11y_shift">مفتاح التحويل</string>
+    <string name="key__a11y_shift_state__unshifted">أحرف صغيرة</string>
+    <string name="key__a11y_shift_state__shifted">تحويل مفعّل</string>
+    <string name="key__a11y_shift_state__caps_lock">قفل الأحرف الكبيرة مفعّل</string>
     <string name="key__a11y_caps_lock">تثبيت التحويل</string>
     <string name="key__a11y_delete">حذف</string>
     <string name="key__a11y_forward_delete">حذف للأمام</string>

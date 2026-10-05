@@ -6,6 +6,7 @@ package com.drs.smartkeyboard.ime.keyboard
 
 import androidx.annotation.StringRes
 import com.drs.smartkeyboard.R
+import com.drs.smartkeyboard.ime.input.InputShiftState
 import com.drs.smartkeyboard.ime.text.key.KeyCode
 
 /**
@@ -38,4 +39,18 @@ fun keyA11yLabelRes(code: Int): Int? = when (code) {
     // DRS v1.15.0 panels: the diacritics panel key speaks as its page name.
     KeyCode.IME_UI_MODE_DIACRITICS -> R.string.key__a11y_view_harakat
     else -> null
+}
+
+/**
+ * DRS v2.4.0 — «اللوحة الحية الشاملة»: the shift key's STATE, spoken.
+ * Until this mapping existed TalkBack announced «Shift key» identically
+ * whether the board was lowercase, shifted, or caps-locked — the state
+ * rode a silent theme attribute alone (and, since this version, a small
+ * honest dot). Total pure function: every InputShiftState member maps to
+ * exactly one localized state description. JVM-tested.
+ */
+fun shiftStateA11yRes(state: InputShiftState): Int = when (state) {
+    InputShiftState.CAPS_LOCK -> R.string.key__a11y_shift_state__caps_lock
+    InputShiftState.SHIFTED_MANUAL, InputShiftState.SHIFTED_AUTOMATIC -> R.string.key__a11y_shift_state__shifted
+    InputShiftState.UNSHIFTED -> R.string.key__a11y_shift_state__unshifted
 }

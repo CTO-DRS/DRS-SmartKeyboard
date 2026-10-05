@@ -10,6 +10,7 @@ import androidx.collection.SparseArrayCompat
 import androidx.collection.isNotEmpty
 import androidx.collection.set
 import com.drs.smartkeyboard.app.DrsPreferenceStore
+import com.drs.smartkeyboard.drs.DrsAcceleratedRepeat
 import com.drs.smartkeyboard.ime.keyboard.KeyData
 import com.drs.smartkeyboard.ime.text.gestures.SwipeAction
 import com.drs.smartkeyboard.ime.text.key.KeyCode
@@ -127,10 +128,20 @@ class InputEventDispatcher private constructor(private val repeatableKeyCodes: I
                     } else if (repeatableKeyCodes.contains(data.code)) {
                         val repeatData = determineRepeatData(data)
                         val repeatDelay = determineRepeatDelay(repeatData)
+                        // DRS v2.4.0: the accelerating delete ladder — the
+                        // delay is re-derived PER REPEAT through the pure
+                        // DrsAcceleratedRepeat contract, so the first six
+                        // repeats run at the user's exact configured rate
+                        // and then the fixed three-gear ladder engages.
+                        // Delete-family codes only; every other repeatable
+                        // key keeps the pinned fixed rate (passthrough).
+                        val accelerated = DrsAcceleratedRepeat.appliesTo(repeatData.code) &&
+                            prefs.keyboard.acceleratedDelete.get()
                         // DRS perf (r0-D): bounded repeat loop — terminates
                         // after [REPEAT_CEILING_MS] even if the matching up
                         // event was lost.
                         var repeatedForMs = 0L
+                        var repeatIndex = 0
                         while (isActive && repeatedForMs < REPEAT_CEILING_MS) {
                             val onRepeatResult = withContext(Dispatchers.Main) { onRepeat() }
                             if (onRepeatResult) {
@@ -143,8 +154,14 @@ class InputEventDispatcher private constructor(private val repeatableKeyCodes: I
                                 }
                                 pressedKeyInfo.blockUp = true
                             }
-                            delay(repeatDelay)
-                            repeatedForMs += repeatDelay
+                            val currentDelay = DrsAcceleratedRepeat.delayFor(
+                                repeatDelay,
+                                repeatIndex,
+                                accelerated,
+                            )
+                            delay(currentDelay)
+                            repeatedForMs += currentDelay
+                            repeatIndex += 1
                         }
                     }
                 }
