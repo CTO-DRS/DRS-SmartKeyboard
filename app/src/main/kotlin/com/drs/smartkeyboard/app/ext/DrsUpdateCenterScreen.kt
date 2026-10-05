@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SystemUpdateAlt
 import androidx.compose.material.icons.outlined.CloudDownload
 import androidx.compose.material.icons.outlined.FileDownload
+import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material3.CircularProgressIndicator
@@ -50,6 +51,7 @@ import com.drs.smartkeyboard.app.drsupdater.ReleaseInfo
 import com.drs.smartkeyboard.app.drsupdater.UpdateCheckMode
 import com.drs.smartkeyboard.app.enumDisplayEntriesOf
 import com.drs.smartkeyboard.lib.compose.DrsScreen
+import com.drs.smartkeyboard.lib.util.launchUrl
 import org.drs.lib.compose.DrsButton
 import org.drs.lib.compose.DrsOutlinedBox
 import org.drs.lib.compose.DrsTextButton
@@ -60,6 +62,14 @@ import org.drs.jetpref.datastore.ui.Preference
 import org.drs.jetpref.datastore.ui.SwitchPreference
 import org.drs.lib.compose.stringRes
 import java.util.Locale
+
+/** v2.5.0: the honest front doors — opened in the user's browser via
+ *  launchUrl, never fetched by the keyboard itself. The site is served
+ *  from docs/ on the same repo through GitHub Pages: no third-party host,
+ *  no ads, no tracking, and it dies only if the repo dies.
+ */
+private const val UPDATES_SITE_URL = "https://cto-drs.github.io/DRS-SmartKeyboard/"
+private const val UPDATES_RELEASES_URL = "https://github.com/CTO-DRS/DRS-SmartKeyboard/releases"
 
 /**
  * DRS Update Center — the real in-app update experience: version status,
@@ -264,6 +274,50 @@ fun DrsUpdateCenterScreen() = DrsScreen {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        }
+
+        // v2.5.0: the honest front door — the official ad-free project page
+        // and the signed releases listing, opened in the user's browser via
+        // launchUrl (ACTION_VIEW). The keyboard itself fetches nothing: zero
+        // network here, and a missing browser is announced honestly by the
+        // existing toast in LaunchUtils instead of a silent no-op.
+        DrsOutlinedBox(modifier = Modifier.defaultDrsOutlinedBox()) {
+            Row(
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Icon(
+                    modifier = Modifier.size(18.dp),
+                    imageVector = Icons.Outlined.Public,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = stringRes(R.string.updates__links__title),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
+            Text(
+                modifier = Modifier.padding(start = 16.dp, top = 6.dp, end = 16.dp, bottom = 4.dp),
+                text = stringRes(R.string.updates__links__body),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 4.dp)) {
+                DrsTextButton(
+                    onClick = { context.launchUrl(UPDATES_SITE_URL) },
+                    icon = Icons.AutoMirrored.Filled.OpenInNew,
+                    text = stringRes(R.string.updates__links__site),
+                )
+            }
+            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 4.dp)) {
+                DrsTextButton(
+                    onClick = { context.launchUrl(UPDATES_RELEASES_URL) },
+                    icon = Icons.AutoMirrored.Filled.OpenInNew,
+                    text = stringRes(R.string.updates__links__releases),
+                )
+            }
         }
     }
 }

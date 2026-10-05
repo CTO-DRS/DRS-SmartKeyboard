@@ -1643,6 +1643,10 @@
     <string name="updates__privacy_hint">يتم الفحص عبر واجهة GitHub الرسمية (HTTPS) فقط، ولا تُرسل أي بيانات شخصية.</string>
     <string name="updates__guide__title">كيف أُحدّث التطبيق؟</string>
     <string name="updates__guide__body">١. اضغط «فحص الآن» وانتظر ظهور الإصدار الأحدث.\n٢. اضغط «تنزيل» — يتحقق التطبيق تلقائياً من سلامة الملف (SHA-256) بعد اكتمال التنزيل.\n٣. اضغط «تثبيت» ووافق على التثبيت من هذا المصدر عند طلب النظام ذلك. ستُستبدل نسختك القديمة مباشرة دون فقدان أي بيانات أو إعدادات.\nملاحظة: ملف APK فقط قابل للتثبيت — تجاهل ملف AAB إن ظهر في صفحة الإصدار.</string>
+    <string name="updates__links__title">الروابط الرسمية</string>
+    <string name="updates__links__body">الصفحة الرسمية للمشروع بلا إعلانات، وقائمة كل الإصدارات الموقعة على GitHub — تُفتحان في متصفحك، ولا شيء يُجلب من داخل لوحة المفاتيح نفسها</string>
+    <string name="updates__links__site">صفحة المشروع الرسمية</string>
+    <string name="updates__links__releases">كل الإصدارات على GitHub</string>
 
     <!-- DRS Package Center -->
     <string name="packages__center__title">مركز حزم DRS</string>
