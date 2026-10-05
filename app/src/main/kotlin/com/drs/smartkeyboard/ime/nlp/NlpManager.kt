@@ -237,13 +237,50 @@ class NlpManager(context: Context) {
                     emptyList()
                 }
                 else -> {
-                    getSuggestionProvider(subtype).suggest(
+                    val base = getSuggestionProvider(subtype).suggest(
                         subtype = subtype,
                         content = content,
                         maxCandidateCount = 8,
                         allowPossiblyOffensive = !prefs.suggestion.blockPossiblyOffensive.get(),
                         isPrivateSession = keyboardManager.activeState.isIncognitoMode,
                     )
+                    // DRS v2.7.0: multilingual typing (HeliBoard heritage,
+                    // opt-in). The dictionaries of up to two OTHER enabled
+                    // subtypes that share the current subtype's suggestion
+                    // provider AND speak a different language also feed the
+                    // row, so mixed sentences like «مرحبا hello» never force
+                    // a manual language switch. Same on-device providers,
+                    // same content, same privacy flags — nothing new leaves
+                    // the keyboard. Cross-provider subtypes (e.g. Latin ↔
+                    // Han) and same-language duplicates are excluded; extras
+                    // interleave round-robin behind the active language's
+                    // candidates.
+                    if (prefs.suggestion.multilingualTyping.get()) {
+                        val extras = subtypeManager.subtypes
+                            .filter { other ->
+                                other != subtype &&
+                                    other.nlpProviders.suggestion == subtype.nlpProviders.suggestion &&
+                                    other.primaryLocale.languageTag() != subtype.primaryLocale.languageTag()
+                            }
+                            .distinctBy { it.primaryLocale.languageTag() }
+                            .take(DrsMultilingualMerge.MAX_EXTRA_SUBTYPES)
+                            .map { extraSubtype ->
+                                getSuggestionProvider(extraSubtype).suggest(
+                                    subtype = extraSubtype,
+                                    content = content,
+                                    maxCandidateCount = 8,
+                                    allowPossiblyOffensive = !prefs.suggestion.blockPossiblyOffensive.get(),
+                                    isPrivateSession = keyboardManager.activeState.isIncognitoMode,
+                                )
+                            }
+                        DrsMultilingualMerge.interleave(
+                            base = base,
+                            extras = extras,
+                            dedupKey = { it.text.toString().lowercase() },
+                        )
+                    } else {
+                        base
+                    }
                 }
             }
             synchronized(internalSuggestionsLock) {

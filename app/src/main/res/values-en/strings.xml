@@ -474,6 +474,8 @@
     <string name="settings__keyboard__title" comment="Title of Keyboard preferences screen">Keyboard</string>
     <string name="pref__keyboard__number_row__label" comment="Preference title">Number row</string>
     <string name="pref__keyboard__number_row__summary" comment="Preference summary">Show a number row above the character layout</string>
+    <string name="pref__keyboard__volume_key_cursor__label" comment="Preference title">Volume keys move the cursor</string>
+    <string name="pref__keyboard__volume_key_cursor__summary" comment="Preference summary">While the keyboard is up, volume up/down move the cursor a line up/down instead of changing media volume</string>
     <string name="pref__keyboard__hinted_number_row_mode__label" comment="Preference title">Hinted number row</string>
     <string name="pref__keyboard__hinted_symbols_mode__label" comment="Preference title">Hinted symbols</string>
     <string name="pref__keyboard__utility_key_enabled__label" comment="Preference title">Show utility key</string>
@@ -527,6 +529,8 @@
     <string name="pref__correction__remember_caps_lock_state__summary" comment="Preference summary">Caps lock will stay on when moving to another text field</string>
     <string name="pref__correction__double_space_period__label" comment="Preference title">Double-space period</string>
     <string name="pref__correction__double_space_period__summary" comment="Preference summary">Tapping twice on spacebar inserts a period followed by a space</string>
+    <string name="pref__correction__smart_punctuation__label" comment="Preference title">Smart punctuation</string>
+    <string name="pref__correction__smart_punctuation__summary" comment="Preference summary">Typing two hyphens (--) after a space then pressing space rewrites them into a real em dash (—) — triple dashes and dashes glued to words are left alone</string>
     <string name="pref__spelling__title" comment="Preference group title">Spelling</string>
     <string name="pref__spelling__active_spellchecker__summary_disabled">Disabled system-wide. No red lines will appear in text fields for incorrect words. Tap to change.</string>
     <string name="pref__spelling__active_spellchecker__summary_none">No inline text spell checker service set. Tap to change.</string>
@@ -2630,6 +2634,8 @@
     <string name="clipboard__a11y_pinned_badge">Pinned</string>
     <string name="pref__suggestion__autocorrect_enabled__label">Autocorrect</string>
     <string name="pref__suggestion__autocorrect_enabled__summary">Fixes a typo automatically on space when a nearby common correction matches a word no dictionary starts with — backspace reverts it</string>
+    <string name="pref__suggestion__multilingual_typing__label">Multilingual suggestions</string>
+    <string name="pref__suggestion__multilingual_typing__summary">Shows word suggestions from your other enabled languages alongside the current one — everything stays on-device, nothing leaves the keyboard</string>
     <string name="pref__keyboard__backspace_strips_harakat__label">Haraka-first backspace</string>
     <string name="pref__keyboard__backspace_strips_harakat__summary">The delete key peels the diacritic (fatha, damma, shadda…) off the letter first instead of deleting the letter with all its marks at once</string>
     <string name="pref__keyboard__split_mode__label">Split keyboard</string>

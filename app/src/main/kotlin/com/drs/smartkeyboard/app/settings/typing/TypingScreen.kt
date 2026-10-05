@@ -73,6 +73,15 @@ fun TypingScreen() = DrsScreen {
                 summary = stringRes(R.string.pref__suggestion__autocorrect_enabled__summary),
                 enabledIf = { prefs.suggestion.enabled isEqualTo true },
             )
+            // DRS v2.7.0: HeliBoard-heritage multilingual typing. Lives
+            // under the same master switch as autocorrect — no suggestions,
+            // no multilingual merge.
+            SwitchPreference(
+                prefs.suggestion.multilingualTyping,
+                title = stringRes(R.string.pref__suggestion__multilingual_typing__label),
+                summary = stringRes(R.string.pref__suggestion__multilingual_typing__summary),
+                enabledIf = { prefs.suggestion.enabled isEqualTo true },
+            )
             SwitchPreference(
                 prefs.suggestion.nextWordEnabled,
                 title = stringRes(R.string.pref__suggestion__next_word_enabled__label),
@@ -160,6 +169,12 @@ fun TypingScreen() = DrsScreen {
                 prefs.correction.doubleSpacePeriod,
                 title = stringRes(R.string.pref__correction__double_space_period__label),
                 summary = stringRes(R.string.pref__correction__double_space_period__summary),
+            )
+            // DRS v2.7.0: Gboard/AOSP-heritage smart punctuation (-- → —).
+            SwitchPreference(
+                prefs.correction.smartPunctuation,
+                title = stringRes(R.string.pref__correction__smart_punctuation__label),
+                summary = stringRes(R.string.pref__correction__smart_punctuation__summary),
             )
         }
 

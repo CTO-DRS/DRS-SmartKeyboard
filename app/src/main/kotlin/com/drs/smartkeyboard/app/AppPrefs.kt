@@ -284,6 +284,16 @@ abstract class DrsPreferenceModel : PreferenceModel() {
             key = "correction__double_space_period",
             default = true,
         )
+        // DRS v2.7.0: Gboard/AOSP-style smart punctuation — a whitespace-
+        // (or text-start) preceded double hyphen is rewritten to a real em
+        // dash when the following space is committed. Deterministic,
+        // local-only, and disabled inside the same non-TEXT/numeric guards
+        // that protect double-space-period. Triple-dash runs are left alone:
+        // the user drawing a line meant a line.
+        val smartPunctuation = boolean(
+            key = "correction__smart_punctuation",
+            default = true,
+        )
         val rememberCapsLockState = boolean(
             key = "correction__remember_caps_lock_state",
             default = false,
@@ -654,6 +664,14 @@ abstract class DrsPreferenceModel : PreferenceModel() {
         )
         val numberRow = boolean(
             key = "keyboard__number_row",
+            default = false,
+        )
+        // DRS v2.7.0: AOSP/OpenBoard-heritage accessibility affordance —
+        // while the IME owns key events, VOLUME_UP/DOWN move the cursor a
+        // line up/down instead of changing media volume. Default OFF: the
+        // volume keys keep their system meaning unless the user opts in.
+        val volumeKeyCursor = boolean(
+            key = "keyboard__volume_key_cursor",
             default = false,
         )
         val hintedNumberRowEnabled = boolean(
@@ -1033,6 +1051,15 @@ abstract class DrsPreferenceModel : PreferenceModel() {
         val autocorrectEnabled = boolean(
             key = "suggestion__autocorrect_enabled",
             default = true,
+        )
+        // DRS v2.7.0: HeliBoard-style multilingual typing — when enabled,
+        // the dictionaries of up to two OTHER enabled subtypes that share
+        // the current subtype's suggestion provider also feed the
+        // candidate row (round-robin interleaved, deduped, capped).
+        // Everything stays on-device; nothing leaves the keyboard.
+        val multilingualTyping = boolean(
+            key = "suggestion__multilingual_typing",
+            default = false,
         )
         val incognitoMode = enum(
             key = "suggestion__incognito_mode",

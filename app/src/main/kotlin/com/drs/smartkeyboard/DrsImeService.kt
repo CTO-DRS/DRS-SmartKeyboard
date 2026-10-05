@@ -620,7 +620,14 @@ class DrsImeService : LifecycleInputMethodService() {
         val handled = runCatching { keyboardManager.onHardwareKeyDown(keyCode, event) }
             .onFailure { flogError(LogTopic.KEY_EVENTS) { "onHardwareKeyDown failed: $it" } }
             .getOrDefault(false)
-        return handled || super.onKeyDown(keyCode, event)
+        if (handled) return true
+        // DRS v2.7.0: volume-key cursor control (opt-in). Only reached when
+        // the hardware path declined the key, so physical-keyboard behavior
+        // is never shadowed. Same shielded-degrade contract as above.
+        val volumeHandled = runCatching { keyboardManager.onVolumeKeyCursor(keyCode) }
+            .onFailure { flogError(LogTopic.KEY_EVENTS) { "volume-key cursor failed: $it" } }
+            .getOrDefault(false)
+        return volumeHandled || super.onKeyDown(keyCode, event)
     }
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
@@ -630,6 +637,12 @@ class DrsImeService : LifecycleInputMethodService() {
         val handled = runCatching { keyboardManager.onHardwareKeyUp(keyCode, event) }
             .onFailure { flogError(LogTopic.KEY_EVENTS) { "onHardwareKeyUp failed: $it" } }
             .getOrDefault(false)
-        return handled || super.onKeyUp(keyCode, event)
+        if (handled) return true
+        // DRS v2.7.0: a consumed volume DOWN must pair with a consumed UP,
+        // otherwise the system half-handles the chord (stray click/beep).
+        val volumeHandled = runCatching { keyboardManager.onVolumeKeyCursor(keyCode) }
+            .onFailure { flogError(LogTopic.KEY_EVENTS) { "volume-key cursor failed: $it" } }
+            .getOrDefault(false)
+        return volumeHandled || super.onKeyUp(keyCode, event)
     }
 }

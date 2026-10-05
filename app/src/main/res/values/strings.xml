@@ -437,6 +437,8 @@
     <string name="settings__keyboard__title" comment="Title of Keyboard preferences screen">لوحة المفاتيح</string>
     <string name="pref__keyboard__number_row__label" comment="Preference title">صف الأعداد</string>
     <string name="pref__keyboard__number_row__summary" comment="Preference summary">إظهار صف الأعداد فوق تخطيط الحروف</string>
+    <string name="pref__keyboard__volume_key_cursor__label" comment="Preference title">مفاتيح الصوت تحرّك المؤشر</string>
+    <string name="pref__keyboard__volume_key_cursor__summary" comment="Preference summary">أثناء ظهور اللوحة: زر رفع الصوت يحرّك المؤشر سطرًا لأعلى وزر خفض الصوت سطرًا لأسفل بدل تغيير مستوى الصوت</string>
     <string name="pref__keyboard__hinted_number_row_mode__label" comment="Preference title">تلميحات صف الأعداد</string>
     <string name="pref__keyboard__hinted_symbols_mode__label" comment="Preference title">تلميحات للرموز</string>
     <string name="pref__keyboard__utility_key_enabled__label" comment="Preference title">عرض مفتاح الادوات</string>
@@ -488,6 +490,8 @@
     <string name="pref__correction__remember_caps_lock_state__summary" comment="Preference summary">يضل وضع الأحرف الكبيرة قيد التشغيل عند الإنتقال إلى حقل نصي آخر</string>
     <string name="pref__correction__double_space_period__label" comment="Preference title">نقطة المسافة المزدوجة</string>
     <string name="pref__correction__double_space_period__summary" comment="Preference summary">الضغط مرتين على مفتاح المسافة يضيف نقطة متبوعة بمسافة</string>
+    <string name="pref__correction__smart_punctuation__label" comment="Preference title">علامات الترقيم الذكية</string>
+    <string name="pref__correction__smart_punctuation__summary" comment="Preference summary">كتابة شرطتين (--) بعد مسافة ثم ضغط المسافة تعيد كتابتهما شرطةً طويلة حقيقية (—) — وثلاث شرطات أو شرطتان ملتصقتان بكلمة لا يُمسّهما شيء</string>
     <string name="pref__spelling__title" comment="Preference group title">التدقيق الإملائي</string>
     <string name="pref__spelling__active_spellchecker__summary_disabled">معطل على مستوى النظام. لن تظهر أي خطوط حمراء في الحقول النصية للكلمات غير الصحيحة. انقر للتغيير.</string>
     <string name="pref__spelling__active_spellchecker__summary_none">لم يتم تعيين خدمة المدقق الإملائي للنص المضمّن. انقر للتغيير.</string>
@@ -2576,6 +2580,8 @@
     <string name="clipboard__a11y_pinned_badge">مثبت</string>
     <string name="pref__suggestion__autocorrect_enabled__label">التصحيح التلقائي</string>
     <string name="pref__suggestion__autocorrect_enabled__summary">يُصلح الخطأ المطبعي تلقائيًا عند المسافة عندما يطابق تصحيح شائع قريب من كلمةٍ لا تبدأ بها قواميس الحروف — والمسح للخلف يتراجع عن التصحيح</string>
+    <string name="pref__suggestion__multilingual_typing__label">اقتراحات متعددة اللغات</string>
+    <string name="pref__suggestion__multilingual_typing__summary">تُظهر اقتراحات لغاتك الأخرى المفعّلة إلى جانب لغتك الحالية أثناء الكتابة المختلطة — كل شيء على الجهاز ولا شيء يخرج من لوحة المفاتيح</string>
     <string name="pref__keyboard__backspace_strips_harakat__label">حذف الحركة أولًا</string>
     <string name="pref__keyboard__backspace_strips_harakat__summary">يمسح مفتاح الحذف الحركة (الفتحة والضمة والشدة…) قبل الحرف بدل حذف الحرف وحركاته معًا</string>
     <string name="pref__keyboard__split_mode__label">لوحة المفاتيح المقسومة</string>

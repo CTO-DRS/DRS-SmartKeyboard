@@ -46,6 +46,7 @@ import com.drs.smartkeyboard.ime.input.cycleModifierLatch
 import com.drs.smartkeyboard.ime.input.fnFunctionKeyCodeOf
 import com.drs.smartkeyboard.ime.input.fnSurvivesKey
 import com.drs.smartkeyboard.ime.nlp.ClipboardSuggestionCandidate
+import com.drs.smartkeyboard.ime.nlp.DrsSmartPunctuation
 import com.drs.smartkeyboard.ime.nlp.PunctuationRule
 import com.drs.smartkeyboard.ime.nlp.SuggestionCandidate
 import com.drs.smartkeyboard.ime.popup.PopupMappingComponent
@@ -509,6 +510,26 @@ class KeyboardManager(context: Context) : InputKeyEventReceiver {
         }
     }
 
+    /**
+     * DRS v2.7.0: volume-key cursor control (AOSP/OpenBoard heritage).
+     * When the user opted in, VOLUME_UP/DOWN move the cursor one line
+     * up/down through the same synthetic-dispatch path the board's swipe
+     * language uses — same key data, same feedback pipeline, zero new
+     * dialect. Returns false (event untouched) when the pref is off or
+     * the key is not one of the two volume keys.
+     */
+    fun onVolumeKeyCursor(keyCode: Int): Boolean {
+        if (!prefs.keyboard.volumeKeyCursor.get()) return false
+        val action = DrsVolumeCursor.actionFor(keyCode) ?: return false
+        val keyData = when (action) {
+            SwipeAction.MOVE_CURSOR_UP -> TextKeyData.ARROW_UP
+            SwipeAction.MOVE_CURSOR_DOWN -> TextKeyData.ARROW_DOWN
+            else -> return false
+        }
+        inputEventDispatcher.sendDownUp(keyData)
+        return true
+    }
+
     fun commitCandidate(candidate: SuggestionCandidate) {
         // DRS v1.6.0: every committed suggestion-row entry — tapped
         // candidates AND auto-committed completions — flows through this
@@ -891,6 +912,26 @@ class KeyboardManager(context: Context) : InputKeyEventReceiver {
                     editorInstance.commitText(". ")
                     return
                 }
+            }
+        }
+        // DRS v2.7.0: smart punctuation — a whitespace- (or text-start)
+        // preceded double hyphen is rewritten to a real em dash as the
+        // following space commits. Same TEXT/CHARACTERS guards as the
+        // double-space affordance above; runs of three or more dashes and
+        // dashes glued inside a token are left untouched (see
+        // DrsSmartPunctuation). The space itself still commits below, so
+        // "word --␣" becomes "word —␣" in one keystroke.
+        if (prefs.correction.smartPunctuation.get() &&
+            activeState.keyboardMode == KeyboardMode.CHARACTERS &&
+            editorInstance.activeInfo.inputAttributes.type == InputAttributes.Type.TEXT
+        ) {
+            // Three chars, not two: the matcher must see the character
+            // BEFORE the dashes to reject "a--" (glued) and "---" (a drawn
+            // line). A shorter return simply means the text starts there.
+            val before = editorInstance.run { activeContent.getTextBeforeCursor(3) }
+            if (DrsSmartPunctuation.findEmDashTail(before) == DrsSmartPunctuation.MATCH_LENGTH) {
+                editorInstance.deleteBackwards(OperationUnit.CHARACTERS)
+                editorInstance.commitText(DrsSmartPunctuation.EM_DASH)
             }
         }
         // DRS v1.28.0 audit fix (Low, dedup): shared tail, see

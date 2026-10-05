@@ -79,6 +79,13 @@ fun KeyboardScreen() = DrsScreen {
             title = stringRes(R.string.pref__keyboard__capitalization_behavior__label),
             entries = enumDisplayEntriesOf(CapitalizationBehavior::class),
         )
+        // DRS v2.7.0: volume-key cursor control (AOSP/OpenBoard heritage,
+        // opt-in — default OFF so the volume keys keep their system meaning).
+        SwitchPreference(
+            prefs.keyboard.volumeKeyCursor,
+            title = stringRes(R.string.pref__keyboard__volume_key_cursor__label),
+            summary = stringRes(R.string.pref__keyboard__volume_key_cursor__summary),
+        )
         }
 
         PreferenceGroup(title = stringRes(R.string.pref__keyboard__group_look__label)) {
