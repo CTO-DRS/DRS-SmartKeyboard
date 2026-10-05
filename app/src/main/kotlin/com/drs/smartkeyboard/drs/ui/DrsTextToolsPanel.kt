@@ -7,10 +7,14 @@ package com.drs.smartkeyboard.drs.ui
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -86,6 +90,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.WrapText
 import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -96,20 +101,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.drs.smartkeyboard.R
 import com.drs.smartkeyboard.app.DrsPreferenceStore
 import com.drs.smartkeyboard.drs.DrsAdaptationEngine
+import com.drs.smartkeyboard.drs.DrsMotion
+import com.drs.smartkeyboard.drs.DrsPanelGates
 import com.drs.smartkeyboard.drs.DrsStore
 import com.drs.smartkeyboard.drs.DrsSystems
 import com.drs.smartkeyboard.drs.DrsTextTool
 import com.drs.smartkeyboard.drs.DrsTileContextAdvisor
 import com.drs.smartkeyboard.drs.DrsTileFavorites
 import com.drs.smartkeyboard.drs.PanelUsageTracker
+import com.drs.smartkeyboard.drs.rememberDrsMotionEnabled
 import com.drs.smartkeyboard.editorInstance
 import com.drs.smartkeyboard.ime.ImeUiMode
+import com.drs.smartkeyboard.ime.input.LocalInputFeedbackController
 import com.drs.smartkeyboard.ime.keyboard.DrsImeSizing
 import com.drs.smartkeyboard.ime.text.key.KeyCode
 import com.drs.smartkeyboard.ime.text.key.KeyType
@@ -120,7 +134,6 @@ import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 import org.drs.jetpref.datastore.model.collectAsState
-import org.drs.lib.compose.rippleClickable
 import org.drs.lib.compose.stringRes
 import org.drs.lib.snygg.ui.SnyggBox
 import org.drs.lib.snygg.ui.SnyggColumn
@@ -961,6 +974,19 @@ fun DrsTextToolsPanel(modifier: Modifier = Modifier) {
     val editorInstance by context.editorInstance()
     val prefs by DrsPreferenceStore
 
+    // DRS v2.3.0 «اللوحات الحيّة الصادقة»: the panel joins the two
+    // contracts the strips above it have lived by since v2.2.1/v2.2.2 —
+    // feedback at the interaction site (the dispatcher owns NO feedback,
+    // so every tile used to be silent) and the motion-respect gate (the
+    // system «remove animations» switch snaps every pulse/wave below).
+    val feedback = LocalInputFeedbackController.current
+    val motionEnabled = rememberDrsMotionEnabled()
+    // DRS v2.3.0: the LIVE smartbar evaluator — the same single source of
+    // truth QuickActionButton and the unified strip ask. The context-gated
+    // clipboard tools (copy/cut/paste/select-all) dim and refuse honestly
+    // when the editor context says their action would be a silent no-op.
+    val evaluator by keyboardManager.activeSmartbarEvaluator.collectAsState()
+
     val recentsEnabled by prefs.panels.panelRecents.collectAsState()
     val contextEnabled by prefs.panels.textToolsSmartContext.collectAsState()
 
@@ -983,6 +1009,17 @@ fun DrsTextToolsPanel(modifier: Modifier = Modifier) {
         }
         commitStamp++
     }
+
+    // DRS v2.3.0 «البلاطة الصادقة سياقيًا»: the panel's single gate
+    // question. Codes outside DrsPanelGates' closed set are deterministically
+    // always-applicable (text transforms have no master); the gated four ask
+    // the same evaluateEnabled the strip's slots ask. UNDO/REDO stay
+    // ungated by design — the engine tracks no undo stack, so a gate there
+    // would be the lie, not the button.
+    fun isEnabled(code: Int): Boolean =
+        !DrsPanelGates.isContextGated(code) || evaluator.evaluateEnabled(
+            TextKeyData(type = KeyType.FUNCTION, code = code, label = "drs_text_tool"),
+        )
 
     fun toggleFavorite(code: Int) {
         when (val result = DrsTileFavorites.toggled(favorites, code)) {
@@ -1031,7 +1068,13 @@ fun DrsTextToolsPanel(modifier: Modifier = Modifier) {
                 .aspectRatio(1f)
             SnyggIconButton(
                 elementName = DrsImeUi.ClipboardHeaderButton.elementName,
-                onClick = { keyboardManager.activeState.imeUiMode = ImeUiMode.TEXT },
+                onClick = {
+                    // DRS v2.3.0: the header buttons speak too — the close
+                    // button and the undo/redo pair used to be the panel's
+                    // only silent controls.
+                    feedback.keyPress()
+                    keyboardManager.activeState.imeUiMode = ImeUiMode.TEXT
+                },
                 modifier = sizeModifier,
             ) {
                 SnyggIcon(
@@ -1048,7 +1091,10 @@ fun DrsTextToolsPanel(modifier: Modifier = Modifier) {
             )
             SnyggIconButton(
                 elementName = DrsImeUi.ClipboardHeaderButton.elementName,
-                onClick = { dispatch(KeyCode.UNDO) },
+                onClick = {
+                    feedback.keyPress()
+                    dispatch(KeyCode.UNDO)
+                },
                 modifier = sizeModifier,
             ) {
                 SnyggIcon(
@@ -1059,7 +1105,10 @@ fun DrsTextToolsPanel(modifier: Modifier = Modifier) {
             }
             SnyggIconButton(
                 elementName = DrsImeUi.ClipboardHeaderButton.elementName,
-                onClick = { dispatch(KeyCode.REDO) },
+                onClick = {
+                    feedback.keyPress()
+                    dispatch(KeyCode.REDO)
+                },
                 modifier = sizeModifier,
             ) {
                 SnyggIcon(
@@ -1129,12 +1178,16 @@ fun DrsTextToolsPanel(modifier: Modifier = Modifier) {
                                     .padding(horizontal = 8.dp),
                                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                             ) {
-                                contextPicks.forEach { tool ->
+                                contextPicks.forEachIndexed { pickIndex, tool ->
                                     FilterChip(
                                         label = stringRes(textToolTitleRes(tool)),
                                         selected = false,
                                         accent = accent,
                                         onClick = { dispatch(tool.code) },
+                                        // DRS v2.3.0: the picks read as one
+                                        // capped wave per new advisory set.
+                                        entranceIndex = pickIndex,
+                                        entranceKey = contextPicks,
                                     )
                                 }
                             }
@@ -1142,26 +1195,33 @@ fun DrsTextToolsPanel(modifier: Modifier = Modifier) {
                         // 2) المفضلة — rich rows leading the browse view.
                         if (favorites.isNotEmpty()) {
                             SectionSubheader(R.string.drs__text_tools__section_favorites)
-                            favorites.mapNotNull { ITEMS_BY_CODE[it] }.forEach { item ->
+                            favorites.mapNotNull { ITEMS_BY_CODE[it] }.forEachIndexed { favIndex, item ->
                                 ToolRow(
                                     item = item,
                                     isFavorite = true,
                                     onApply = ::dispatch,
                                     onToggleFavorite = ::toggleFavorite,
+                                    actionEnabled = isEnabled(item.code),
+                                    entranceIndex = favIndex,
+                                    entranceKey = favorites,
                                 )
                             }
                         }
                         // 3) كل الأقسام — the compact two-column grid.
                         PANEL_SECTIONS.forEach { section ->
                             SectionSubheader(section.titleRes)
-                            section.items.chunked(2).forEach { rowItems ->
+                            val indexedItems = section.items.mapIndexed { i, item -> i to item }
+                            indexedItems.chunked(2).forEach { rowItems ->
                                 SnyggRow(modifier = Modifier.fillMaxWidth()) {
-                                    rowItems.forEach { item ->
+                                    rowItems.forEach { (itemIndex, item) ->
                                         ToolTile(
                                             item = item,
                                             isFavorite = item.code in favoriteSet,
                                             onApply = ::dispatch,
                                             onToggleFavorite = ::toggleFavorite,
+                                            actionEnabled = isEnabled(item.code),
+                                            entranceIndex = itemIndex,
+                                            entranceKey = filter,
                                             modifier = Modifier.weight(1f),
                                         )
                                     }
@@ -1176,12 +1236,15 @@ fun DrsTextToolsPanel(modifier: Modifier = Modifier) {
                         if (favorites.isEmpty()) {
                             HintText(stringRes(R.string.drs__text_tools__favorites_hint))
                         } else {
-                            favorites.mapNotNull { ITEMS_BY_CODE[it] }.forEach { item ->
+                            favorites.mapNotNull { ITEMS_BY_CODE[it] }.forEachIndexed { favIndex, item ->
                                 ToolRow(
                                     item = item,
                                     isFavorite = true,
                                     onApply = ::dispatch,
                                     onToggleFavorite = ::toggleFavorite,
+                                    actionEnabled = isEnabled(item.code),
+                                    entranceIndex = favIndex,
+                                    entranceKey = favorites,
                                 )
                             }
                         }
@@ -1200,12 +1263,15 @@ fun DrsTextToolsPanel(modifier: Modifier = Modifier) {
                         if (top.isEmpty()) {
                             HintText(stringRes(R.string.drs__text_tools__recents_hint))
                         } else {
-                            top.mapNotNull { ITEMS_BY_CODE[it] }.forEach { item ->
+                            top.mapNotNull { ITEMS_BY_CODE[it] }.forEachIndexed { topIndex, item ->
                                 ToolRow(
                                     item = item,
                                     isFavorite = item.code in favoriteSet,
                                     onApply = ::dispatch,
                                     onToggleFavorite = ::toggleFavorite,
+                                    actionEnabled = isEnabled(item.code),
+                                    entranceIndex = topIndex,
+                                    entranceKey = recents,
                                 )
                             }
                         }
@@ -1213,12 +1279,15 @@ fun DrsTextToolsPanel(modifier: Modifier = Modifier) {
                     is TileFilter.Section -> {
                         val section = PANEL_SECTIONS[current.index]
                         SectionSubheader(section.titleRes)
-                        section.items.forEach { item ->
+                        section.items.forEachIndexed { itemIndex, item ->
                             ToolRow(
                                 item = item,
                                 isFavorite = item.code in favoriteSet,
                                 onApply = ::dispatch,
                                 onToggleFavorite = ::toggleFavorite,
+                                actionEnabled = isEnabled(item.code),
+                                entranceIndex = itemIndex,
+                                entranceKey = current,
                             )
                         }
                     }
@@ -1253,20 +1322,64 @@ private fun HintText(text: String) {
  * One chip of the tiles' filter bar — the shared accent-pill pattern the
  * panel switcher chips established (v1.16.0); a tap filters, the selected
  * chip carries the stronger accent wash.
+ *
+ * DRS v2.3.0 «اللوحات الحيّة»: the chip lives — the same press pulse the
+ * strip slots and the board keys use (draw-only graphicsLayer), feedback
+ * at the interaction site, and an optional entrance-wave slot so dynamic
+ * chip rows (the contextual picks) read as one capped wave, never a
+ * pop-in. Static callers (the filter bar) keep their old instant
+ * appearance via the null-key default.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun FilterChip(
     label: String,
     selected: Boolean,
     accent: Color,
     onClick: () -> Unit,
+    entranceIndex: Int = -1,
+    entranceKey: Any? = null,
 ) {
+    val feedback = LocalInputFeedbackController.current
+    val motionEnabled = rememberDrsMotionEnabled()
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val pulse by animateFloatAsState(
+        targetValue = DrsMotion.scaleFor(pressed),
+        animationSpec = tween(durationMillis = DrsMotion.durationOrSnap(DrsMotion.durationFor(pressed), motionEnabled)),
+        label = "drsToolsChipPulse",
+    )
+    // The entrance wave: replayed only when [entranceKey] changes identity
+    // (the CandidatesRow doctrine — same signature keeps the row static).
+    // Static callers pass no key and start fully entered.
+    var entered by remember(entranceKey) { mutableStateOf(entranceKey == null) }
+    val entrance by animateFloatAsState(
+        targetValue = if (entered) 1f else 0f,
+        animationSpec = tween(
+            durationMillis = DrsMotion.durationOrSnap(DrsMotion.ENTRANCE_DURATION_MS, motionEnabled),
+            delayMillis = DrsMotion.staggerOrSnap(entranceIndex.coerceAtLeast(0), motionEnabled),
+        ),
+        label = "drsToolsChipEntrance",
+    )
+    LaunchedEffect(entranceKey) { entered = true }
     SnyggText(
         elementName = DrsImeUi.ClipboardSubheader.elementName,
         modifier = Modifier
+            .graphicsLayer {
+                scaleX = pulse
+                scaleY = pulse
+                alpha = minOf(entrance, 1f)
+            }
             .clip(CircleShape)
             .background(if (selected) accent.copy(alpha = 0.22f) else accent.copy(alpha = 0.06f))
-            .rippleClickable { onClick() }
+            .combinedClickable(
+                interactionSource = interaction,
+                indication = null,
+                onClick = {
+                    feedback.keyPress()
+                    onClick()
+                },
+            )
             .padding(horizontal = 12.dp, vertical = 6.dp),
         text = label,
     )
@@ -1275,6 +1388,16 @@ private fun FilterChip(
 /**
  * The compact two-column grid tile: the icon plus a one-line label. A tap
  * dispatches the tool; a LONG-PRESS pins or unpins it (the favorites).
+ *
+ * DRS v2.3.0 «البلاطة الحيّة الصادقة»: the tile joins the strips' two
+ * contracts. It lives (press pulse + click/long-press feedback, draw-only
+ * graphicsLayer so the grid geometry never shifts) and it tells the truth
+ * (a context-gated action — paste on an empty clipboard, copy with no
+ * selection — renders dimmed at the honest alpha, announces disabled() to
+ * TalkBack, and REFUSES the tap silently: no dispatch, no fake haptic, no
+ * usage record). The long-press favorite stays alive either way —
+ * re-pinning a tool is always meaningful even when its action is not.
+ * A capped entrance wave rides the same draw layer.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -1284,15 +1407,58 @@ private fun ToolTile(
     onApply: (Int) -> Unit,
     onToggleFavorite: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    actionEnabled: Boolean = true,
+    entranceIndex: Int = 0,
+    entranceKey: Any? = null,
 ) {
+    val feedback = LocalInputFeedbackController.current
+    val motionEnabled = rememberDrsMotionEnabled()
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val pulse by animateFloatAsState(
+        targetValue = DrsMotion.scaleFor(pressed),
+        animationSpec = tween(durationMillis = DrsMotion.durationOrSnap(DrsMotion.durationFor(pressed), motionEnabled)),
+        label = "drsToolsTilePulse",
+    )
+    var entered by remember(entranceKey) { mutableStateOf(entranceKey == null) }
+    val entrance by animateFloatAsState(
+        targetValue = if (entered) 1f else 0f,
+        animationSpec = tween(
+            durationMillis = DrsMotion.durationOrSnap(DrsMotion.ENTRANCE_DURATION_MS, motionEnabled),
+            delayMillis = DrsMotion.staggerOrSnap(entranceIndex, motionEnabled),
+        ),
+        label = "drsToolsTileEntrance",
+    )
+    LaunchedEffect(entranceKey) { entered = true }
     SnyggBox(
         elementName = DrsImeUi.ClipboardItem.elementName,
         modifier = modifier
             .padding(horizontal = 3.dp, vertical = 2.dp),
-        clickAndSemanticsModifier = Modifier.combinedClickable(
-            onClick = { onApply(item.code) },
-            onLongClick = { onToggleFavorite(item.code) },
-        ),
+        clickAndSemanticsModifier = Modifier
+            .combinedClickable(
+                interactionSource = interaction,
+                indication = null,
+                onClick = {
+                    // The honest refusal — a gated, impossible action does
+                    // NOTHING here (same convention as the strip's slots).
+                    if (!actionEnabled) return@combinedClickable
+                    feedback.keyPress()
+                    onApply(item.code)
+                },
+                onLongClick = {
+                    feedback.keyLongPress()
+                    onToggleFavorite(item.code)
+                },
+            )
+            .semantics {
+                role = Role.Button
+                if (!actionEnabled) disabled()
+            }
+            .graphicsLayer {
+                scaleX = pulse
+                scaleY = pulse
+                alpha = minOf(entrance, if (actionEnabled) 1f else DrsMotion.DISABLED_SLOT_ALPHA)
+            },
     ) {
         Column(
             modifier = Modifier
@@ -1343,16 +1509,57 @@ private fun ToolRow(
     isFavorite: Boolean,
     onApply: (Int) -> Unit,
     onToggleFavorite: (Int) -> Unit,
+    actionEnabled: Boolean = true,
+    entranceIndex: Int = 0,
+    entranceKey: Any? = null,
 ) {
+    val feedback = LocalInputFeedbackController.current
+    val motionEnabled = rememberDrsMotionEnabled()
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val pulse by animateFloatAsState(
+        targetValue = DrsMotion.scaleFor(pressed),
+        animationSpec = tween(durationMillis = DrsMotion.durationOrSnap(DrsMotion.durationFor(pressed), motionEnabled)),
+        label = "drsToolsRowPulse",
+    )
+    var entered by remember(entranceKey) { mutableStateOf(entranceKey == null) }
+    val entrance by animateFloatAsState(
+        targetValue = if (entered) 1f else 0f,
+        animationSpec = tween(
+            durationMillis = DrsMotion.durationOrSnap(DrsMotion.ENTRANCE_DURATION_MS, motionEnabled),
+            delayMillis = DrsMotion.staggerOrSnap(entranceIndex, motionEnabled),
+        ),
+        label = "drsToolsRowEntrance",
+    )
+    LaunchedEffect(entranceKey) { entered = true }
     SnyggBox(
         elementName = DrsImeUi.ClipboardItem.elementName,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 2.dp),
-        clickAndSemanticsModifier = Modifier.combinedClickable(
-            onClick = { onApply(item.code) },
-            onLongClick = { onToggleFavorite(item.code) },
-        ),
+        clickAndSemanticsModifier = Modifier
+            .combinedClickable(
+                interactionSource = interaction,
+                indication = null,
+                onClick = {
+                    if (!actionEnabled) return@combinedClickable
+                    feedback.keyPress()
+                    onApply(item.code)
+                },
+                onLongClick = {
+                    feedback.keyLongPress()
+                    onToggleFavorite(item.code)
+                },
+            )
+            .semantics {
+                role = Role.Button
+                if (!actionEnabled) disabled()
+            }
+            .graphicsLayer {
+                scaleX = pulse
+                scaleY = pulse
+                alpha = minOf(entrance, if (actionEnabled) 1f else DrsMotion.DISABLED_SLOT_ALPHA)
+            },
     ) {
         SnyggRow(
             modifier = Modifier

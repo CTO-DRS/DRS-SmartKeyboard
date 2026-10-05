@@ -4,6 +4,8 @@
 
 package com.drs.smartkeyboard.ime.smartbar.quickaction
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -20,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
@@ -28,6 +31,8 @@ import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import org.drs.compose.tooltip.PlainTooltip
+import com.drs.smartkeyboard.drs.DrsMotion
+import com.drs.smartkeyboard.drs.rememberDrsMotionEnabled
 import com.drs.smartkeyboard.ime.input.LocalInputFeedbackController
 import com.drs.smartkeyboard.ime.keyboard.ComputingEvaluator
 import com.drs.smartkeyboard.ime.keyboard.computeImageVector
@@ -56,6 +61,16 @@ fun QuickActionButton(
     val inputFeedbackController = LocalInputFeedbackController.current
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+    // DRS v2.3.0 «اللوحات الحيّة»: the quick actions join the one motion
+    // language — the same press pulse the strips and the board keys use
+    // (draw-only graphicsLayer), and it snaps under the system
+    // «remove animations» switch like every other DrsMotion contract.
+    val motionEnabled = rememberDrsMotionEnabled()
+    val pressPulse by animateFloatAsState(
+        targetValue = DrsMotion.scaleFor(isPressed),
+        animationSpec = tween(durationMillis = DrsMotion.durationOrSnap(DrsMotion.durationFor(isPressed), motionEnabled)),
+        label = "drsQuickActionPulse",
+    )
     val isEnabled = type == QuickActionBarType.EDITOR_TILE || evaluator.evaluateEnabled(action.keyData())
     val elementName = when (type) {
         QuickActionBarType.INTERACTIVE_BUTTON -> DrsImeUi.SmartbarActionKey
@@ -96,6 +111,10 @@ fun QuickActionButton(
             modifier = modifier,
             clickAndSemanticsModifier = Modifier
                 .aspectRatio(1f)
+                .graphicsLayer {
+                    scaleX = pressPulse
+                    scaleY = pressPulse
+                }
                 .indication(interactionSource, LocalIndication.current)
                 .semantics {
                     role = Role.Button

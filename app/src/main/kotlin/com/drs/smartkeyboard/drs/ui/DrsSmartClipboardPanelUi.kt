@@ -231,7 +231,7 @@ fun DrsSmartClipboardPanel(modifier: Modifier = Modifier) {
                         .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    classOrder.forEach { candidate ->
+                    classOrder.forEachIndexed { classIndex, candidate ->
                         AdviceChip(
                             label = stringRes(classLabel(candidate)),
                             accent = accent,
@@ -240,6 +240,10 @@ fun DrsSmartClipboardPanel(modifier: Modifier = Modifier) {
                                 feedback.keyPress()
                                 selected = candidate
                             },
+                            // DRS v2.3.0: the class bar reads as one capped
+                            // wave whenever the usage-ordered set changes.
+                            entranceIndex = classIndex,
+                            entranceKey = classOrder,
                         )
                     }
                 }
@@ -272,7 +276,7 @@ fun DrsSmartClipboardPanel(modifier: Modifier = Modifier) {
                                 .verticalScroll(rememberScrollState())
                                 .padding(horizontal = windowSpec.keyMarginH),
                         ) {
-                            variants.forEach { variant ->
+                            variants.forEachIndexed { variantIndex, variant ->
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -287,6 +291,10 @@ fun DrsSmartClipboardPanel(modifier: Modifier = Modifier) {
                                             feedback.keyPress()
                                             commitText(variant)
                                         },
+                                        // DRS v2.3.0: one capped wave per new
+                                        // variants set — never a pop-in.
+                                        entranceIndex = variantIndex,
+                                        entranceKey = variants,
                                     )
                                 }
                             }

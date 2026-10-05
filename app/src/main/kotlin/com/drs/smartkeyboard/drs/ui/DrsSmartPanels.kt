@@ -5,6 +5,8 @@
 package com.drs.smartkeyboard.drs.ui
 
 import android.content.Context
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -47,6 +49,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -61,6 +64,7 @@ import com.drs.smartkeyboard.drs.DrsHarakatAdvisor
 import com.drs.smartkeyboard.drs.DrsHarakatWordOps
 import com.drs.smartkeyboard.drs.DrsKeyboardHarakat
 import com.drs.smartkeyboard.drs.DrsKeyboardHarakatKey
+import com.drs.smartkeyboard.drs.DrsMotion
 import com.drs.smartkeyboard.drs.DrsPanelOrder
 import com.drs.smartkeyboard.drs.DrsStore
 import com.drs.smartkeyboard.drs.DrsWordTashkeel
@@ -70,6 +74,7 @@ import com.drs.smartkeyboard.drs.PanelUsageTracker
 import com.drs.smartkeyboard.drs.DrsSystems
 import com.drs.smartkeyboard.drs.DrsRuntimeState
 import com.drs.smartkeyboard.drs.SymbolSmartSuggestor
+import com.drs.smartkeyboard.drs.rememberDrsMotionEnabled
 import com.drs.smartkeyboard.ime.ImeUiMode
 import com.drs.smartkeyboard.ime.editor.OperationUnit
 import com.drs.smartkeyboard.ime.input.LocalInputFeedbackController
@@ -86,7 +91,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
 import org.drs.jetpref.datastore.model.collectAsState
-import org.drs.lib.compose.rippleClickable
 import org.drs.lib.compose.stringRes
 import org.drs.lib.snygg.ui.SnyggBox
 import org.drs.lib.snygg.ui.SnyggColumn
@@ -177,6 +181,7 @@ object DrsArabicLettersCatalog {
  * DRS v1.2.0: shared with the fourth smart panel (لوحة الأرقام الذكية)
  * — internal so the numbers panel mounts the exact same chips row.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun PanelSwitcherChips(current: ImeUiMode, keyboardManager: com.drs.smartkeyboard.ime.keyboard.KeyboardManager, accent: androidx.compose.ui.graphics.Color) {
     val context = LocalContext.current
@@ -204,14 +209,37 @@ internal fun PanelSwitcherChips(current: ImeUiMode, keyboardManager: com.drs.sma
             .padding(horizontal = 8.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
+        // DRS v2.3.0 «اللوحات الحيّة": the switcher chips speak and pulse —
+        // they are shared by EVERY smart panel, so this one change carries
+        // the strips' motion language to all of them at once.
+        val motionEnabled = rememberDrsMotionEnabled()
+        val feedback = LocalInputFeedbackController.current
         options.forEach { (mode, labelRes) ->
             val selected = mode == current
+            val chipInteraction = remember(mode) { MutableInteractionSource() }
+            val chipPressed by chipInteraction.collectIsPressedAsState()
+            val chipPulse by animateFloatAsState(
+                targetValue = DrsMotion.scaleFor(chipPressed),
+                animationSpec = tween(durationMillis = DrsMotion.durationOrSnap(DrsMotion.durationFor(chipPressed), motionEnabled)),
+                label = "drsSwitcherChipPulse",
+            )
             SnyggText(
                 elementName = DrsImeUi.ClipboardSubheader.elementName,
                 modifier = Modifier
+                    .graphicsLayer {
+                        scaleX = chipPulse
+                        scaleY = chipPulse
+                    }
                     .clip(CircleShape)
                     .background(if (selected) accent.copy(alpha = 0.22f) else accent.copy(alpha = 0.06f))
-                    .rippleClickable { keyboardManager.activeState.imeUiMode = mode }
+                    .combinedClickable(
+                        interactionSource = chipInteraction,
+                        indication = null,
+                        onClick = {
+                            feedback.keyPress()
+                            keyboardManager.activeState.imeUiMode = mode
+                        },
+                    )
                     .padding(horizontal = 12.dp, vertical = 6.dp),
                 text = stringRes(labelRes),
             )
@@ -256,9 +284,15 @@ internal fun SmartPanelHeader(
         val sizeModifier = Modifier
             .sizeIn(maxHeight = DrsImeSizing.smartbarHeight)
             .aspectRatio(1f)
+        val headerFeedback = LocalInputFeedbackController.current
         SnyggIconButton(
             elementName = DrsImeUi.ClipboardHeaderButton.elementName,
-            onClick = { keyboardManager.activeState.imeUiMode = ImeUiMode.TEXT },
+            onClick = {
+                // DRS v2.3.0: the shared back button speaks too — every
+                // smart panel's close used to be silent.
+                headerFeedback.keyPress()
+                keyboardManager.activeState.imeUiMode = ImeUiMode.TEXT
+            },
             modifier = sizeModifier,
         ) {
             SnyggIcon(
@@ -276,19 +310,45 @@ internal fun SmartPanelHeader(
     }
 }
 
-/** One tile of the char grids: the big glyph plus its small local name. */
+/**
+ * One tile of the char grids: the big glyph plus its small local name.
+ * DRS v2.3.0 «اللوحات الحيّة": the tile pulses with the shared DrsMotion
+ * contract and speaks at the interaction site (it used to be silent).
+ */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun SmartTile(
     glyph: String,
     name: String,
     onApply: () -> Unit,
 ) {
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val motionEnabled = rememberDrsMotionEnabled()
+    val feedback = LocalInputFeedbackController.current
+    val pulse by animateFloatAsState(
+        targetValue = DrsMotion.scaleFor(pressed),
+        animationSpec = tween(durationMillis = DrsMotion.durationOrSnap(DrsMotion.durationFor(pressed), motionEnabled)),
+        label = "drsSmartTilePulse",
+    )
     SnyggBox(
         elementName = DrsImeUi.ClipboardItem.elementName,
         modifier = Modifier
             .aspectRatio(1.4f)
             .padding(2.dp),
-        clickAndSemanticsModifier = Modifier.rippleClickable { onApply() },
+        clickAndSemanticsModifier = Modifier
+            .graphicsLayer {
+                scaleX = pulse
+                scaleY = pulse
+            }
+            .combinedClickable(
+                interactionSource = interaction,
+                indication = null,
+                onClick = {
+                    feedback.keyPress()
+                    onApply()
+                },
+            ),
     ) {
         Column(
             modifier = Modifier.padding(4.dp),
@@ -614,19 +674,57 @@ private fun adviceReasonLabel(reason: DrsHarakatAdvisor.AdviceReason): Int = whe
  * One chip of the smart advice strip ([leading] chips get the accent fill).
  * DRS v1.2.0: internal — the smart numbers panel reuses it for its
  * context bar and its ready-formats strip.
+ *
+ * DRS v2.3.0 «اللوحات الحيّة»: the chip lives — the same press pulse the
+ * strips and the board keys use (draw-only graphicsLayer), feedback at the
+ * interaction site (clickable chips used to be silent), and an optional
+ * entrance-wave slot so dynamic chip rows (clipboard variants, number
+ * formats) read as one capped wave, never a pop-in. Static/label callers
+ * keep their old instant appearance via the null-key default.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun AdviceChip(
     label: String,
     accent: androidx.compose.ui.graphics.Color,
     leading: Boolean,
     onClick: (() -> Unit)? = null,
+    entranceIndex: Int = -1,
+    entranceKey: Any? = null,
 ) {
-    val modifier = if (onClick != null) {
+    val feedback = LocalInputFeedbackController.current
+    val motionEnabled = rememberDrsMotionEnabled()
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val pulse by animateFloatAsState(
+        targetValue = DrsMotion.scaleFor(pressed),
+        animationSpec = tween(durationMillis = DrsMotion.durationOrSnap(DrsMotion.durationFor(pressed), motionEnabled)),
+        label = "drsAdviceChipPulse",
+    )
+    // The entrance wave (CandidatesRow doctrine): replayed only when
+    // [entranceKey] changes identity; static callers start fully entered.
+    var entered by remember(entranceKey) { mutableStateOf(entranceKey == null) }
+    val entrance by animateFloatAsState(
+        targetValue = if (entered) 1f else 0f,
+        animationSpec = tween(
+            durationMillis = DrsMotion.durationOrSnap(DrsMotion.ENTRANCE_DURATION_MS, motionEnabled),
+            delayMillis = DrsMotion.staggerOrSnap(entranceIndex.coerceAtLeast(0), motionEnabled),
+        ),
+        label = "drsAdviceChipEntrance",
+    )
+    LaunchedEffect(entranceKey) { entered = true }
+    val baseModifier = if (onClick != null) {
         Modifier
             .clip(CircleShape)
             .background(if (leading) accent.copy(alpha = 0.20f) else accent.copy(alpha = 0.08f))
-            .rippleClickable { onClick() }
+            .combinedClickable(
+                interactionSource = interaction,
+                indication = null,
+                onClick = {
+                    feedback.keyPress()
+                    onClick()
+                },
+            )
     } else {
         Modifier
             .clip(CircleShape)
@@ -634,7 +732,13 @@ internal fun AdviceChip(
     }
     SnyggText(
         elementName = DrsImeUi.ClipboardSubheader.elementName,
-        modifier = modifier.padding(horizontal = 12.dp, vertical = 5.dp),
+        modifier = baseModifier
+            .graphicsLayer {
+                scaleX = pulse
+                scaleY = pulse
+                alpha = entrance
+            }
+            .padding(horizontal = 12.dp, vertical = 5.dp),
         text = label,
     )
 }
@@ -659,6 +763,16 @@ internal fun HarakatKeyboardKey(
 ) {
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
+    // DRS v2.3.0 «اللوحات الحيّة»: the board key pulses with the same
+    // DrsMotion contract the letters keys and the strips use — one motion
+    // language everywhere — and it respects the system «remove animations»
+    // switch (draw-only graphicsLayer, zero geometry change).
+    val motionEnabled = rememberDrsMotionEnabled()
+    val keyPulse by animateFloatAsState(
+        targetValue = DrsMotion.scaleFor(pressed),
+        animationSpec = tween(durationMillis = DrsMotion.durationOrSnap(DrsMotion.durationFor(pressed), motionEnabled)),
+        label = "drsBoardKeyPulse",
+    )
 
     // DRS v1.21.0: the hold-to-repeat key fires its first press the moment
     // the finger lands — a quick tap deletes immediately (it used to need a
@@ -695,11 +809,16 @@ internal fun HarakatKeyboardKey(
             role = Role.Button
             contentDescription = a11yDescription
         },
-        clickAndSemanticsModifier = Modifier.combinedClickable(
-            interactionSource = interaction,
-            indication = null,
-            onClick = { if (!holdRepeat) onPress() },
-        ),
+        clickAndSemanticsModifier = Modifier
+            .graphicsLayer {
+                scaleX = keyPulse
+                scaleY = keyPulse
+            }
+            .combinedClickable(
+                interactionSource = interaction,
+                indication = null,
+                onClick = { if (!holdRepeat) onPress() },
+            ),
     ) {
         when (key) {
             DrsKeyboardHarakatKey.Delete -> {

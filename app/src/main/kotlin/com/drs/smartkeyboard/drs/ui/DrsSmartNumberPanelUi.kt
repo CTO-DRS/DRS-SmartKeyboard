@@ -199,7 +199,7 @@ fun DrsSmartNumberPanel(modifier: Modifier = Modifier) {
                 .horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            contextOrder.forEach { candidate ->
+            contextOrder.forEachIndexed { contextIndex, candidate ->
                 AdviceChip(
                     label = stringRes(contextLabel(candidate)),
                     accent = accent,
@@ -208,6 +208,10 @@ fun DrsSmartNumberPanel(modifier: Modifier = Modifier) {
                         feedback.keyPress()
                         selected = candidate
                     },
+                    // DRS v2.3.0: the context bar reads as one capped wave
+                    // whenever the usage-ordered set changes.
+                    entranceIndex = contextIndex,
+                    entranceKey = contextOrder,
                 )
             }
         }
@@ -222,7 +226,7 @@ fun DrsSmartNumberPanel(modifier: Modifier = Modifier) {
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                formats.forEach { format ->
+                formats.forEachIndexed { formatIndex, format ->
                     AdviceChip(
                         label = format,
                         accent = accent,
@@ -231,6 +235,10 @@ fun DrsSmartNumberPanel(modifier: Modifier = Modifier) {
                             feedback.keyPress()
                             commitText(format)
                         },
+                        // DRS v2.3.0: one capped wave per new formats set —
+                        // never a pop-in.
+                        entranceIndex = formatIndex,
+                        entranceKey = formats,
                     )
                 }
             }
