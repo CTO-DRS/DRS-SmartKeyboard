@@ -176,6 +176,13 @@ fun TypingScreen() = DrsScreen {
                 title = stringRes(R.string.pref__correction__smart_punctuation__label),
                 summary = stringRes(R.string.pref__correction__smart_punctuation__summary),
             )
+            // DRS v2.9.0: HeliBoard/OpenBoard heritage — the first backspace
+            // right after a silent auto-correction restores the typed word.
+            SwitchPreference(
+                prefs.correction.undoAutoCorrectOnBackspace,
+                title = stringRes(R.string.pref__correction__undo_autocorrect_on_backspace__label),
+                summary = stringRes(R.string.pref__correction__undo_autocorrect_on_backspace__summary),
+            )
         }
 
         PreferenceGroup(title = stringRes(R.string.pref__spelling__title)) {

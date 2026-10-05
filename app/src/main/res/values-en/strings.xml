@@ -543,6 +543,8 @@
     <string name="pref__correction__double_space_period__summary" comment="Preference summary">Tapping twice on spacebar inserts a period followed by a space</string>
     <string name="pref__correction__smart_punctuation__label" comment="Preference title">Smart punctuation</string>
     <string name="pref__correction__smart_punctuation__summary" comment="Preference summary">Typing two hyphens (--) after a space then pressing space rewrites them into a real em dash (—) — triple dashes and dashes glued to words are left alone</string>
+    <string name="pref__correction__undo_autocorrect_on_backspace__label" comment="Preference title">Undo auto-correction</string>
+    <string name="pref__correction__undo_autocorrect_on_backspace__summary" comment="Preference summary">The first backspace right after a silent auto-correction restores the word exactly as you typed it — manual suggestion picks are never touched, and it never runs in password fields or private sessions</string>
     <string name="pref__spelling__title" comment="Preference group title">Spelling</string>
     <string name="pref__spelling__active_spellchecker__summary_disabled">Disabled system-wide. No red lines will appear in text fields for incorrect words. Tap to change.</string>
     <string name="pref__spelling__active_spellchecker__summary_none">No inline text spell checker service set. Tap to change.</string>

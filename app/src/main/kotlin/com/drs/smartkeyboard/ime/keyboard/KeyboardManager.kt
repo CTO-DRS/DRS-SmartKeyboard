@@ -46,6 +46,7 @@ import com.drs.smartkeyboard.ime.input.cycleModifierLatch
 import com.drs.smartkeyboard.ime.input.fnFunctionKeyCodeOf
 import com.drs.smartkeyboard.ime.input.fnSurvivesKey
 import com.drs.smartkeyboard.ime.nlp.ClipboardSuggestionCandidate
+import com.drs.smartkeyboard.ime.nlp.DrsCorrectionRevert
 import com.drs.smartkeyboard.ime.nlp.DrsSmartPunctuation
 import com.drs.smartkeyboard.ime.nlp.PunctuationRule
 import com.drs.smartkeyboard.ime.nlp.SuggestionCandidate
@@ -253,6 +254,12 @@ class KeyboardManager(context: Context) : InputKeyEventReceiver {
     // the annotation documents the cross-branch visibility contract.
     @Volatile
     private var isSyntheticSwipeShiftDispatch = false
+
+    // DRS v2.9.0: the armed «honest revert» opportunity — an auto-committed
+    // correction whose first backspace restores the typed word. One-shot,
+    // self-verifying against the editor text at fire time (DrsCorrectionRevert),
+    // and disarmed by every other key-up so it can never reach unrelated text.
+    private var correctionRevertPending: DrsCorrectionRevert.Pending? = null
 
     private val activeEvaluatorGuard = Mutex(locked = false)
     private var activeEvaluatorVersion = AtomicInteger(0)
@@ -530,11 +537,19 @@ class KeyboardManager(context: Context) : InputKeyEventReceiver {
         return true
     }
 
-    fun commitCandidate(candidate: SuggestionCandidate) {
+    fun commitCandidate(candidate: SuggestionCandidate, isAutoCommit: Boolean = false) {
         // DRS v1.6.0: every committed suggestion-row entry — tapped
         // candidates AND auto-committed completions — flows through this
         // single path, so this is the one real accept counter.
         DrsAdaptationEngine.recordSuggestionAccept()
+        // DRS v2.9.0: a manual pick from the suggestion row is a deliberate
+        // choice — it is never reverted, so it disarms any pending
+        // auto-commit revert. Auto-commits (isAutoCommit = true) arm at
+        // their own call sites, where the typed word is still observable
+        // before the silent rewrite erases it.
+        if (!isAutoCommit) {
+            correctionRevertPending = null
+        }
         scope.launch {
             candidate.sourceProvider?.notifySuggestionAccepted(subtypeManager.activeSubtype, candidate)
         }
@@ -691,8 +706,32 @@ class KeyboardManager(context: Context) : InputKeyEventReceiver {
      * Handles a [KeyCode.DELETE] event.
      */
     private fun handleBackwardDelete(unit: OperationUnit) {
+        // DRS v2.9.0: the honest revert is one-shot — the DELETE key consumes
+        // the armed opportunity on every path (applied, refused, redirected).
+        val revertPending = correctionRevertPending
+        correctionRevertPending = null
         if (inputEventDispatcher.isPressed(KeyCode.SHIFT)) {
             return handleForwardDelete(unit)
+        }
+        if (revertPending != null && unit == OperationUnit.CHARACTERS &&
+            prefs.correction.undoAutoCorrectOnBackspace.get()
+        ) {
+            val content = editorInstance.activeContent
+            val selection = content.selection
+            if (!selection.isSelectionMode) {
+                // Self-verification before any rewrite: the editor text must
+                // still end with exactly the committed word (+ bounded
+                // non-word tail). A stale arm never reaches unrelated text.
+                val plan = DrsCorrectionRevert.plan(revertPending, content.textBeforeSelection.toString())
+                if (plan != null) {
+                    editorInstance.setSelection(plan.replaceStart, plan.replaceEndExclusive)
+                    editorInstance.commitText(revertPending.typed)
+                    // The text is restored AND the provider must unlearn —
+                    // the same revert notification the plain path sends.
+                    revertPreviouslyAcceptedCandidate()
+                    return
+                }
+            }
         }
         activeState.batchEdit {
             it.isManualSelectionMode = false
@@ -855,7 +894,18 @@ class KeyboardManager(context: Context) : InputKeyEventReceiver {
      */
     private fun commitSpaceWithAutoCommitAndLearning() {
         val candidate = nlpManager.getAutoCommitCandidate()
-        candidate?.let { commitCandidate(it) }
+        // DRS v2.9.0: the space path is where the silent rewrite happens —
+        // capture what the user typed BEFORE the commit erases it, then arm
+        // the honest revert (the arm refuses honestly when nothing was
+        // actually corrected: committed == typed, blanks, oversized words).
+        if (candidate != null) {
+            val typed = editorInstance.activeContent.currentWordText
+            commitCandidate(candidate, isAutoCommit = true)
+            correctionRevertPending = DrsCorrectionRevert.arm(
+                typed = typed,
+                committed = candidate.text.toString(),
+            )
+        }
         // DRS: learn manually typed words (not picked from the suggestion row and not
         // auto-committed) into the personal user dictionary. Guarded like all DRS
         // learning features: no composing-disabled, password or incognito contexts.
@@ -1148,6 +1198,14 @@ class KeyboardManager(context: Context) : InputKeyEventReceiver {
 
     private fun onInputKeyUpBody(data: KeyData) = activeState.batchEdit {
         val windowController = DrsImeService.windowControllerOrNull() ?: return@batchEdit
+        // DRS v2.9.0: the honest revert is a ONE-BACKSPACE affordance — every
+        // other key-up (typing, space, arrows, navigation, suggestions)
+        // disarms a stale opportunity before it can fire on unrelated text.
+        // KeyCode.DELETE is exempt: it is the key that consumes the revert
+        // inside handleBackwardDelete (one-shot there, on every path).
+        if (data.code != KeyCode.DELETE) {
+            correctionRevertPending = null
+        }
         // DRS v1.22.0: snapshot the armed modifier latches BEFORE any
         // branch can consume them — the arrow and delete branches below
         // read these, the CTRL/ALT branches cycle them.
@@ -1519,7 +1577,18 @@ class KeyboardManager(context: Context) : InputKeyEventReceiver {
                             // stays unconditional (it owns empty-input
                             // semantics itself).
                             if (text.isNotEmpty() && !UCharacter.isUAlphabetic(UCharacter.codePointAt(text, 0))) {
-                                nlpManager.getAutoCommitCandidate()?.let { commitCandidate(it) }
+                                // DRS v2.9.0: interword punctuation auto-commits too
+                                // («helo,» → «hello,») — arm the same honest revert,
+                                // capturing the typed word before the silent rewrite.
+                                val autoCandidate = nlpManager.getAutoCommitCandidate()
+                                if (autoCandidate != null) {
+                                    val typed = editorInstance.activeContent.currentWordText
+                                    commitCandidate(autoCandidate, isAutoCommit = true)
+                                    correctionRevertPending = DrsCorrectionRevert.arm(
+                                        typed = typed,
+                                        committed = autoCandidate.text.toString(),
+                                    )
+                                }
                             }
                             editorInstance.commitChar(text)
                         }

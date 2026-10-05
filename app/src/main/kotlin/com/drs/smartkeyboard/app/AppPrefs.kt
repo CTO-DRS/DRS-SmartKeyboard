@@ -298,6 +298,16 @@ abstract class DrsPreferenceModel : PreferenceModel() {
             key = "correction__remember_caps_lock_state",
             default = false,
         )
+        // DRS v2.9.0: HeliBoard/OpenBoard heritage — the first backspace
+        // right after a silent auto-correction restores the word exactly as
+        // the user typed it (one-shot, self-verifying, never for manual
+        // picks). Default on: it is the affordance AOSP-derived keyboards
+        // ship, and it can never rewrite text the revert verification
+        // cannot see right under the cursor.
+        val undoAutoCorrectOnBackspace = boolean(
+            key = "correction__undo_autocorrect_on_backspace",
+            default = true,
+        )
     }
 
     val devtools = Devtools()
