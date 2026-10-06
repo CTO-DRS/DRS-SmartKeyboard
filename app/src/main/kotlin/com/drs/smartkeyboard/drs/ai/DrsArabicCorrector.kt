@@ -36,6 +36,11 @@ object DrsArabicCorrector {
      *  - hamza family on alef: أ إ آ ٱ → ا (cost 0 — same letter linguistically)
      *  - ة ↔ ه (cost 0), ى ↔ ي (cost 0), ئ ↔ ي (0), ؤ ↔ و (0)
      *  - Arabic keyboard adjacency (row-mates on the standard layout) cost 1
+     *  - v2.12.0: same-row two-apart pairs cost 2 (QwertyCostModel parity —
+     *    the fat-finger band the Arabic model alone refused to cover), and
+     *    the PHONETIC-IDENTICAL pairs ت↔ط، د↔ض، ذ↔ظ، ض↔ظ cost 2 — letters
+     *    whose SOUNDS are identical or dialectally merged, the classic
+     *    spelling-ignorance errors (الط ↔ الت class), unreachable before.
      * Everything else saturates ([DrsQuantizedEngine.MAX_DISTANCE]).
      */
     object ArabicCostModel : DrsQuantizedEngine.CostModel {
@@ -61,6 +66,20 @@ object DrsArabicCorrector {
             charArrayOf('\u0624', '\u0648'),                              // ؤ و
         )
 
+        /**
+         * v2.12.0: phonetically identical / dialectally merged letter pairs.
+         * These are NOT keyboard confusions — they are spelling-ignorance
+         * errors (the writer does not know which of the identical-sounding
+         * letters the word carries). Cost 2: reachable, but always outranked
+         * by exact and adjacency matches.
+         */
+        private val PHONETIC_GROUPS: Array<CharArray> = arrayOf(
+            charArrayOf('\u062A', '\u0637'), // ت ط
+            charArrayOf('\u062F', '\u0636'), // د ض
+            charArrayOf('\u0630', '\u0638'), // ذ ظ
+            charArrayOf('\u0636', '\u0638'), // ض ظ
+        )
+
         override fun substitutionCost(a: Char, b: Char): Int {
             if (a == b) return 0
             // Hamza-family / orthographic near-synonyms: cost 0.
@@ -73,13 +92,25 @@ object DrsArabicCorrector {
                 }
                 if (hasA && hasB) return 0
             }
-            // Arabic keyboard adjacency: cost 1 for row-mates one apart.
+            // v2.12.0: phonetically identical pairs — cost 2.
+            for (g in PHONETIC_GROUPS) {
+                var hasA = false
+                var hasB = false
+                for (c in g) {
+                    if (c == a) hasA = true
+                    if (c == b) hasB = true
+                }
+                if (hasA && hasB) return 2
+            }
+            // Arabic keyboard adjacency: cost 1 for row-mates one apart,
+            // cost 2 for same-row two-apart (v2.12.0, Qwerty parity).
             val pa = AR_POS[a]
             val pb = AR_POS[b]
             if (pa != null && pb != null) {
                 if (pa.first == pb.first) {
                     val d = pa.second - pb.second
                     if (d == 1 || d == -1) return 1
+                    if (d == 2 || d == -2) return 2
                 }
                 val dr = pa.first - pb.first
                 val dc = pa.second - pb.second
@@ -154,6 +185,25 @@ object DrsArabicCorrector {
         "مسئلة" to "مسألة",
         "تسئولات" to "تساؤلات",
         "شئون" to "شؤون",
+        // DRS v2.12.0: the real-errors reference round — thirteen more
+        // UNIVERSALLY-wrong spellings, each one orthographic certainty:
+        // opening-hamza omissions (انت/اهم/افضل/الي), the لاكن/اللذي/هاذا
+        // trio (the three wrong spellings the AR DICTIONARY ITSELF carries),
+        // the doubled-الله typo, and the fused praise phrases that never
+        // belong in one word.
+        "انت" to "أنت",
+        "اهم" to "أهم",
+        "افضل" to "أفضل",
+        "الي" to "إلى",
+        "لاكن" to "لكن",
+        "اللذي" to "الذي",
+        "هاذا" to "هذا",
+        "اللله" to "الله",
+        "مشكوور" to "مشكور",
+        "الحمدلله" to "الحمد لله",
+        "ماشاء الله" to "ما شاء الله",
+        "ماشاءالله" to "ما شاء الله",
+        "انشالله" to "إن شاء الله",
     )
 
     /** Normalized wrong-phrase → correct raw spelling. */
@@ -172,6 +222,27 @@ object DrsArabicCorrector {
         val norm = stripTashkeel(normalize(query))
         if (norm.isEmpty()) return null
         return HARD_BY_NORM[norm]
+    }
+
+    /**
+     * v2.12.0 — the KNOWN-BUT-WRONG composition: several of the universal
+     * misspellings (مسئول، لاكن، اللذي، هاذا، شئ…) are dictionary entries in
+     * their own right, so the completion branch serves them and the typo
+     * branch never fires — the correction was dead code for exactly the
+     * errors it exists for. The provider asks this helper BEFORE returning
+     * completions: when the typed word carries a universal correction that
+     * is not already on the strip, it leads the strip (suggestion-only,
+     * never auto-committed). Pure.
+     */
+    fun composedSuggestionFor(
+        query: String,
+        existingTexts: Collection<String>,
+        normalize: (String) -> String,
+    ): String? {
+        val correct = hardCorrectionFor(query, normalize) ?: return null
+        if (correct == query) return null
+        if (correct in existingTexts) return null
+        return correct
     }
 
     /**

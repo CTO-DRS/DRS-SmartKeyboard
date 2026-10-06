@@ -27,9 +27,8 @@ import com.drs.smartkeyboard.drs.ai.DrsContextRanker
 import com.drs.smartkeyboard.drs.ai.DrsLearningEngine
 import com.drs.smartkeyboard.drs.ai.DrsMorphologyRanker
 import com.drs.smartkeyboard.drs.ai.DrsNextWordPredictor
-import com.drs.smartkeyboard.drs.ai.DrsQuantizedEngine
 import com.drs.smartkeyboard.drs.ai.DrsSmartReplies
-import com.drs.smartkeyboard.drs.ai.QwertyCostModel
+import com.drs.smartkeyboard.drs.ai.LatinNormBridge
 import com.drs.smartkeyboard.lib.devtools.flogDebug
 import com.drs.smartkeyboard.lib.devtools.flogError
 import kotlinx.coroutines.Dispatchers
@@ -262,6 +261,10 @@ class LatinLanguageProvider(context: Context) : SpellingProvider, SuggestionProv
 
     override suspend fun create() {
         // One-time provider initialization; dictionaries are loaded per language in preload().
+        // DRS v2.12.0: ONE normalization truth — the LatinNormBridge default has
+        // the same Arabic semantics, but the hard-correction matching now runs
+        // through the SAME tested pipeline the dictionary and typed prefix use.
+        LatinNormBridge.normalize = LatinWordNormalize::normalize
         // DRS Phase 2 (roadmap task 9): the personal learning tables load
         // once here — lazy from the disk's perspective (a missing file is
         // an empty table) and fully OFF the keystroke hot path.
@@ -535,16 +538,38 @@ class LatinLanguageProvider(context: Context) : SpellingProvider, SuggestionProv
         // list by the stem family of the word before the cursor: the lemma
         // itself first, its stem family next, same-root words after — all
         // with a stable sort that never scrambles the frequency order.
+        // DRS v2.12.0 — both exits pass through the KNOWN-BUT-WRONG
+        // composition head (a universal misspelling that lives in the
+        // dictionary, e.g. مسئول، لاكن، اللذي، هاذا، شئ — its correction
+        // leads the strip, suggestion-only, never auto-committed).
+        fun withUniversalHead(list: List<SuggestionCandidate>): List<SuggestionCandidate> {
+            if (!isArabic || list.isEmpty()) return list
+            val head = runCatching {
+                DrsArabicCorrector.composedSuggestionFor(
+                    raw, list.map { it.text.toString() },
+                ) { normalize(it) }
+            }.getOrNull() ?: return list
+            return buildList {
+                add(
+                    WordSuggestionCandidate(
+                        text = head,
+                        confidence = 0.95,
+                        sourceProvider = this@LatinLanguageProvider,
+                    ),
+                )
+                addAll(list.take(maxCandidateCount - 1))
+            }
+        }
         if (isArabic && merged.size > 1) {
             val prev = lastWordBefore(content.textBeforeSelection)
             if (prev != null) {
                 val reordered = DrsMorphologyRanker.rerank(prev, merged.map { it.text.toString() })
                 val byText = merged.associateBy { it.text.toString() }
                 val reranked = reordered.mapNotNull { byText[it] }
-                if (reranked.size == merged.size) return reranked
+                if (reranked.size == merged.size) return withUniversalHead(reranked)
             }
         }
-        if (merged.isNotEmpty()) return merged
+        if (merged.isNotEmpty()) return withUniversalHead(merged)
 
         // No word starts with what was typed: offer the nearest known spellings
         // as "did you mean?" candidates, ranked by frequency.
@@ -858,15 +883,10 @@ class LatinLanguageProvider(context: Context) : SpellingProvider, SuggestionProv
     }
 
     /**
-     * DRS Phase 2 (tasks 8+10+9): the fused correction pipeline.
-     *  1. Universal Arabic hard corrections (universally-wrong phrases).
-     *  2. Quantized weighted Damerau-Levenshtein over the dictionary with
-     *     confusion-aware costs (ArabicCostModel / QwertyCostModel) and the
-     *     tier's cost budget; ranking adds the personal learning boost.
-     *  3. The legacy delete-1 index as backstop (cheap, catches what the
-     *     band cut of the quantized scan can miss on very short words).
-     * Results are DEDUPED by displayed text and hard corrections always
-     * lead. Never throws.
+     * DRS Phase 2 (tasks 8+10+9): the fused correction pipeline — now a thin
+     * delegate to the PURE DrsFusedCorrection (v2.12.0 extraction): the
+     * real-errors benchmark measures the exact same computation the provider
+     * runs. The provider keeps the candidate wrapping (display case + source).
      */
     private fun fusedCorrectionCandidates(
         subtype: Subtype,
@@ -877,71 +897,22 @@ class LatinLanguageProvider(context: Context) : SpellingProvider, SuggestionProv
         caps: DrsAiPowerManager.Caps,
         maxCandidateCount: Int,
     ): List<SuggestionCandidate> {
-        val out = LinkedHashMap<String, SuggestionCandidate>()
-
-        // 1) Hard corrections — the "انشاء الله" class. Raw spelling IS the
-        //    suggestion; only when it differs from what was typed.
-        runCatching {
-            DrsArabicCorrector.hardCorrectionFor(raw) { normalize(it) }
-        }.getOrNull()?.let { correct ->
-            if (correct != raw) {
-                out[correct] = WordSuggestionCandidate(
-                    text = correct,
-                    confidence = 0.95,
-                    sourceProvider = this,
-                )
-            }
+        return DrsFusedCorrection.corrections(
+            index = index,
+            raw = raw,
+            isArabic = isArabic,
+            maxCost = caps.maxCorrectionCost,
+            lengthBand = caps.lengthBand,
+            maxCandidateCount = maxCandidateCount,
+            normalize = ::normalize,
+            learningBoost = { DrsLearningEngine.boostFor(it) },
+        ).map { correction ->
+            WordSuggestionCandidate(
+                text = displayCase(correction.text, raw, isArabic, subtype.primaryLocale.base),
+                confidence = correction.confidence,
+                sourceProvider = this,
+            )
         }
-
-        // 2) Quantized weighted search (distance-2 class corrections).
-        if (prefix.length >= CORRECTION_MIN_LENGTH) {
-            val costModel = if (isArabic) {
-                DrsArabicCorrector.ArabicCostModel
-            } else {
-                QwertyCostModel
-            }
-            runCatching {
-                DrsQuantizedEngine.search(
-                    query = prefix,
-                    words = index.entries.asSequence().map { it.norm to it.freq },
-                    costs = costModel,
-                    limit = maxCandidateCount * 3,
-                    maxCost = caps.maxCorrectionCost,
-                    lengthBand = caps.lengthBand,
-                )
-            }.getOrDefault(emptyList()).forEach { match ->
-                val entry = index.byNorm[match.word] ?: return@forEach
-                if (entry.word == raw) return@forEach
-                if (entry.word in out) return@forEach
-                // Task 9: personal learning boost rides on the corpus
-                // frequency — the user's own vocabulary outcompetes noise.
-                val boosted = (entry.freq + DrsLearningEngine.boostFor(entry.word) / 4)
-                    .coerceAtMost(255)
-                out[entry.word] = WordSuggestionCandidate(
-                    text = displayCase(entry.word, raw, isArabic, subtype.primaryLocale.base),
-                    confidence = (match.cost == 0).let { exact ->
-                        (boosted / 255.0) + if (exact) 0.05 else 0.0
-                    }.coerceIn(0.0, 1.0),
-                    sourceProvider = this,
-                )
-            }
-        }
-
-        // 3) Legacy delete-1 backstop — the quantized scan's length band can
-        //    miss zero-cost hamza-family matches on 3-char words; the old
-        //    index is still the cheapest net for those.
-        if (out.size < maxCandidateCount) {
-            index.corrections(prefix, maxCandidateCount).forEach { entry ->
-                if (entry.word !in out) {
-                    out[entry.word] = WordSuggestionCandidate(
-                        text = displayCase(entry.word, raw, isArabic, subtype.primaryLocale.base),
-                        confidence = entry.freq / 255.0,
-                        sourceProvider = this,
-                    )
-                }
-            }
-        }
-        return out.values.take(maxCandidateCount)
     }
 
     // DRS v1.18.0: the normalization pipeline lives in the pure
@@ -1000,8 +971,29 @@ internal class DictIndex(val entries: List<DictEntry>) {
      * DRS Phase 2 (roadmap task 8): norm -> entry lookup for the quantized
      * correction engine — the weighted search returns NORMALIZED keys, the
      * provider needs the original (correct) spelling back. Built lazily.
+     *
+     * DRS v2.12.0 — CANONICAL tiebreak instead of last-wins: when several
+     * raw spellings share one norm (the dictionary carries a misspelling
+     * beside the correct form), the entry whose spelling ends in ة wins
+     * over a ه-ending twin, then the higher frequency wins. The suggestion
+     * the user sees must be the orthographically canonical form, decided by
+     * a deterministic rule — never by JSON order.
      */
-    val byNorm: Map<String, DictEntry> by lazy { entries.associateBy { it.norm } }
+    val byNorm: Map<String, DictEntry> by lazy {
+        val map = HashMap<String, DictEntry>(entries.size * 2)
+        for (entry in entries) {
+            val current = map[entry.norm]
+            if (current == null || canonicalPrefers(entry, current)) map[entry.norm] = entry
+        }
+        map
+    }
+
+    private fun canonicalPrefers(a: DictEntry, b: DictEntry): Boolean {
+        val aTa = a.word.endsWith('ة')
+        val bTa = b.word.endsWith('ة')
+        if (aTa != bTa) return aTa
+        return a.freq > b.freq
+    }
 
     /**
      * Delete-1 neighborhood index for "did you mean?" corrections, built lazily
