@@ -270,6 +270,18 @@ abstract class DrsPreferenceModel : PreferenceModel() {
         )
     }
 
+    // DRS v2.10.0 — «التراجع والإعادة المحليان الصادقان»: the keyboard keeps
+    // its own bounded self-verifying edit history so undo/redo work in hosts
+    // that implement none. Off switches the strip tools back to pure host
+    // delegation (Ctrl+Z keyevents) — the pre-2.10.0 behavior.
+    val editor = Editor()
+    inner class Editor {
+        val localUndoRedo = boolean(
+            key = "editor__local_undo_redo",
+            default = true,
+        )
+    }
+
     val correction = Correction()
     inner class Correction {
         val autoCapitalization = boolean(

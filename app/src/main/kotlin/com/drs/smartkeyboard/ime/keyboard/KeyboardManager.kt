@@ -1440,7 +1440,12 @@ class KeyboardManager(context: Context) : InputKeyEventReceiver {
             KeyCode.KANA_KATA -> handleKanaKata()
             KeyCode.KANA_HALF_KATA -> handleKanaHalfKata()
             KeyCode.LANGUAGE_SWITCH -> handleLanguageSwitch()
-            KeyCode.REDO -> editorInstance.performRedo()
+            KeyCode.REDO -> {
+                // DRS v2.10.0: same local-first, host-fallback discipline.
+                if (!(prefs.editor.localUndoRedo.get() && editorInstance.tryLocalRedo())) {
+                    editorInstance.performRedo()
+                }
+            }
             KeyCode.SETTINGS -> DrsImeService.launchSettings()
             // DRS v1.0.8: unified-strip tools (real engine actions).
             KeyCode.THEME_CYCLE -> scope.launch { themeManager.cycleTheme() }
@@ -1507,7 +1512,14 @@ class KeyboardManager(context: Context) : InputKeyEventReceiver {
             }
             KeyCode.TOGGLE_INCOGNITO_MODE -> scope.launch { handleToggleIncognitoMode() }
             KeyCode.TOGGLE_AUTOCORRECT -> scope.launch { handleToggleAutocorrect() }
-            KeyCode.UNDO -> editorInstance.performUndo()
+            KeyCode.UNDO -> {
+                // DRS v2.10.0: local history first (self-verifying); the host
+                // delegation stays the honest fallback whenever the keyboard
+                // cannot prove it understands the field.
+                if (!(prefs.editor.localUndoRedo.get() && editorInstance.tryLocalUndo())) {
+                    editorInstance.performUndo()
+                }
+            }
             KeyCode.VIEW_CHARACTERS -> activeState.keyboardMode = KeyboardMode.CHARACTERS
             KeyCode.VIEW_NUMERIC -> activeState.keyboardMode = KeyboardMode.NUMERIC
             KeyCode.VIEW_NUMERIC_ADVANCED -> activeState.keyboardMode = KeyboardMode.NUMERIC_ADVANCED

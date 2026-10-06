@@ -545,6 +545,8 @@
     <string name="pref__correction__smart_punctuation__summary" comment="Preference summary">Typing two hyphens (--) after a space then pressing space rewrites them into a real em dash (—) — triple dashes and dashes glued to words are left alone</string>
     <string name="pref__correction__undo_autocorrect_on_backspace__label" comment="Preference title">Undo auto-correction</string>
     <string name="pref__correction__undo_autocorrect_on_backspace__summary" comment="Preference summary">The first backspace right after a silent auto-correction restores the word exactly as you typed it — manual suggestion picks are never touched, and it never runs in password fields or private sessions</string>
+    <string name="pref__editor__local_undo_redo__label" comment="Preference title">Local undo &amp; redo</string>
+    <string name="pref__editor__local_undo_redo__summary" comment="Preference summary">A deterministic edit history inside the keyboard makes the undo/redo tools work in any field, even in apps that implement no undo — with strict text verification before any repair and a graceful fallback to the undo of the host app itself at the first doubt. No permanent memory, no network</string>
     <string name="pref__spelling__title" comment="Preference group title">Spelling</string>
     <string name="pref__spelling__active_spellchecker__summary_disabled">Disabled system-wide. No red lines will appear in text fields for incorrect words. Tap to change.</string>
     <string name="pref__spelling__active_spellchecker__summary_none">No inline text spell checker service set. Tap to change.</string>

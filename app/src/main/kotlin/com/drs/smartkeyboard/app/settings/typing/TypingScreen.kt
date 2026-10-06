@@ -183,6 +183,14 @@ fun TypingScreen() = DrsScreen {
                 title = stringRes(R.string.pref__correction__undo_autocorrect_on_backspace__label),
                 summary = stringRes(R.string.pref__correction__undo_autocorrect_on_backspace__summary),
             )
+            // DRS v2.10.0: local undo/redo — the strip tools work through the
+            // keyboard's own self-verifying history in every host, with the
+            // host's own undo kept as the honest fallback.
+            SwitchPreference(
+                prefs.editor.localUndoRedo,
+                title = stringRes(R.string.pref__editor__local_undo_redo__label),
+                summary = stringRes(R.string.pref__editor__local_undo_redo__summary),
+            )
         }
 
         PreferenceGroup(title = stringRes(R.string.pref__spelling__title)) {

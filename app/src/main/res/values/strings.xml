@@ -506,6 +506,8 @@
     <string name="pref__correction__smart_punctuation__summary" comment="Preference summary">كتابة شرطتين (--) بعد مسافة ثم ضغط المسافة تعيد كتابتهما شرطةً طويلة حقيقية (—) — وثلاث شرطات أو شرطتان ملتصقتان بكلمة لا يُمسّهما شيء</string>
     <string name="pref__correction__undo_autocorrect_on_backspace__label" comment="Preference title">التراجع عن التصحيح التلقائي</string>
     <string name="pref__correction__undo_autocorrect_on_backspace__summary" comment="Preference summary">ضغطة المطّاطة الأولى بعد تصحيحٍ صامتٍ تلقائي تعيد الكلمة كما كتبتها أنت بالضبط — الاختيار اليدوي من الاقتراحات لا يُمسّ أبدًا، ولا يعمل في الحقول المحمية ولا الجلسات الخاصة</string>
+    <string name="pref__editor__local_undo_redo__label" comment="Preference title">التراجع والإعادة المحليان</string>
+    <string name="pref__editor__local_undo_redo__summary" comment="Preference summary">سجل تعديل حتمي داخل الكيبورد يجعل زرا التراجع والإعادة يعملان في أي حقل حتى لو كان التطبيق لا يدعم التراجع — بتحقق صارم من النص قبل أي إصلاح، وبسقوط رشيق لتراجع التطبيق نفسه عند أدنى شك. بلا ذاكرة دائمة ولا شبكة</string>
     <string name="pref__spelling__title" comment="Preference group title">التدقيق الإملائي</string>
     <string name="pref__spelling__active_spellchecker__summary_disabled">معطل على مستوى النظام. لن تظهر أي خطوط حمراء في الحقول النصية للكلمات غير الصحيحة. انقر للتغيير.</string>
     <string name="pref__spelling__active_spellchecker__summary_none">لم يتم تعيين خدمة المدقق الإملائي للنص المضمّن. انقر للتغيير.</string>
