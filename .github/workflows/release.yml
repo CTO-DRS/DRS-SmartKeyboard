@@ -147,3 +147,60 @@ jobs:
           fail_on_unmatched_files: true
           prerelease: ${{ env.IS_PRERELEASE == 'true' }}
           make_latest: ${{ env.MAKE_LATEST }}
+
+  # Sync the published release assets into the documentation site hosting
+  # (GitHub Pages serves docs/ from main): versioned APK + stable-name latest
+  # APK + .flex theme packages + manifests, and rewrite the AUTO:* zones of
+  # index.html. No JavaScript on the page — the update happens here in CI.
+  # ADR 0003 honored: prereleases (-beta/-rc/-alpha) never touch the site.
+  sync-site-hosting:
+    name: Sync Site Downloads (GitHub Pages)
+    needs: build-release
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_call'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Resolve tag & prerelease flag
+        run: |
+          TAG="${{ inputs.tag_name || github.ref_name }}"
+          echo "TAG=${TAG}" >> "$GITHUB_ENV"
+          if [[ "${TAG}" =~ -(beta|rc|alpha) ]]; then
+            echo "SKIP_SYNC=true" >> "$GITHUB_ENV"
+          else
+            echo "SKIP_SYNC=false" >> "$GITHUB_ENV"
+          fi
+
+      - name: Download published release assets
+        if: env.SKIP_SYNC == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p dist
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern 'DRS-Smart-Keyboard-*.apk' \
+            --pattern '*.flex' \
+            --pattern 'SHA256SUMS.txt' \
+            --dir dist
+          ls -la dist/
+
+      - name: Verify checksums, refresh hosting, rewrite page AUTO zones
+        if: env.SKIP_SYNC == 'false'
+        run: python3 .github/scripts/sync_site_page.py --dist dist
+
+      - name: Commit & push (Pages redeploys from main)
+        if: env.SKIP_SYNC == 'false'
+        run: |
+          git config user.name "drs-release-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/apk docs/flex docs/index.html
+          if git diff --cached --quiet; then
+            echo "No hosting changes — honest no-op."
+          else
+            git commit -m "chore(site): مزامنة آلية لأصول الإصدار ${TAG} إلى استضافة الموقع [skip ci]"
+            git push origin main
+          fi

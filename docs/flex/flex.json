@@ -1,0 +1,143 @@
+{
+  "$schema": "site/flex-listing/v1",
+  "generatedFrom": "packages/manifest.json",
+  "count": 8,
+  "packages": [
+    {
+      "packageId": "org.drs.packages.amethyst",
+      "file": "pkg-amethyst-v1.0.0.flex",
+      "name": "سمة الجمشت • Amethyst",
+      "description": "بنفسجي ملكي فاخر مستوحى من حجر الجمشت — سمة ليلية.",
+      "version": "1.0.0",
+      "type": "ime/theme",
+      "sizeBytes": 2489,
+      "sha256": "ac0151eca622866401f0ddbce12ccfa756b56f137b54e79ffede6bc2fcc870da",
+      "colors": [
+        "#7e57c2",
+        "#512da8",
+        "#1a1626",
+        "#311b92"
+      ],
+      "minAppVersion": "1.0.0"
+    },
+    {
+      "packageId": "org.drs.packages.arabian",
+      "file": "pkg-arabian-v1.0.0.flex",
+      "name": "سمة ليلة عربية • Arabian Night",
+      "description": "تركواز وصحراء بذهب الأصيل — هوية عربية أصيلة للوحة المفاتيح.",
+      "version": "1.0.0",
+      "type": "ime/theme",
+      "sizeBytes": 4593,
+      "sha256": "29579f4e4acf356f4ca352fc9f2f02adf4bee44e45d360e21f80487579cb9d13",
+      "colors": [
+        "#00897b",
+        "#00695c",
+        "#0f1f1d",
+        "#d4af37"
+      ],
+      "minAppVersion": "1.0.0"
+    },
+    {
+      "packageId": "org.drs.packages.aurora",
+      "file": "pkg-aurora-v1.0.0.flex",
+      "name": "سمة الشفق • Aurora",
+      "description": "ألوان الشفق القطبي: سماوي وأخضر متوهج — سمة ليلية.",
+      "version": "1.0.0",
+      "type": "ime/theme",
+      "sizeBytes": 2482,
+      "sha256": "0b71d9e95471d26a2d6600f012cefd9115cf6869f3901c95b81881f15d4d1fc1",
+      "colors": [
+        "#26c6da",
+        "#69f0ae",
+        "#0c1622",
+        "#304ffe"
+      ],
+      "minAppVersion": "1.0.0"
+    },
+    {
+      "packageId": "org.drs.packages.carbon",
+      "file": "pkg-carbon-v1.0.0.flex",
+      "name": "سمة الكربون • Carbon",
+      "description": "رمادي فحمي محايد بلمسة كهرمانية — سمة ليلية للتركيز.",
+      "version": "1.0.0",
+      "type": "ime/theme",
+      "sizeBytes": 2478,
+      "sha256": "387e35d9ac12ef773cb9f0f19253141599ff7151a59dfb97ff1c130fed7f29c5",
+      "colors": [
+        "#ffc107",
+        "#ffa000",
+        "#121212",
+        "#424242"
+      ],
+      "minAppVersion": "1.0.0"
+    },
+    {
+      "packageId": "org.drs.packages.forest",
+      "file": "pkg-forest-v1.0.0.flex",
+      "name": "سمة الغابة • Forest",
+      "description": "أخضر عميق وهدوء الطبيعة — سمة نهارية وليلية.",
+      "version": "1.0.0",
+      "type": "ime/theme",
+      "sizeBytes": 4573,
+      "sha256": "5f18b5119836c8683d7904e50e952404806eb2232d39dfad0649f0b0094a6150",
+      "colors": [
+        "#2e7d32",
+        "#1b5e20",
+        "#e8f5e9",
+        "#1a2e1a"
+      ],
+      "minAppVersion": "1.0.0"
+    },
+    {
+      "packageId": "org.drs.packages.ocean",
+      "file": "pkg-ocean-v1.0.0.flex",
+      "name": "سمة المحيط • Ocean",
+      "description": "أزرق وتركوازي عميق بروح البحر — سمة نهارية وليلية.",
+      "version": "1.0.0",
+      "type": "ime/theme",
+      "sizeBytes": 4565,
+      "sha256": "0645bb68b667f7d556246d1e42fe479fd7d9ac86f5c80fd33b9a1445e8ea8263",
+      "colors": [
+        "#0288d1",
+        "#01579b",
+        "#e1f5fe",
+        "#37474f"
+      ],
+      "minAppVersion": "1.0.0"
+    },
+    {
+      "packageId": "org.drs.packages.rose",
+      "file": "pkg-rose-v1.0.0.flex",
+      "name": "سمة الورد • Rose",
+      "description": "وردي أنيق ناعم بلمسة عصرية — سمة نهارية.",
+      "version": "1.0.0",
+      "type": "ime/theme",
+      "sizeBytes": 2474,
+      "sha256": "23e33c65ae8e09c3332b14255e7b95151e49ba0a24da1dcec482dcd54e76e5b8",
+      "colors": [
+        "#e91e63",
+        "#ad1457",
+        "#fce4ec",
+        "#ffffff"
+      ],
+      "minAppVersion": "1.0.0"
+    },
+    {
+      "packageId": "org.drs.packages.sunset",
+      "file": "pkg-sunset-v1.0.0.flex",
+      "name": "سمة الغروب • Sunset",
+      "description": "درجات دافئة من البرتقالي والوردي المستوحاة من غروب الشمس — سمة نهارية كاملة.",
+      "version": "1.0.0",
+      "type": "ime/theme",
+      "sizeBytes": 2499,
+      "sha256": "d2f54f341960c01b7bd9713f6e66234dbdc7494e34d3e5631272ed6342bdf771",
+      "colors": [
+        "#ff7043",
+        "#f4511e",
+        "#fff3e0",
+        "#ffffff"
+      ],
+      "minAppVersion": "1.0.0"
+    }
+  ]
+}

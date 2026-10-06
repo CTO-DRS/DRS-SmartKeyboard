@@ -148,6 +148,13 @@
   .card h3 { font-size: 1.04rem; font-weight: 800; margin-bottom: 8px; }
   .card p { font-size: .92rem; color: var(--ink-2); }
 
+  /* ---------- themes (.flex packages) ---------- */
+  .theme-card .dots { display: flex; gap: 7px; margin-bottom: 14px; }
+  .theme-card .dots i { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line); box-shadow: inset 0 0 0 2px var(--surface); }
+  .theme-card .theme-meta { font-size: .78rem; color: var(--ink-3); margin: 12px 0 14px; direction: ltr; unicode-bidi: plaintext; text-align: start; }
+  .theme-card .theme-dl { font-size: .85rem; padding: 9px 16px; }
+  .themes-note { max-width: 820px; margin: 26px auto 0; color: var(--ink-2); font-size: .9rem; text-align: center; }
+
   /* ---------- download ---------- */
   .dl-card {
     background: var(--surface); border: 1px solid var(--brand-line); border-radius: 20px;
@@ -226,6 +233,7 @@
     <nav class="links">
       <a href="#features" class="hide-sm">الميزات</a>
       <a href="#download" class="hide-sm">التنزيل</a>
+      <a href="#themes" class="hide-sm">السمات</a>
       <a href="#privacy" class="hide-sm">الخصوصية</a>
       <a href="#docs" class="hide-sm">الوثائق</a>
       <a href="https://github.com/CTO-DRS/DRS-SmartKeyboard" target="_blank" rel="noopener">GitHub ↗</a>
@@ -238,19 +246,23 @@
   <!-- ======== hero ======== -->
   <div class="hero">
     <div class="wrap">
-      <span class="badge"><span class="dot"></span> الإصدار v2.9.0 · مستقر · versionCode 23</span>
+      <!-- AUTO:BADGE-START (rewritten automatically by the release workflow — do not edit by hand) -->
+<span class="badge"><span class="dot"></span> الإصدار v2.9.0 · مستقر · versionCode 23</span>
+      <!-- AUTO:BADGE-END -->
       <h1>لوحة مفاتيح عربية ذكية<br><em>بلا ذكاء اصطناعي، بلا سحابة، بلا إعلانات</em></h1>
       <p class="sub">
         محرّك حتمي بالكامل يعمل على جهازك وحده: اقتراحات وتصحيح وتحليل صرفي عربي
         بقواعد مكتوبة وقابلة للتدقيق — لا نماذج ضخمة، لا رفع مفاتيح، لا تتبّع.
         ما تكتبه يبقى بينك وبين جهازك.
       </p>
+      <!-- AUTO:HERO-START (rewritten automatically by the release workflow — do not edit by hand) -->
       <div class="ctas">
-        <a class="btn primary" href="apk/DRS-Smart-Keyboard-v2.9.0.apk" download>
+        <a class="btn primary" href="apk/DRS-Smart-Keyboard-latest.apk" download>
           ⬇ تنزيل APK — v2.9.0 (11.4MB)
         </a>
         <a class="btn ghost" href="https://github.com/CTO-DRS/DRS-SmartKeyboard/releases">كل الإصدارات والثيمات</a>
       </div>
+      <!-- AUTO:HERO-END -->
       <div class="chips">
         <span class="chip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> صفر إعلانات</span>
         <span class="chip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> صفر تتبّع</span>
@@ -332,10 +344,11 @@
         <p>الملف مستضاف على هذا الموقع نفسه — بلا إعلانات، بلا وسيط، بلا تسجيل دخول — والبديل الرسمي إصدارات GitHub.</p>
       </div>
       <div class="dl-card">
+        <!-- AUTO:DLCARD-START (rewritten automatically by the release workflow — do not edit by hand) -->
         <div class="apk-name">DRS-Smart-Keyboard-v2.9.0.apk</div>
         <div class="meta">11.4MB · حزمة com.drs.smartkeyboard · أندرويد 8.0 فأحدث</div>
         <div class="ctas">
-          <a class="btn primary" href="apk/DRS-Smart-Keyboard-v2.9.0.apk" download>⬇ تنزيل من الموقع مباشرة</a>
+          <a class="btn primary" href="apk/DRS-Smart-Keyboard-latest.apk" download>⬇ تنزيل من الموقع مباشرة</a>
           <a class="btn ghost" href="https://github.com/CTO-DRS/DRS-SmartKeyboard/releases/download/v2.9.0/DRS-Smart-Keyboard-v2.9.0.apk" download>مصدر بديل: إصدارات GitHub</a>
         </div>
         <details class="sha">
@@ -346,6 +359,7 @@
           <summary>التحقق من الجهاز (اختياري)</summary>
           <code>certutil -hashfile DRS-Smart-Keyboard-v2.9.0.apk SHA256</code>
         </details>
+        <!-- AUTO:DLCARD-END -->
       </div>
       <div class="steps">
         <div class="step">
@@ -364,6 +378,78 @@
           <p>إعدادات النظام ← إدارة لوحات المفاتيح ← فعّل «لوحة المفاتيح DRS» ثم اجعلها افتراضية — وشغّل دليل الترحيب داخل التطبيق.</p>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- ======== themes (.flex packages) ======== -->
+  <section id="themes">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="kicker">الحزم الرسمية الموقّعة</div>
+        <h2>ثماني سمات جاهزة — تنزيل بنقرة</h2>
+        <p>حزم <code>.flex</code> رسمية موقّعة رقميًا (مفتاح cto-drs-release-1) مستضافة هنا على الموقع نفسه، والتطبيق يتحقق من بصمة كل حزمة قبل تثبيتها ويرفض غير المطابقة. أما قواميسك الخارجية فأصدق طريق لها: استوردها من ملفاتك مباشرة عبر «الإعدادات ← القواميس الخارجية» — بلا حزم ولا وسيط.</p>
+      </div>
+      <div class="cards themes-grid">
+        <!-- AUTO:THEMES-START (rewritten automatically by the release workflow — do not edit by hand) -->
+        <div class="card theme-card">
+          <div class="dots"><i style="background:#7e57c2"></i><i style="background:#512da8"></i><i style="background:#1a1626"></i><i style="background:#311b92"></i></div>
+          <h3>سمة الجمشت • Amethyst</h3>
+          <p>بنفسجي ملكي فاخر مستوحى من حجر الجمشت — سمة ليلية.</p>
+          <div class="theme-meta">pkg-amethyst-v1.0.0.flex · v1.0.0 · 2.4KB</div>
+          <a class="btn ghost theme-dl" href="flex/pkg-amethyst-v1.0.0.flex" download>⬇ تنزيل الحزمة</a>
+        </div>
+        <div class="card theme-card">
+          <div class="dots"><i style="background:#00897b"></i><i style="background:#00695c"></i><i style="background:#0f1f1d"></i><i style="background:#d4af37"></i></div>
+          <h3>سمة ليلة عربية • Arabian Night</h3>
+          <p>تركواز وصحراء بذهب الأصيل — هوية عربية أصيلة للوحة المفاتيح.</p>
+          <div class="theme-meta">pkg-arabian-v1.0.0.flex · v1.0.0 · 4.5KB</div>
+          <a class="btn ghost theme-dl" href="flex/pkg-arabian-v1.0.0.flex" download>⬇ تنزيل الحزمة</a>
+        </div>
+        <div class="card theme-card">
+          <div class="dots"><i style="background:#26c6da"></i><i style="background:#69f0ae"></i><i style="background:#0c1622"></i><i style="background:#304ffe"></i></div>
+          <h3>سمة الشفق • Aurora</h3>
+          <p>ألوان الشفق القطبي: سماوي وأخضر متوهج — سمة ليلية.</p>
+          <div class="theme-meta">pkg-aurora-v1.0.0.flex · v1.0.0 · 2.4KB</div>
+          <a class="btn ghost theme-dl" href="flex/pkg-aurora-v1.0.0.flex" download>⬇ تنزيل الحزمة</a>
+        </div>
+        <div class="card theme-card">
+          <div class="dots"><i style="background:#ffc107"></i><i style="background:#ffa000"></i><i style="background:#121212"></i><i style="background:#424242"></i></div>
+          <h3>سمة الكربون • Carbon</h3>
+          <p>رمادي فحمي محايد بلمسة كهرمانية — سمة ليلية للتركيز.</p>
+          <div class="theme-meta">pkg-carbon-v1.0.0.flex · v1.0.0 · 2.4KB</div>
+          <a class="btn ghost theme-dl" href="flex/pkg-carbon-v1.0.0.flex" download>⬇ تنزيل الحزمة</a>
+        </div>
+        <div class="card theme-card">
+          <div class="dots"><i style="background:#2e7d32"></i><i style="background:#1b5e20"></i><i style="background:#e8f5e9"></i><i style="background:#1a2e1a"></i></div>
+          <h3>سمة الغابة • Forest</h3>
+          <p>أخضر عميق وهدوء الطبيعة — سمة نهارية وليلية.</p>
+          <div class="theme-meta">pkg-forest-v1.0.0.flex · v1.0.0 · 4.5KB</div>
+          <a class="btn ghost theme-dl" href="flex/pkg-forest-v1.0.0.flex" download>⬇ تنزيل الحزمة</a>
+        </div>
+        <div class="card theme-card">
+          <div class="dots"><i style="background:#0288d1"></i><i style="background:#01579b"></i><i style="background:#e1f5fe"></i><i style="background:#37474f"></i></div>
+          <h3>سمة المحيط • Ocean</h3>
+          <p>أزرق وتركوازي عميق بروح البحر — سمة نهارية وليلية.</p>
+          <div class="theme-meta">pkg-ocean-v1.0.0.flex · v1.0.0 · 4.5KB</div>
+          <a class="btn ghost theme-dl" href="flex/pkg-ocean-v1.0.0.flex" download>⬇ تنزيل الحزمة</a>
+        </div>
+        <div class="card theme-card">
+          <div class="dots"><i style="background:#e91e63"></i><i style="background:#ad1457"></i><i style="background:#fce4ec"></i><i style="background:#ffffff"></i></div>
+          <h3>سمة الورد • Rose</h3>
+          <p>وردي أنيق ناعم بلمسة عصرية — سمة نهارية.</p>
+          <div class="theme-meta">pkg-rose-v1.0.0.flex · v1.0.0 · 2.4KB</div>
+          <a class="btn ghost theme-dl" href="flex/pkg-rose-v1.0.0.flex" download>⬇ تنزيل الحزمة</a>
+        </div>
+        <div class="card theme-card">
+          <div class="dots"><i style="background:#ff7043"></i><i style="background:#f4511e"></i><i style="background:#fff3e0"></i><i style="background:#ffffff"></i></div>
+          <h3>سمة الغروب • Sunset</h3>
+          <p>درجات دافئة من البرتقالي والوردي المستوحاة من غروب الشمس — سمة نهارية كاملة.</p>
+          <div class="theme-meta">pkg-sunset-v1.0.0.flex · v1.0.0 · 2.4KB</div>
+          <a class="btn ghost theme-dl" href="flex/pkg-sunset-v1.0.0.flex" download>⬇ تنزيل الحزمة</a>
+        </div>
+        <!-- AUTO:THEMES-END -->
+      </div>
+      <div class="themes-note">التثبيت: نزّل الحزمة ثم من التطبيق «الإعدادات ← السِمات ← مكتبة الحزم (استيراد .flex)» — وتُتحقق البصمة قبل التثبيت وتُرفض الحزمة غير المطابقة.</div>
     </div>
   </section>
 
