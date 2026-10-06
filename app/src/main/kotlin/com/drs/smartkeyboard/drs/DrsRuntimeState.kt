@@ -7,6 +7,7 @@ package com.drs.smartkeyboard.drs
 
 import com.drs.smartkeyboard.ime.editor.DrsEditorInfo
 import com.drs.smartkeyboard.ime.editor.InputAttributes
+import com.drs.smartkeyboard.ime.smartbar.DrsFieldKind
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,6 +35,19 @@ object DrsRuntimeState {
      */
     private val _numberFieldClass = MutableStateFlow(DrsNumberFieldClass.GENERAL)
     val numberFieldClass: StateFlow<DrsNumberFieldClass> = _numberFieldClass.asStateFlow()
+
+    /**
+     * DRS v2.11.0 «المُرتّب السياقي الصادق»: the fine-grained field kind
+     * the smartbar's contextual ranker reads. Set at EVERY input start
+     * BEFORE the context-modes pref gate — the declared EditorInfo truth
+     * is not a user preference (same covenant as [numberFieldClass]):
+     * the coarse [DrsContextMode] keeps its stable stats contract while
+     * this classification stays lossless (URI fields are URI, email
+     * fields are EMAIL, filter bars are SEARCH_FILTER — nothing folded
+     * away). Attributes only, never field content.
+     */
+    private val _fieldKind = MutableStateFlow(DrsFieldKind.GENERAL)
+    val fieldKind: StateFlow<DrsFieldKind> = _fieldKind.asStateFlow()
 
     /**
      * DRS v1.16.0: the open slot editor of the fixed tasks bar — null
@@ -66,6 +80,13 @@ object DrsRuntimeState {
         // the pref gate returns early — so the smart numbers panel sees
         // every field, not just the adaptive-UI-enabled ones.
         _numberFieldClass.value = detectNumberFieldClass(editorInfo)
+        // DRS v2.11.0: the fine field kind lands beside it, also before
+        // the gate — the honest ranker reads declared attributes, not
+        // adaptive-UI switches.
+        _fieldKind.value = DrsFieldKind.kindOf(
+            editorInfo.inputAttributes,
+            isCodingPackage(editorInfo.packageName),
+        )
         val state = DrsStore.state.value
         if (!state.contextModesEnabled) {
             _contextMode.value = DrsContextMode.NORMAL

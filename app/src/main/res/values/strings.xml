@@ -475,6 +475,9 @@
     <string name="settings__smartbar__title" comment="Title of Smartbar screen">الشريط الذكي</string>
     <string name="pref__smartbar__enabled__label" comment="Preference title">تفعيل الشريط الذكي</string>
     <string name="pref__smartbar__enabled__summary" comment="Preference summary">سوف يظهر أعلى لوحة المفاتيح</string>
+    <!-- DRS v2.11.0 «المُرتّب السياقي الصادق» -->
+    <string name="pref__smartbar__contextual_ranking__label" comment="Preference title">الترتيب السياقي الصادق</string>
+    <string name="pref__smartbar__contextual_ranking__summary" comment="Preference summary">يرفع أفعالك المفعّلة نفسها إلى الواجهة بحسب نوع الحقل (رابط، بحث، رسالة، كلمة سر) — بلا بلاطات جديدة ولا حذف، وترتيبك اليدوي يبقى الأساس، وفي كلمات السر لا تُرقّى الحافظة أو الصوت أبدًا</string>
     <string name="pref__smartbar__layout__label" comment="Preference title">التخطيط</string>
     <string name="pref__smartbar__group_layout_specific__label" comment="Preference group title">خيارات التخطيط المخصص</string>
     <string name="pref__smartbar__flip_toggles__label" comment="Preference title">تبديل ازرار التنقل</string>

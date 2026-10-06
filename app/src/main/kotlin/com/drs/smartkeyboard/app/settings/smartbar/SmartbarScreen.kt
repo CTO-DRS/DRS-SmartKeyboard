@@ -40,6 +40,15 @@ fun SmartbarScreen() = DrsScreen {
                 title = stringRes(R.string.pref__smartbar__enabled__label),
                 summary = stringRes(R.string.pref__smartbar__enabled__summary),
             )
+            // DRS v2.11.0 «المُرتّب السياقي الصادق»: the honest contextual
+            // ranker — promotes the user's OWN enabled actions by field
+            // kind. Off = identity ranking (the manual order is the base).
+            SwitchPreference(
+                prefs.smartbar.contextualRanking,
+                title = stringRes(R.string.pref__smartbar__contextual_ranking__label),
+                summary = stringRes(R.string.pref__smartbar__contextual_ranking__summary),
+                enabledIf = { prefs.smartbar.enabled isEqualTo true },
+            )
             ListPreference(
                 listPref = prefs.smartbar.layout,
                 title = stringRes(R.string.pref__smartbar__layout__label),

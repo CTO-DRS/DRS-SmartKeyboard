@@ -965,6 +965,15 @@ abstract class DrsPreferenceModel : PreferenceModel() {
             key = "smartbar__extended_actions_placement",
             default = ExtendedActionsPlacement.ABOVE_CANDIDATES,
         )
+        // DRS v2.11.0 «المُرتّب السياقي الصادق»: promotes the user's OWN
+        // enabled quick actions to the front of the row by field kind
+        // (URI/email/chat/search/password). A pure permutation of their
+        // manual arrangement — no new tiles, no removals; the master
+        // switch turns the whole engine off (identity ranking).
+        val contextualRanking = boolean(
+            key = "smartbar__contextual_ranking",
+            default = true,
+        )
     }
 
     /**

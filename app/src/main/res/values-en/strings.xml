@@ -513,6 +513,9 @@
     <string name="settings__smartbar__title" comment="Title of Smartbar screen">Smartbar</string>
     <string name="pref__smartbar__enabled__label" comment="Preference title">Enable smartbar</string>
     <string name="pref__smartbar__enabled__summary" comment="Preference summary">Will show on top of the keyboard</string>
+    <!-- DRS v2.11.0: the honest contextual ranker -->
+    <string name="pref__smartbar__contextual_ranking__label" comment="Preference title">Honest contextual ranking</string>
+    <string name="pref__smartbar__contextual_ranking__summary" comment="Preference summary">Promotes your own enabled actions to the front by field type (URL, search, message, password) — no new tiles, no removals; your manual order stays the base, and password fields never promote clipboard or voice</string>
     <string name="pref__smartbar__layout__label" comment="Preference title">Layout</string>
     <string name="pref__smartbar__group_layout_specific__label" comment="Preference group title">Layout-specific options</string>
     <string name="pref__smartbar__flip_toggles__label" comment="Preference title">Flip toggle buttons</string>
