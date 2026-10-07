@@ -665,6 +665,7 @@ fun DrsDiacriticsPanel(modifier: Modifier = Modifier) {
 private fun adviceReasonLabel(reason: DrsHarakatAdvisor.AdviceReason): Int = when (reason) {
     DrsHarakatAdvisor.AdviceReason.AFTER_SHADDA -> R.string.panel__harakat__advice_after_shadda
     DrsHarakatAdvisor.AdviceReason.DEFINITE_LAM -> R.string.panel__harakat__advice_definite_lam
+    DrsHarakatAdvisor.AdviceReason.DEFINITE_SUN -> R.string.panel__harakat__advice_definite_sun
     DrsHarakatAdvisor.AdviceReason.TANWEEN_ALEF -> R.string.panel__harakat__advice_tanween_alef
     DrsHarakatAdvisor.AdviceReason.OVER_MARK -> R.string.panel__harakat__advice_over_mark
     DrsHarakatAdvisor.AdviceReason.MRU -> R.string.panel__harakat__advice_mru

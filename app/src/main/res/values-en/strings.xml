@@ -2634,6 +2634,7 @@
     <!-- DRS v1.1.0: the full smart harakat board — contextual advisor and word tashkeel -->
     <string name="panel__harakat__advice_after_shadda">shadda + fatha</string>
     <string name="panel__harakat__advice_definite_lam">sukun of the definite lam</string>
+    <string name="panel__harakat__advice_definite_sun">sun-letter shadda</string>
     <string name="panel__harakat__advice_tanween_alef">complete the tanween with alef</string>
     <string name="panel__harakat__advice_over_mark">replace the mark</string>
     <string name="panel__harakat__advice_mru">most used</string>

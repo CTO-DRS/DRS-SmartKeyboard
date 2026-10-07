@@ -5,6 +5,7 @@
 
 package com.drs.smartkeyboard.drs
 
+import com.drs.smartkeyboard.drs.ai.DrsArabicLetters
 import com.drs.smartkeyboard.drs.ai.DrsWritingAssistant
 import java.text.Collator
 import java.util.Locale
@@ -915,13 +916,30 @@ object DrsTextTools {
      * is looked up via [DrsWordTashkeel.vocalize] (seed lexicon first,
      * then the installed 3000-word asset — both matched on the STRIPPED
      * form, so partially-marked words still resolve to the canonical
-     * form). A known token is replaced by its canonical vocalization; an
-     * unknown token is emitted BYTE-IDENTICAL (the honest rule: the tool
-     * never invents diacritics, exactly like the word-level action).
-     * Every other character — spaces, newlines, punctuation, digits,
-     * Latin — passes through verbatim, so punctuation and line structure
-     * are preserved exactly. Idempotent by construction: applying the
-     * tool to its own output re-derives the same canonical forms.
+     * form). A known token is replaced by its canonical vocalization.
+     *
+     * DRS v2.17.0 — طبقة القانون (the law layer): a token the lexicons
+     * do NOT know is no longer always byte-identical. When the pure
+     * DrsArabicLetters engine classifies it as a definite-article token
+     * followed by a SUN letter and it carries no mark anywhere, the
+     * token takes the one mark the assimilation law demands — the sun
+     * letter's shadda, and NOTHING beyond it (الشرق → الشّرق): the
+     * haraka after the shadda is lexical knowledge the law cannot
+     * invent. This is the same partial style the seed lexicon itself
+     * speaks for its known sun words (النَّاس، الَّذِي — shadda on the
+     * sun letter, lam left bare), so one text never speaks two LAM
+     * styles; a known word simply keeps its hand-reviewed haraka as
+     * well. The lam's sukun stays the advisor's explicit suggestion,
+     * never auto-applied. Every other unknown token — moon followers
+     * (المغرب)، hamza carriers (الأمل)، partially-marked words،
+     * non-article words — is emitted BYTE-IDENTICAL (the honest rule:
+     * the tool never invents what the law does not fix).
+     *
+     * Every non-Arabic character — spaces, newlines, punctuation,
+     * digits, Latin — passes through verbatim, so punctuation and line
+     * structure are preserved exactly. Idempotent by construction:
+     * applying the tool to its own output re-derives the same canonical
+     * forms (a law-marked token now carries a mark and passes through).
      */
     private fun tashkeelText(text: String): String {
         return buildString(text.length + 64) {
@@ -932,7 +950,7 @@ object DrsTextTools {
                     var j = i + 1
                     while (j < text.length && DrsHarakatWordOps.isArabicWordChar(text[j])) j++
                     val word = text.substring(i, j)
-                    append(DrsWordTashkeel.vocalize(word) ?: word)
+                    append(DrsWordTashkeel.vocalize(word) ?: DrsArabicLetters.shaddaForm(word) ?: word)
                     i = j
                 } else {
                     append(c)

@@ -2579,6 +2579,7 @@
     <string name="pref__panels__smart_order__summary">رقاقات مبدّل اللوحات تُرتَّب تلقائيًا: اللوحة الحالية أولًا ثم الأكثر فتحًا — محليًا فقط</string>
     <!-- DRS v1.1.0: لوحة الحركات الذكية الكاملة — المستشار السياقي ومشكِّل الكلمة -->
     <string name="panel__harakat__advice_after_shadda">شدّة + فتحة</string>
+    <string name="panel__harakat__advice_definite_sun">شدّة الحرف الشمسي</string>
     <string name="panel__harakat__advice_definite_lam">سكون لام التعريف</string>
     <string name="panel__harakat__advice_tanween_alef">أكمل التنوين بألف</string>
     <string name="panel__harakat__advice_over_mark">استبدال الحركة</string>

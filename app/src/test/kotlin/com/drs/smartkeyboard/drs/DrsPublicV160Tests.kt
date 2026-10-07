@@ -173,11 +173,15 @@ class DrsPublicV160Tests : FunSpec({
         DrsArabicLetters.vocalizedArticle("النور") shouldBe "الْنّور"
     }
 
-    test("the vocalized article marks non-sun tokens with fatha on the lam") {
-        DrsArabicLetters.vocalizedArticle("القمر") shouldBe "الَقمر"
-        DrsArabicLetters.vocalizedArticle("الكتاب") shouldBe "الَكتاب"
+    test("the vocalized article marks non-sun tokens with sukun on the lam") {
+        // DRS v2.17.0 honest correction: the lam of the definite article
+        // is SAKINAH in both branches — the old fatha-on-lam pins (الَقمر)
+        // encoded a form no standard orthography writes, and now match
+        // the live definite-lam advisor rule (sukun) exactly:
+        DrsArabicLetters.vocalizedArticle("القمر") shouldBe "الْقمر"
+        DrsArabicLetters.vocalizedArticle("الكتاب") shouldBe "الْكتاب"
         // The hamza carriers are NOT sun — the lam stays pronounced:
-        DrsArabicLetters.vocalizedArticle("الأمل") shouldBe "الَأمل"
+        DrsArabicLetters.vocalizedArticle("الأمل") shouldBe "الْأمل"
     }
 
     test("non-article and already-vocalized tokens pass through byte-identical") {

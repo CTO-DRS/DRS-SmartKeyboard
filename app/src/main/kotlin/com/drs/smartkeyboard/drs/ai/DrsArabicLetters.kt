@@ -42,6 +42,9 @@ object DrsArabicLetters {
     /** The bare alif that opens the definite article. */
     private const val ALIF = 'ا'
 
+    /** The shadda (U+0651) the sun letter of a definite-article token demands. */
+    private const val SHADDA = '\u0651'
+
     /** Hamza-carrying alif forms that still OPEN a definite-article token. */
     private val ALIF_OPENERS = setOf('ا', 'أ', 'إ', 'آ')
 
@@ -89,8 +92,16 @@ object DrsArabicLetters {
      * letters never changes — assimilation is a pronunciation fact — what
      * changes is only the marks a vocalizer would place:
      *
-     *  - sun follower: Sukun on the lam, Shadda on the sun letter (الشَّمس)
-     *  - anything else: Fatha on the lam (الَقمر, الَأمل)
+     *  - sun follower: Sukun on the lam, Shadda on the sun letter (الْشَّمس)
+     *  - anything else: Sukun on the lam (الْقمر, الْأمل)
+     *
+     * DRS v2.17.0 (honest correction): the moon branch previously emitted
+     * a FATHA on the lam (الَقمر) — a form no standard orthography writes.
+     * The lam of the definite article is SAKINAH in both branches (that is
+     * exactly what the live definite-lam advisor rule has always offered);
+     * the two branches differ only in the shadda the sun letter demands.
+     * The old pins were corrected alongside, and the CHANGELOG carries the
+     * confession.
      *
      * Words that are not definite-article tokens — and tokens ALREADY
      * carrying a mark right after the article — pass through
@@ -105,7 +116,35 @@ object DrsArabicLetters {
         return if (third in SUN) {
             "$ALIF$LAM\u0652$third\u0651" + word.substring(3)
         } else {
-            "$ALIF$LAM\u064E" + word.substring(2)
+            "$ALIF$LAM\u0652" + word.substring(2)
         }
+    }
+
+    /**
+     * DRS v2.17.0 — the partial-style assimilation mark for a definite-
+     * article sun token, the form the whole-text vocalizer applies to
+     * tokens its lexicons do not know.
+     *
+     * The design decision behind this SEPARATE function: the seed and
+     * asset lexicons vocalize their known sun words in the PARTIAL style
+     * (النَّاس، الَّذِي — shadda on the sun letter, lam left bare) and the
+     * vocalizer must not speak two styles in one text. So the law layer
+     * adds exactly what the law demands and nothing the style debate
+     * owns: the sun letter's shadda. The lam's sukun stays the advisor's
+     * explicit suggestion ([DrsHarakatAdvisor] definite-lam rule) — a
+     * user choice, never auto-applied.
+     *
+     * Returns the token with U+0651 inserted after the sun letter when —
+     * and only when — [word] is a definite-article token whose third
+     * letter is one of the fourteen sun letters and the token carries NO
+     * mark anywhere (a partially-marked word is not the engine's to
+     * touch). Null otherwise: not an article token, a moon follower,
+     * already marked, or too short. Idempotent by construction — the
+     * output carries a mark, so a second call returns null.
+     */
+    fun shaddaForm(word: String): String? {
+        if (lamAssimilation(word) != LamAssimilation.ASSIMILATED) return null
+        if (word.any { isMark(it) }) return null
+        return word.substring(0, 3) + SHADDA + word.substring(3)
     }
 }

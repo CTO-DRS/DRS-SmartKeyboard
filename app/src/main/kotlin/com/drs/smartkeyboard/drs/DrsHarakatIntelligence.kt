@@ -4,6 +4,8 @@
 
 package com.drs.smartkeyboard.drs
 
+import com.drs.smartkeyboard.drs.ai.DrsArabicLetters
+
 /**
  * DRS v1.1.0 — الذكاء العربي للوحة الحركات الكاملة (the smart harakat
  * BOARD intelligence core).
@@ -15,7 +17,10 @@ package com.drs.smartkeyboard.drs
  *     the cursor and ranks the harakat that make sense right now: a tanween
  *     fath not sitting on an alef asks for its alef, a fresh shadda asks
  *     for its haraka, the lam of a fresh definite article asks for its
- *     sukun, a mark under the cursor asks to be replaced, and everything
+ *     sukun, a sun letter fresh after that article asks for its shadda
+ *     (v2.17.0 — the law of the fourteen, decided by the pure
+ *     DrsArabicLetters engine that sat orphaned since v1.6.0), a mark
+ *     under the cursor asks to be replaced, and everything
  *     else falls back to the user's most-used harakat. Every rule is a
  *     documented orthography convention — never a guess, never a network
  *     call, never any text stored.
@@ -279,6 +284,13 @@ object DrsHarakatAdvisor {
         /** The cursor is right after «ال» — the lam takes a sukun. */
         DEFINITE_LAM,
 
+        /**
+         * DRS v2.17.0 — the cursor is right after «ال» + a SUN letter —
+         * the letter takes the shadda the assimilation law demands
+         * (الشَّ: the lam is silent, the sun letter doubles).
+         */
+        DEFINITE_SUN,
+
         /** A tanween fath is not sitting on an alef — offer to complete it. */
         TANWEEN_ALEF,
 
@@ -317,6 +329,25 @@ object DrsHarakatAdvisor {
             val beforeAl = textBeforeCursor.dropLast(2).lastOrNull()
             if (beforeAl == null || !SymbolSmartSuggestor.isArabicLetter(beforeAl)) {
                 return listOf(Pick(DrsHarakat.SUKUN.toString(), AdviceReason.DEFINITE_LAM))
+            }
+        }
+
+        // R3b — DRS v2.17.0: الشمسية بعد أل — الشدة قانون الرسم لا اختيار
+        // جمالي: «الش» تطلب شدة على الشين (الْشّ — اللام ساكنة والحرف
+        // مشدود). الحكم من محرك الشمس والقمر النقي (DrsArabicLetters)
+        // لا من قائمة يدوية. الحدود موثقة: أل المجردة في موقع الأداة
+        // فقط — حرس ما قبل الليم نفسه الذي يحرس R3؛ والملتصقة بحروف
+        // الجر (بالش وللش) صامتة حتى يأتي قرارها بعقد خاص. القمرية
+        // وأحمال الهمزة (الق، الأ) لا تطلب شيئًا — الصمت الصادق.
+        if (textBeforeCursor.length >= 3 &&
+            DrsArabicLetters.isSun(textBeforeCursor.last())
+        ) {
+            val beforeLast = textBeforeCursor.dropLast(1)
+            if (beforeLast.endsWith("ال")) {
+                val beforeAl = beforeLast.dropLast(2).lastOrNull()
+                if (beforeAl == null || !SymbolSmartSuggestor.isArabicLetter(beforeAl)) {
+                    return listOf(Pick(DrsHarakat.SHADDA.toString(), AdviceReason.DEFINITE_SUN))
+                }
             }
         }
 
