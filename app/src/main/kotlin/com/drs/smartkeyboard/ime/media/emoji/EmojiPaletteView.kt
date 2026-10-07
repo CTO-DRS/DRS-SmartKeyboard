@@ -89,6 +89,7 @@ import com.drs.smartkeyboard.app.DrsPreferenceStore
 import com.drs.smartkeyboard.editorInstance
 import com.drs.smartkeyboard.ime.input.LocalInputFeedbackController
 import com.drs.smartkeyboard.ime.keyboard.DrsImeSizing
+import com.drs.smartkeyboard.ime.text.key.KeyVariation
 import com.drs.smartkeyboard.ime.text.keyboard.TextKeyData
 import com.drs.smartkeyboard.ime.theme.DrsImeUi
 import com.drs.smartkeyboard.keyboardManager
@@ -219,7 +220,21 @@ fun EmojiPaletteView(
             onEmojiInput = { emoji ->
                 keyboardManager.inputEventDispatcher.sendDownUp(emoji)
                 scope.launch {
-                    EmojiHistoryHelper.markEmojiUsed(prefs, emoji)
+                    // DRS v2.14.0: الالتقاط يُحكم بالبوابة عند الحدث نفسه —
+                    // حقائق السياق تُقرأ من الحالة الحية لحظة النقر (لا لقطة
+                    // متراكمة)، فلا جلسة تخفي ولا حقل كلمة مرور ولا محرر خام
+                    // ولا حقل بلا تكوين ولا قفل شاشي يترك أثرًا في الذاكرة.
+                    val state = keyboardManager.activeState.value
+                    EmojiHistoryHelper.markEmojiUsed(
+                        prefs, emoji,
+                        DrsEmojiHistoryGate.RecordContext(
+                            isIncognitoMode = state.isIncognitoMode,
+                            isPasswordVariation = state.keyVariation == KeyVariation.PASSWORD,
+                            isRawInputEditor = activeEditorInfo.isRawInputEditor,
+                            isComposingEnabled = state.isComposingEnabled,
+                            isDeviceLocked = deviceLocked,
+                        ),
+                    )
                 }
             },
             onHistoryAction = {

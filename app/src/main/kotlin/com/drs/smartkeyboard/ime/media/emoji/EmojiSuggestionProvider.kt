@@ -15,11 +15,15 @@ import android.content.Context
 import com.drs.smartkeyboard.app.DrsPreferenceStore
 import com.drs.smartkeyboard.ime.core.Subtype
 import com.drs.smartkeyboard.ime.editor.EditorContent
+import com.drs.smartkeyboard.ime.text.key.KeyVariation
 import com.drs.smartkeyboard.ime.nlp.EmojiSuggestionCandidate
 import com.drs.smartkeyboard.ime.nlp.SuggestionCandidate
 import com.drs.smartkeyboard.ime.nlp.SuggestionProvider
+import com.drs.smartkeyboard.editorInstance
 import com.drs.smartkeyboard.keyboardManager
 import com.drs.smartkeyboard.lib.DrsLocale
+import org.drs.lib.android.AndroidKeyguardManager
+import org.drs.lib.android.systemService
 import io.github.reactivecircus.cache4k.Cache
 
 /**
@@ -144,7 +148,24 @@ class EmojiSuggestionProvider(private val context: Context) : SuggestionProvider
         if (!updateHistory || candidate !is EmojiSuggestionCandidate) {
             return
         }
-        EmojiHistoryHelper.markEmojiUsed(prefs, candidate.emoji)
+        // DRS v2.14.0: قبول الاقتراح التِقَاطٌ أيضًا — يمرّ بالبوابة نفسها.
+        // عقلية learnExternalWord في NlpManager: التخفي وعطْل التكوين
+        // وتنويعات كلمات المرور «أفلِ الاقتراحات فأفلِ التعلم». المحرر الخام
+        // يُقرأ من معلومات المحرر الحية، والقفل الشاشي من مدير القفل —
+        // التماثل الكامل مع مسار لوحة الإيموجي.
+        val km = context.keyboardManager().value
+        val state = km.activeState.value
+        EmojiHistoryHelper.markEmojiUsed(
+            prefs, candidate.emoji,
+            DrsEmojiHistoryGate.RecordContext(
+                isIncognitoMode = state.isIncognitoMode,
+                isPasswordVariation = state.keyVariation == KeyVariation.PASSWORD,
+                isRawInputEditor = context.editorInstance().value.activeInfo.isRawInputEditor,
+                isComposingEnabled = state.isComposingEnabled,
+                isDeviceLocked = context.systemService(AndroidKeyguardManager::class)
+                    .let { it.isDeviceLocked || it.isKeyguardLocked },
+            ),
+        )
     }
 
     override suspend fun notifySuggestionReverted(subtype: Subtype, candidate: SuggestionCandidate) {

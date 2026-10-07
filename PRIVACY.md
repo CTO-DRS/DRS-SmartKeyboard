@@ -22,6 +22,17 @@
   خوادم GitHub الرسمية، ولا يُرسل معه أي بيانات شخصية أو عن ما تكتبه.
   بدون فتح هذه الميزات لا يقوم التطبيق بأي اتصال شبكي على الإطلاق.
 
+### ذاكرة الإيموجي
+
+- سجل الإيموجي المؤخر والمثبت محفوظ محلياً فقط على جهازك، وتستطيع مسحه
+  من إعدادات الوسائط.
+- ما تكتبه في السياقات الخاصة لا يُلتقط في هذه الذاكرة إطلاقاً: جلسات
+  التخفي، وحقول كلمات المرور، والمحررات الخام، والحقول ذات التكوين
+  المعطّل، والجهاز والقفل الشاشي مرفوع — رفضٌ حتمي مثبت باختبارات، ويشمل
+  مساري النقرة في لوحة الإيموجي وقبول الاقتراح. عرض الإيموجي في هذه
+  الحقول يبقى ممكنًا (لا يُسجَّل شيئاً) وإدارةُ ما هو محفوظ سلفاً تعمل
+  دائماً.
+
 ### الحافظة
 
 - سجل الحافظة محفوظ محلياً فقط، ويُمسح تلقائياً بعد الفترة التي تحددها
@@ -88,6 +99,18 @@ using the app.
   both over HTTPS to official GitHub servers only, never sending any
   personal data or anything you type. Without enabling those features
   the app performs no network activity at all.
+
+### Emoji memory
+
+- The emoji recents and pinned history are stored locally on your device
+  only, and can be cleared from the media settings.
+- What you type in private contexts is never recorded into this memory:
+  incognito sessions, password fields, raw input editors, fields with
+  composing disabled, and while the screen lock is up — a deterministic
+  refusal proven by tests, covering both the emoji-palette tap path and
+  the suggestion-acceptance path. Viewing emoji in those fields stays
+  possible (nothing is recorded) and managing previously saved entries
+  always works.
 
 ### Clipboard
 

@@ -21,6 +21,25 @@ import io.kotest.matchers.shouldBe
  */
 class EmojiHistoryTest : FunSpec({
 
+    /**
+     * DRS v2.14.0: the recording path now requires the privacy gate's
+     * record context. These heritage contracts exercise the mutation
+     * strategies in a fully clean context — the gate's own contracts live
+     * in DrsV21400Tests (exhaustive refusal table + full-loop gating).
+     */
+    suspend fun markEmojiUsed(prefs: DrsPreferenceModel, emoji: Emoji) {
+        EmojiHistoryHelper.markEmojiUsed(
+            prefs, emoji,
+            DrsEmojiHistoryGate.RecordContext(
+                isIncognitoMode = false,
+                isPasswordVariation = false,
+                isRawInputEditor = false,
+                isComposingEnabled = true,
+                isDeviceLocked = false,
+            ),
+        )
+    }
+
     // U+1F600 grinning face
     val grinning = Emoji("😀", "grinning face", emptyList())
     // U+1F60E smiling face with sunglasses
@@ -38,15 +57,15 @@ class EmojiHistoryTest : FunSpec({
 
         // pinEmoji only moves emojis that exist in recents (EmojiHistory.kt:131-135),
         // so seed the recents first (AUTO prepend → newest first).
-        EmojiHistoryHelper.markEmojiUsed(prefs, grinning)
-        EmojiHistoryHelper.markEmojiUsed(prefs, sunglasses)
+        markEmojiUsed(prefs, grinning)
+        markEmojiUsed(prefs, sunglasses)
 
         EmojiHistoryHelper.pinEmoji(prefs, grinning)
         EmojiHistoryHelper.pinEmoji(prefs, sunglasses)
         // pinEmoji prepends under AUTO_SORT_PREPEND: last pinned ends up first
         prefs.emoji.historyData.get().pinned shouldBe listOf(sunglasses, grinning)
 
-        EmojiHistoryHelper.markEmojiUsed(prefs, grinning)
+        markEmojiUsed(prefs, grinning)
         // grinning was already pinned, so the automatic branch (EmojiHistory.kt:93-100)
         // removes and re-adds it with the strategy → moved to front.
         prefs.emoji.historyData.get().pinned shouldBe listOf(grinning, sunglasses)
@@ -58,12 +77,12 @@ class EmojiHistoryTest : FunSpec({
         val prefs by jetprefDataStoreOf(DrsPreferenceModel::class)
         prefs.emoji.historyRecentUpdateStrategy.set(EmojiHistory.UpdateStrategy.AUTO_SORT_PREPEND)
 
-        EmojiHistoryHelper.markEmojiUsed(prefs, grinning)
-        EmojiHistoryHelper.markEmojiUsed(prefs, sunglasses)
-        EmojiHistoryHelper.markEmojiUsed(prefs, partying)
+        markEmojiUsed(prefs, grinning)
+        markEmojiUsed(prefs, sunglasses)
+        markEmojiUsed(prefs, partying)
         prefs.emoji.historyData.get().recent shouldBe listOf(partying, sunglasses, grinning)
 
-        EmojiHistoryHelper.markEmojiUsed(prefs, grinning)
+        markEmojiUsed(prefs, grinning)
         // automatic branch for existing recents (EmojiHistory.kt:102-109): moved to front
         prefs.emoji.historyData.get().recent shouldBe listOf(grinning, partying, sunglasses)
     }
@@ -74,15 +93,15 @@ class EmojiHistoryTest : FunSpec({
 
         // Seed via recents: pinEmoji only moves emojis present in recents, and
         // it APPENDS to pinned under MANUAL_SORT_APPEND (addWithStrategy).
-        EmojiHistoryHelper.markEmojiUsed(prefs, grinning)
+        markEmojiUsed(prefs, grinning)
         EmojiHistoryHelper.pinEmoji(prefs, grinning)
-        EmojiHistoryHelper.markEmojiUsed(prefs, sunglasses)
+        markEmojiUsed(prefs, sunglasses)
         EmojiHistoryHelper.pinEmoji(prefs, sunglasses)
-        EmojiHistoryHelper.markEmojiUsed(prefs, partying)
+        markEmojiUsed(prefs, partying)
         EmojiHistoryHelper.pinEmoji(prefs, partying)
         prefs.emoji.historyData.get().pinned shouldBe listOf(grinning, sunglasses, partying)
 
-        EmojiHistoryHelper.markEmojiUsed(prefs, sunglasses)
+        markEmojiUsed(prefs, sunglasses)
         // manual sort: item must stay in place (EmojiHistory.kt:98-100)
         prefs.emoji.historyData.get().pinned shouldBe listOf(grinning, sunglasses, partying)
     }
@@ -91,15 +110,15 @@ class EmojiHistoryTest : FunSpec({
         val prefs by jetprefDataStoreOf(DrsPreferenceModel::class)
         prefs.emoji.historyRecentUpdateStrategy.set(EmojiHistory.UpdateStrategy.MANUAL_SORT_PREPEND)
 
-        EmojiHistoryHelper.markEmojiUsed(prefs, grinning)
-        EmojiHistoryHelper.markEmojiUsed(prefs, sunglasses)
-        EmojiHistoryHelper.markEmojiUsed(prefs, partying)
+        markEmojiUsed(prefs, grinning)
+        markEmojiUsed(prefs, sunglasses)
+        markEmojiUsed(prefs, partying)
         // new emojis are PREPENDED even under MANUAL_SORT_PREPEND
         // (addWithStrategy) — 'manual' only means existing items are never
         // repositioned by a later markEmojiUsed.
         prefs.emoji.historyData.get().recent shouldBe listOf(partying, sunglasses, grinning)
 
-        EmojiHistoryHelper.markEmojiUsed(prefs, sunglasses)
+        markEmojiUsed(prefs, sunglasses)
         // manual sort: item must stay in place (EmojiHistory.kt:107-109)
         prefs.emoji.historyData.get().recent shouldBe listOf(partying, sunglasses, grinning)
     }
@@ -109,9 +128,9 @@ class EmojiHistoryTest : FunSpec({
         prefs.emoji.historyRecentUpdateStrategy.set(EmojiHistory.UpdateStrategy.AUTO_SORT_PREPEND)
         prefs.emoji.historyRecentMaxSize.set(2)
 
-        EmojiHistoryHelper.markEmojiUsed(prefs, grinning)
-        EmojiHistoryHelper.markEmojiUsed(prefs, sunglasses)
-        EmojiHistoryHelper.markEmojiUsed(prefs, partying)
+        markEmojiUsed(prefs, grinning)
+        markEmojiUsed(prefs, sunglasses)
+        markEmojiUsed(prefs, partying)
 
         // newest is prepended to the front, take(2) keeps the front (EmojiHistory.kt:225-227)
         prefs.emoji.historyData.get().recent shouldBe listOf(partying, sunglasses)
@@ -122,9 +141,9 @@ class EmojiHistoryTest : FunSpec({
         prefs.emoji.historyRecentUpdateStrategy.set(EmojiHistory.UpdateStrategy.AUTO_SORT_APPEND)
         prefs.emoji.historyRecentMaxSize.set(2)
 
-        EmojiHistoryHelper.markEmojiUsed(prefs, grinning)
-        EmojiHistoryHelper.markEmojiUsed(prefs, sunglasses)
-        EmojiHistoryHelper.markEmojiUsed(prefs, partying)
+        markEmojiUsed(prefs, grinning)
+        markEmojiUsed(prefs, sunglasses)
+        markEmojiUsed(prefs, partying)
 
         // newest is appended to the tail, takeLast(2) keeps the tail (EmojiHistory.kt:227-229)
         prefs.emoji.historyData.get().recent shouldBe listOf(sunglasses, partying)
@@ -135,9 +154,9 @@ class EmojiHistoryTest : FunSpec({
         prefs.emoji.historyRecentUpdateStrategy.set(EmojiHistory.UpdateStrategy.AUTO_SORT_PREPEND)
         prefs.emoji.historyRecentMaxSize.set(EmojiHistory.MaxSizeUnlimited)
 
-        EmojiHistoryHelper.markEmojiUsed(prefs, grinning)
-        EmojiHistoryHelper.markEmojiUsed(prefs, sunglasses)
-        EmojiHistoryHelper.markEmojiUsed(prefs, partying)
+        markEmojiUsed(prefs, grinning)
+        markEmojiUsed(prefs, sunglasses)
+        markEmojiUsed(prefs, partying)
 
         prefs.emoji.historyData.get().recent shouldBe listOf(partying, sunglasses, grinning)
     }
@@ -146,7 +165,7 @@ class EmojiHistoryTest : FunSpec({
         val prefs by jetprefDataStoreOf(DrsPreferenceModel::class)
         prefs.emoji.historyEnabled.set(false)
 
-        EmojiHistoryHelper.markEmojiUsed(prefs, grinning)
+        markEmojiUsed(prefs, grinning)
         EmojiHistoryHelper.pinEmoji(prefs, sunglasses)
         EmojiHistoryHelper.unpinEmoji(prefs, grinning)
         EmojiHistoryHelper.moveEmoji(prefs, grinning, 5)
@@ -159,7 +178,7 @@ class EmojiHistoryTest : FunSpec({
     test("pinEmoji only moves an emoji that is present in recents") {
         val prefs by jetprefDataStoreOf(DrsPreferenceModel::class)
 
-        EmojiHistoryHelper.markEmojiUsed(prefs, grinning)
+        markEmojiUsed(prefs, grinning)
         EmojiHistoryHelper.pinEmoji(prefs, sunglasses)
         // sunglasses is not in recents → no-op (EmojiHistory.kt:131-135)
         prefs.emoji.historyData.get() shouldBe EmojiHistory(
@@ -211,10 +230,10 @@ class EmojiHistoryTest : FunSpec({
         prefs.emoji.historyRecentUpdateStrategy.set(EmojiHistory.UpdateStrategy.AUTO_SORT_PREPEND)
 
         // pinEmoji only moves emojis that exist in recents — seed first.
-        EmojiHistoryHelper.markEmojiUsed(prefs, grinning)
+        markEmojiUsed(prefs, grinning)
         EmojiHistoryHelper.pinEmoji(prefs, grinning)
-        EmojiHistoryHelper.markEmojiUsed(prefs, sunglasses)
-        EmojiHistoryHelper.markEmojiUsed(prefs, partying)
+        markEmojiUsed(prefs, sunglasses)
+        markEmojiUsed(prefs, partying)
         prefs.emoji.historyData.get().recent shouldBe listOf(partying, sunglasses)
 
         EmojiHistoryHelper.deleteHistory(prefs)

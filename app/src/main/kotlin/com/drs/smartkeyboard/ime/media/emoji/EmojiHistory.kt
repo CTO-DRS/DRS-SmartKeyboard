@@ -63,9 +63,33 @@ data class EmojiHistory(
 object EmojiHistoryHelper {
     private var emojiGuard = Mutex(locked = false)
 
-    suspend fun markEmojiUsed(prefs: DrsPreferenceModel, emoji: Emoji): Unit = emojiGuard.withLock {
-        if (!prefs.emoji.historyEnabled.get()) {
-            return
+    /**
+     * DRS v2.14.0 «ذاكرة الإيموجي الأمينة»: المسار الوحيد لتسجيل استخدام
+     * إيموجي في السجل الدائم — وهو الآن محكوم ببوابة [DrsEmojiHistoryGate]
+     * حصرًا: السياق المُمرر من موقع الالتقاط يُحكم عند الحدث نفسه، والرفض
+     * صامت في الذاكرة (لا استثناء ولا أثر). لا قيمة افتراضية للسياق — كل
+     * موقع التقاط يبني الحقائق بنفسه، فلا التقاط صامت ولا تجاوز عرضي.
+     *
+     * أفعال الإدارة (pin/unpin/move/remove/delete) لا تمر هنا — هي تعمل
+     * على ذاكرات محفوظة سلفًا ولا تلتقط شيئًا من الحقل الحالي.
+     */
+    suspend fun markEmojiUsed(
+        prefs: DrsPreferenceModel,
+        emoji: Emoji,
+        recordContext: DrsEmojiHistoryGate.RecordContext,
+    ): Unit = emojiGuard.withLock {
+        when (DrsEmojiHistoryGate.decide(
+            historyEnabled = prefs.emoji.historyEnabled.get(),
+            isIncognitoMode = recordContext.isIncognitoMode,
+            isPasswordVariation = recordContext.isPasswordVariation,
+            isRawInputEditor = recordContext.isRawInputEditor,
+            isComposingEnabled = recordContext.isComposingEnabled,
+            isDeviceLocked = recordContext.isDeviceLocked,
+        )) {
+            is DrsEmojiHistoryGate.Verdict.Refuse -> return
+            DrsEmojiHistoryGate.Verdict.Record -> {
+                /* كل الحقائق سليمة — أكمل الالتقاط أدناه */
+            }
         }
 
         val dataMut = prefs.emoji.historyData.get().edit()
