@@ -227,33 +227,34 @@ class DrsV1210Tests : FunSpec({
 
     // -------------------------------------------------------------
     // ClipEditNotificationPolicy — the v1.11 notification promise
+    // (DRS v2.15.0: captureAccepted صار أول قيد — التقاط مرفوض لا يُعلن)
     // -------------------------------------------------------------
     test("a plain text capture with everything on notifies") {
         ClipEditNotificationPolicy.shouldNotify(
-            prefEnabled = true, historyEnabled = true,
+            captureAccepted = true, prefEnabled = true, historyEnabled = true,
             type = ItemType.TEXT, text = "مرحبا بالعالم", isSensitive = false,
         ).shouldBeTrue()
     }
 
     test("sensitive text never rides a notification") {
         ClipEditNotificationPolicy.shouldNotify(
-            prefEnabled = true, historyEnabled = true,
+            captureAccepted = true, prefEnabled = true, historyEnabled = true,
             type = ItemType.TEXT, text = "password123", isSensitive = true,
         ).shouldBeFalse()
     }
 
     test("non-text items, blank text, disabled pref and disabled history never notify") {
         ClipEditNotificationPolicy.shouldNotify(
-            true, true, ItemType.IMAGE, null, false,
+            true, true, true, ItemType.IMAGE, null, false,
         ).shouldBeFalse()
         ClipEditNotificationPolicy.shouldNotify(
-            true, true, ItemType.TEXT, "   ", false,
+            true, true, true, ItemType.TEXT, "   ", false,
         ).shouldBeFalse()
         ClipEditNotificationPolicy.shouldNotify(
-            false, true, ItemType.TEXT, "text", false,
+            true, false, true, ItemType.TEXT, "text", false,
         ).shouldBeFalse()
         ClipEditNotificationPolicy.shouldNotify(
-            true, false, ItemType.TEXT, "text", false,
+            true, true, false, ItemType.TEXT, "text", false,
         ).shouldBeFalse()
     }
 

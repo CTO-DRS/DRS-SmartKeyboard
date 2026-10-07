@@ -37,6 +37,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.drs.lib.android.AndroidClipboardManager
 import org.drs.lib.android.AndroidClipboardManager_OnPrimaryClipChangedListener
+import org.drs.lib.android.AndroidKeyguardManager
 import org.drs.lib.android.clearPrimaryClipAnyApi
 import org.drs.lib.android.setOrClearPrimaryClip
 import org.drs.lib.android.showShortToastSync
@@ -97,6 +98,12 @@ class ClipboardManager(
     private val editorInstance by context.editorInstance()
     private val keyboardManager by context.keyboardManager()
     private val systemClipboardManager = context.systemService(AndroidClipboardManager::class)
+
+    // DRS v2.15.0 «ذاكرة الحافظة الأمينة»: مدير القفل الشاشي — حقيقة
+    // البيئة لبوابة الالتقاط. تُقرأ حالتُها لحظة كل حدث التقط لا عند
+    // البناء، فالقفل يتقلب والخدمة تبقى (نفس نمط مُقيّم السياق في
+    // KeyboardManager ومزوّد اقتراح الإيموجي).
+    private val keyguardManager = context.systemService(AndroidKeyguardManager::class)
 
     private val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val cleanUpJob: Job
@@ -391,27 +398,33 @@ class ClipboardManager(
 
                 val isEqual = internalPrimaryClip?.isEqualTo(systemPrimaryClip) == true
                 if (!isEqual) {
-                    // DRS p8 (S-1): the history-refusal gates are evaluated
-                    // BEFORE any media clone. fromClipData(cloneUri = false)
-                    // never touches disk — a media clip that will be refused
-                    // (incognito mode / password field / EXTRA_IS_SENSITIVE,
-                    // the exact conditions insertOrMoveBeginning refuses on)
-                    // keeps the source uri for the live paste (RAM ClipData)
-                    // and no provider row + clipboard_files clone is created
-                    // for it, so nothing is orphaned on disk.
+                    // DRS p8 (S-1) + v2.15.0: the history-refusal gate is
+                    // evaluated BEFORE any media clone. fromClipData
+                    // (cloneUri = false) never touches disk — a media clip
+                    // whose capture verdict refuses (incognito mode /
+                    // password field / EXTRA_IS_SENSITIVE / device locked —
+                    // the exact conditions insertOrMoveBeginning refuses
+                    // storage on) keeps the source uri for the live paste
+                    // (RAM ClipData) and no provider row + clipboard_files
+                    // clone is created for it, so nothing is orphaned on
+                    // disk. The gate verdict is the single source of truth
+                    // for both the clone decision and the storage decision.
                     val probe = ClipboardItem.fromClipData(appContext, systemPrimaryClip, cloneUri = false)
                     val isMedia = probe.type == ItemType.IMAGE || probe.type == ItemType.VIDEO
                     val sourceUri = systemPrimaryClip.getItemAt(0).uri
                     val willClone = isMedia &&
                         sourceUri != null &&
                         sourceUri.authority != ClipboardMediaProvider.AUTHORITY
+                    val captureVerdict = DrsClipboardCaptureGate.decide(
+                        historyEnabled = prefs.clipboard.historyEnabled.get(),
+                        isIncognitoMode = keyboardManager.activeState.isIncognitoMode,
+                        isPasswordVariation = keyboardManager.activeState.keyVariation == KeyVariation.PASSWORD,
+                        isSensitiveClip = probe.isSensitive,
+                        isDeviceLocked = isDeviceLockedNow(),
+                    )
                     var item = probe
                     var cloned = false
-                    if (isMedia && willClone &&
-                        !keyboardManager.activeState.isIncognitoMode &&
-                        keyboardManager.activeState.keyVariation != KeyVariation.PASSWORD &&
-                        !probe.isSensitive
-                    ) {
+                    if (isMedia && willClone && DrsClipboardCaptureGate.allowsMediaClone(captureVerdict)) {
                         item = ClipboardItem.fromClipData(appContext, systemPrimaryClip, cloneUri = true)
                         cloned = true
                         // DRS p7 (F12): a captured media item whose provider
@@ -443,10 +456,23 @@ class ClipboardManager(
     }
 
     /**
+     * DRS v2.15.0 «ذاكرة الحافظة الأمينة»: حقيقة القفل لحظة الحدث —
+     * يُقرأ عند كل التقاط لا مرة واحدة، فالبوابة تحكم بحقائق حية.
+     */
+    private fun isDeviceLockedNow(): Boolean {
+        return keyguardManager.let { it.isDeviceLocked || it.isKeyguardLocked }
+    }
+
+    /**
      * Change the current text on clipboard, update history (if enabled).
      */
     private fun addNewClip(item: ClipboardItem) {
-        insertOrMoveBeginning(item)
+        // DRS v2.15.0: قيمة الإرجاع صارت إلزامية الاستهلاك — false تعني
+        // رفضًا خصوصيًا (تخفي/كلمة مرور/حساس/قفل)، وإشعار «تعديل» سطح
+        // عرض مشتق من التقاطٍ قَبِلَ فقط: رفضٌ لا يُعلن ولا يُسرَّب،
+        // ولا صف يفتحه الإشعار أصلًا. عطْل السجل يعيد true هنا لكن
+        // السياسة نفسها ترفض الإشعار بعدها (historyEnabled).
+        val captureAccepted = insertOrMoveBeginning(item)
         updatePrimaryClip(item)
         // DRS v1.21.0: «نافذة الاشعارات المنبثقه الخاصه بالتعديل» — a new
         // capture can surface a heads-up «تعديل» notification that opens
@@ -457,6 +483,7 @@ class ClipboardManager(
             item,
             prefEnabled = prefs.clipboard.editNotificationEnabled.get(),
             historyEnabled = prefs.clipboard.historyEnabled.get(),
+            captureAccepted = captureAccepted,
         )
     }
 
@@ -471,52 +498,63 @@ class ClipboardManager(
     /**
      * Adds a new item to the clipboard history (if enabled).
      *
+     * DRS v2.15.0 «ذاكرة الحافظة الأمينة»: الحكم الواحد من
+     * [DrsClipboardCaptureGate] يحكم التخزين حصريًا — الفحوص اليدوية
+     * المتفرقة (تخفي/كلمة مرور/حساس) صارت حقائق تُغذّي البوابة مع
+     * إضافة العلة المفقودة: القفل الشاشي (اللصق محجوب مقفولًا فالالتقاط
+     * محجوب بالتماثل).
+     *
      * DRS p8 (S-1): returns false when the item was REFUSED by the privacy
-     * gates (incognito mode / password field / sensitive flag — the exact
-     * conditions the S-1 pre-gate in [onPrimaryClipChanged] mirrors), so the
-     * caller can clean up an already-cloned media backing. Returns true when
-     * the item was stored, merged, or history is simply disabled (nothing to
-     * clean up in those cases).
+     * gate (incognito mode / password field / sensitive flag / device
+     * locked — the exact conditions the S-1 pre-gate in
+     * [onPrimaryClipChanged] mirrors through the same verdict), so the
+     * caller can clean up an already-cloned media backing. Returns true
+     * when the item was stored, merged, or history is simply disabled
+     * (nothing to clean up in those cases — the gate's
+     * [DrsClipboardCaptureGate.storageRefused] translation).
      */
     private fun insertOrMoveBeginning(newItem: ClipboardItem): Boolean {
-        // DRS privacy guard: never record clipboard history while an incognito
-        // or password field is active, so sensitive content is never stored.
-        if (keyboardManager.activeState.isIncognitoMode ||
-            keyboardManager.activeState.keyVariation == KeyVariation.PASSWORD
-        ) {
+        // DRS v2.15.0: بوابة واحدة، حقائق حية لحظة الحدث — التخفي
+        // وكلمة المرور من حالة المحرر الحية، الحساسية من العنصر نفسه،
+        // والقفل من مدير القفل. الرفض صامت في الذاكرة: لا استثناء ولا
+        // سجل أخطاء ولا أثر.
+        val verdict = DrsClipboardCaptureGate.decide(
+            historyEnabled = prefs.clipboard.historyEnabled.get(),
+            isIncognitoMode = keyboardManager.activeState.isIncognitoMode,
+            isPasswordVariation = keyboardManager.activeState.keyVariation == KeyVariation.PASSWORD,
+            isSensitiveClip = newItem.isSensitive,
+            isDeviceLocked = isDeviceLockedNow(),
+        )
+        if (DrsClipboardCaptureGate.storageRefused(verdict)) {
             return false
         }
-        // DRS (S-6): a sensitive clip (EXTRA_IS_SENSITIVE / IS_SENSITIVE per
-        // ClipData) must never enter the history even if some source
-        // mislabels it — the live primary clip keeps working above; only the
-        // history storage path is refused here.
-        if (newItem.isSensitive) {
-            return false
+        if (verdict is DrsClipboardCaptureGate.Verdict.Refuse) {
+            // HISTORY_DISABLED: لا شيء خُزِن ولا شيء يُنظَّف — عقد اللا-انحدار
+            // مع سلوك التراث (استنساخ الوسائط الليفي يظل ظهرَ المقص الحي).
+            return true
         }
-        if (prefs.clipboard.historyEnabled.get()) {
-            // DRS v1.9.0: one history text retains at most 50,000 characters
-            // (ClipboardTextPolicy). The primary clip keeps the full text;
-            // the stored history variant is what the panel re-pastes.
-            val historyVariant = if (newItem.type == ItemType.TEXT && newItem.text != null) {
-                newItem.copy(text = ClipboardTextPolicy.truncateForStorage(newItem.text))
-            } else {
-                newItem
-            }
-            val historyElement = currentHistory.all.firstOrNull { item ->
-                item.type == ItemType.TEXT && item.text == historyVariant.text && item.isSensitive == historyVariant.isSensitive
-            }
-            if (historyElement != null) {
-                moveToTheBeginning(
-                    oldItem = historyElement,
-                    newItem = if (historyElement.isPinned) {
-                        historyVariant.copy(isPinned = true)
-                    } else {
-                        historyVariant
-                    }
-                )
-            } else {
-                insertClip(historyVariant)
-            }
+        // DRS v1.9.0: one history text retains at most 50,000 characters
+        // (ClipboardTextPolicy). The primary clip keeps the full text;
+        // the stored history variant is what the panel re-pastes.
+        val historyVariant = if (newItem.type == ItemType.TEXT && newItem.text != null) {
+            newItem.copy(text = ClipboardTextPolicy.truncateForStorage(newItem.text))
+        } else {
+            newItem
+        }
+        val historyElement = currentHistory.all.firstOrNull { item ->
+            item.type == ItemType.TEXT && item.text == historyVariant.text && item.isSensitive == historyVariant.isSensitive
+        }
+        if (historyElement != null) {
+            moveToTheBeginning(
+                oldItem = historyElement,
+                newItem = if (historyElement.isPinned) {
+                    historyVariant.copy(isPinned = true)
+                } else {
+                    historyVariant
+                }
+            )
+        } else {
+            insertClip(historyVariant)
         }
         return true
     }

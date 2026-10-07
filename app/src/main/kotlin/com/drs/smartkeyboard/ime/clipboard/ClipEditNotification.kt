@@ -27,6 +27,14 @@ import com.drs.smartkeyboard.ime.clipboard.provider.ItemType
  * clips (flagged passwords etc.), non-text items, and incognito-captured
  * content never surface in a notification, and the whole channel is
  * pref-gated from the comprehensive clipboard settings.
+ *
+ * DRS v2.15.0 «ذاكرة الحافظة الأمينة»: السياسة تُقيّد إضافيًا بأن يكون
+ * التقاط العنصر قد قُبِل أصلًا (captureAccepted) — الإشعار سطح عرض
+ * مشتق من التقاط، ورفضٌ من بوابة الالتقاط (تخفي/كلمة مرور/حساس/قفل)
+ * لا يُعلن ولا يُسرَّب معاينته. الوثيقة القديمة كانت تدّعي أن مسار
+ * الالتقاط مُبوَّب من الأصل — كانت دعوى غير صحيحة حين يتجاهل المستدعي
+ * قيمة إرجاع الإدراج؛ الآن القيد نفسه جزء من العقد النقي ومثبت
+ * اختبارًا.
  */
 object ClipEditNotificationPolicy {
 
@@ -35,18 +43,22 @@ object ClipEditNotificationPolicy {
 
     /**
      * The pure decision: does this captured clip deserve the edit
-     * notification? Requires the pref, a history-backed capture (the
-     * capture path is already incognito/password-gated upstream), a text
-     * item with real content, and a non-sensitive clip — a notification
-     * surfaces content on the lock screen, so sensitive text never rides it.
+     * notification? Requires an ACCEPTED capture (the capture gate's
+     * verdict — a refused capture has no history row behind the edit
+     * window and must never surface a preview), the pref, a
+     * history-backed capture, a text item with real content, and a
+     * non-sensitive clip — a notification surfaces content on the lock
+     * screen, so sensitive text never rides it.
      */
     fun shouldNotify(
+        captureAccepted: Boolean,
         prefEnabled: Boolean,
         historyEnabled: Boolean,
         type: ItemType,
         text: String?,
         isSensitive: Boolean,
     ): Boolean {
+        if (!captureAccepted) return false
         if (!prefEnabled || !historyEnabled) return false
         if (type != ItemType.TEXT) return false
         if (isSensitive) return false
@@ -74,10 +86,21 @@ object ClipEditNotification {
      * Posts the heads-up edit notification for [item] when the pure policy
      * approves and notifications are actually granted. Never throws: the
      * capture path must not break because a notification could not post.
+     *
+     * DRS v2.15.0: [captureAccepted] إلزامي — قيمة إرجاع مسار التخزين
+     * نفسها (false ⟺ رفض بوابة الالتقاط الخصوصي)؛ لا افتراضي فلا مسار
+     * استدعاء صامت يعلن التقاطًا مرفوضًا.
      */
-    fun maybePost(context: Context, item: ClipboardItem, prefEnabled: Boolean, historyEnabled: Boolean) {
+    fun maybePost(
+        context: Context,
+        item: ClipboardItem,
+        captureAccepted: Boolean,
+        prefEnabled: Boolean,
+        historyEnabled: Boolean,
+    ) {
         try {
             if (!ClipEditNotificationPolicy.shouldNotify(
+                    captureAccepted = captureAccepted,
                     prefEnabled = prefEnabled,
                     historyEnabled = historyEnabled,
                     type = item.type,
