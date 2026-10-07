@@ -80,9 +80,9 @@ any contributor ever introduces a network stack into the engine.
 
 ### What is stored on your device (and where)
 
-1. **Personal learning table:** your frequently used words and pairs
-   (never full sentences, never digits) — one size-capped file in a
-   private folder excluded from cloud backups.
+1. **Personal learning table:** your frequently used words, pairs and
+   two-word continuations (never full sentences, never digits) — one
+   size-capped file in a private folder excluded from cloud backups.
 2. **Sanitized crash registry:** on a rare crash we keep the exception
    class name and a fingerprint only — never the exception message,
    never any text you typed. Export is manual, one tap.

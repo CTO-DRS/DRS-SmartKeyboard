@@ -39,6 +39,7 @@ class DrsPrivacyDashboard(
     private val stores: List<StoreProbe>,
     private val attestationProvider: () -> DrsNetworkSentinel.Attestation,
     private val learningProvider: () -> Pair<Map<String, Long>, Map<String, Map<String, Long>>>? = { null },
+    private val trigramProvider: () -> Map<String, Map<String, Map<String, Long>>> = { emptyMap() },
 ) {
 
     /** One known data store and how to measure/destroy it. */
@@ -99,6 +100,7 @@ class DrsPrivacyDashboard(
         iterations: Int = DrsE2ECrypto.DEFAULT_ITERATIONS,
     ): String? = exportEncrypted(
         learning = learningProvider(),
+        trigrams = trigramProvider(),
         appVersion = appVersion,
         exportedAt = exportedAt,
         passphrase = passphrase,
@@ -107,6 +109,7 @@ class DrsPrivacyDashboard(
 
     fun exportEncrypted(
         learning: Pair<Map<String, Long>, Map<String, Map<String, Long>>>?,
+        trigrams: Map<String, Map<String, Map<String, Long>>> = emptyMap(),
         appVersion: String,
         exportedAt: Long,
         passphrase: CharArray,
@@ -114,12 +117,15 @@ class DrsPrivacyDashboard(
     ): String? {
         if (learning == null) return null
         val (words, bigrams) = learning
-        if (words.isEmpty() && bigrams.isEmpty()) return null
+        if (words.isEmpty() && bigrams.isEmpty() && trigrams.isEmpty()) return null
         val payload = DrsSyncBundle.Payload(
             app = appVersion,
             exportedAt = exportedAt,
             words = words,
             bigrams = bigrams,
+            // v2.13.0 «السياق الأعمق» — the two-word habits ride the same
+            // E2E container (validated, capped, sealed with everything else).
+            trigrams = trigrams,
         )
         return DrsSyncBundle.seal(payload, passphrase, iterations)
     }
@@ -171,6 +177,7 @@ class DrsPrivacyDashboard(
             context: Context,
             attestationProvider: () -> DrsNetworkSentinel.Attestation,
             learningSnapshot: () -> Pair<Map<String, Long>, Map<String, Map<String, Long>>>?,
+            trigramSnapshot: () -> Map<String, Map<String, Map<String, Long>>> = { emptyMap() },
         ): DrsPrivacyDashboard {
             val appContext = context.applicationContext
             val learningFile = File(appContext.noBackupFilesDir, "drs_learning_v1.json")
@@ -219,6 +226,7 @@ class DrsPrivacyDashboard(
                 // The export path reads the live learning snapshot through
                 // the same provider the sync bundle uses.
                 learningProvider = learningSnapshot,
+                trigramProvider = trigramSnapshot,
             )
         }
     }

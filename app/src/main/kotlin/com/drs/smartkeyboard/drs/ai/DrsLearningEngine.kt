@@ -16,6 +16,8 @@ import kotlinx.serialization.json.Json
  * WHAT it stores (local only, noBackupFilesDir):
  *  - committed word counts (the user's real vocabulary with real weights)
  *  - personal bigram counts (the user's real word-pair habits)
+ *  - personal trigram counts (v2.13.0 «السياق الأعمق» — the user's real
+ *    two-word-context habits: what follows WHAT after WHAT)
  *
  * WHAT it NEVER stores: full sentences, field contents, timestamps per
  * keystroke, or anything identifiable beyond the linguistic units
@@ -42,6 +44,11 @@ object DrsLearningEngine {
 
     private const val MAX_WORDS = 2000
     private const val MAX_BIGRAMS = 1024
+    // v2.13.0 «السياق الأعمق» — the trigram table rides the same store,
+    // the same discipline: bounded rows, bounded counts, bounded file.
+    const val MAX_TRIGRAMS = 512
+    private const val MAX_TRIGRAM_COUNT = 100L
+    private const val MAX_TRIGRAM_ROW = 8
     private const val MAX_WORD_COUNT = 200L
     private const val MAX_BIGRAM_COUNT = 100L
     private const val FILE_BYTES_CAP = 128 * 1024
@@ -50,6 +57,10 @@ object DrsLearningEngine {
     private val lock = Any()
     private var words = LinkedHashMap<String, Long>()
     private var bigrams = LinkedHashMap<String, LinkedHashMap<String, Long>>()
+    // v2.13.0 — personal trigrams: p2 → p1 → next → count. NESTED keys (no
+    // joined-string key) so a learned "word" containing a space can never
+    // collide with the row delimiter.
+    private var trigrams = LinkedHashMap<String, LinkedHashMap<String, LinkedHashMap<String, Long>>>()
     // DRS M1.6 — the lemma table: the STEM of learned words (via
     // DrsArabicMorphology) carries half of each word's increment so the
     // per-load decay can never kill the stem before its words.
@@ -72,6 +83,91 @@ object DrsLearningEngine {
             dirty = true
         }
     }
+
+    /**
+     * v2.13.0 «السياق الأعمق» — learns one [p2]→[p1]→[next] chain. Same
+     * gating and guarantees as [learnBigram]: capped rows (evicting the
+     * weakest row on overflow), capped counts (saturation), capped row
+     * width (evicting the weakest continuation), never throws.
+     */
+    fun learnTrigram(p2: String, p1: String, next: String) {
+        val a = p2.trim().lowercase()
+        val b = p1.trim().lowercase()
+        val c = next.trim().lowercase()
+        if (a.isEmpty() || b.isEmpty() || c.isEmpty()) return
+        if (a.length > 40 || b.length > 40 || c.length > 40) return
+        if (a.any { it.isDigit() } || b.any { it.isDigit() } || c.any { it.isDigit() }) return
+        synchronized(lock) {
+            val row1 = trigrams[a]
+            if (row1 == null) {
+                if (trigrams.size >= MAX_TRIGRAMS) evictWeakestTrigramRow() ?: return
+                trigrams[a] = LinkedHashMap()
+            }
+            // Here: trigrams[a] is guaranteed non-null (created or pre-existing).
+            val row1b = trigrams.getValue(a)
+            var row2 = row1b[b]
+            if (row2 == null) {
+                // b is NOT in row1 here — when the p1 slot is full the
+                // weakest p1 row gives way first.
+                if (row1b.size >= MAX_TRIGRAM_ROW) {
+                    evictWeakestP1Row(row1b)
+                    if (row1b.size >= MAX_TRIGRAM_ROW) return
+                }
+                row2 = row1b.getOrPut(b) { LinkedHashMap() }
+            }
+            val cnt = (row2[c] ?: 0L) + 1L
+            row2[c] = cnt.coerceAtMost(MAX_TRIGRAM_COUNT)
+            if (row2.size > MAX_TRIGRAM_ROW) evictWeakestInRow(row2)
+            dirty = true
+        }
+    }
+
+    private fun evictWeakestTrigramRow(): String? {
+        var weakestKey: String? = null
+        var weakestSum = Long.MAX_VALUE
+        for ((a, row1) in trigrams) {
+            var sum = 0L
+            for (row2 in row1.values) sum += row2.values.sum()
+            if (sum < weakestSum) {
+                weakestSum = sum
+                weakestKey = a
+            }
+        }
+        return weakestKey?.also { trigrams.remove(it) }
+    }
+
+    private fun evictWeakestP1Row(row1: LinkedHashMap<String, LinkedHashMap<String, Long>>) {
+        var weakestKey: String? = null
+        var weakestSum = Long.MAX_VALUE
+        for ((b, row2) in row1) {
+            val sum = row2.values.sum()
+            if (sum < weakestSum) {
+                weakestSum = sum
+                weakestKey = b
+            }
+        }
+        weakestKey?.let { row1.remove(it) }
+    }
+
+    /**
+     * v2.13.0 — the personal trigram row for a two-word context (p2, p1):
+     * (next, count) pairs, strongest first, at most [limit].
+     */
+    fun personalTrigramNext(p2: String, p1: String, limit: Int): List<Pair<String, Int>> {
+        if (limit <= 0) return emptyList()
+        val a = p2.trim().lowercase()
+        val b = p1.trim().lowercase()
+        if (a.isEmpty() || b.isEmpty()) return emptyList()
+        val row = synchronized(lock) { trigrams[a]?.get(b) } ?: return emptyList()
+        // Deterministic tiebreak: count desc, then word — the persisted
+        // roundtrip (HashMap encode/decode) must never flip equal counts.
+        return row.entries
+            .sortedWith(compareByDescending<Map.Entry<String, Long>> { it.value }.thenBy { it.key })
+            .take(limit)
+            .map { it.key to it.value.toInt() }
+    }
+
+    fun trigramRowCount(): Int = synchronized(lock) { trigrams.size }
 
     /** Learns one [prev]→[next] pair. Same gating and guarantees as [learnWord]. */
     fun learnBigram(prev: String, next: String) {
@@ -187,6 +283,7 @@ object DrsLearningEngine {
             words.clear()
             bigrams.clear()
             lemmas.clear()
+            trigrams.clear()
             dirty = false
             file?.delete()
         }
@@ -250,6 +347,54 @@ object DrsLearningEngine {
         }
     }
 
+    /**
+     * v2.13.0 «السياق الأعمق» — read-only snapshot of the trigram table
+     * for the E2E sync bundle (additive companion of [exportState] — the
+     * existing signature is untouched so today's callers never change).
+     * p2 → p1 → next → count, copies under the lock.
+     */
+    fun exportTrigramState(): Map<String, Map<String, Map<String, Long>>> = synchronized(lock) {
+        trigrams.mapValues { (_, row1) -> row1.mapValues { (_, row2) -> row2.toMap() } }
+    }
+
+    /**
+     * v2.13.0 — restores a trigram snapshot produced by
+     * [exportTrigramState] (validated by DrsSyncBundle before it reaches
+     * here). Same replace/merge semantics as [importState]; the clamps
+     * guarantee an import can never overflow what locally-learned state
+     * could have produced (rows ≤ [MAX_TRIGRAMS], counts ≤ the ceiling,
+     * row width ≤ [MAX_TRIGRAM_ROW]).
+     */
+    fun importTrigramState(
+        importedTrigrams: Map<String, Map<String, Map<String, Long>>>,
+        replace: Boolean,
+    ) {
+        synchronized(lock) {
+            if (replace) trigrams = LinkedHashMap()
+            for ((a, row1) in importedTrigrams) {
+                val p2 = a.trim().lowercase()
+                if (p2.isEmpty() || p2.length > 40) continue
+                val target1 = trigrams.getOrPut(p2) { LinkedHashMap() }
+                for ((b, row2) in row1) {
+                    val p1 = b.trim().lowercase()
+                    if (p1.isEmpty() || p1.length > 40) continue
+                    val target2 = target1.getOrPut(p1) { LinkedHashMap() }
+                    for ((c, n) in row2) {
+                        val nxt = c.trim().lowercase()
+                        if (nxt.isEmpty() || nxt.length > 40) continue
+                        target2[nxt] = ((target2[nxt] ?: 0L) + n).coerceAtMost(MAX_TRIGRAM_COUNT)
+                    }
+                    while (target2.size > MAX_TRIGRAM_ROW) evictWeakestInRow(target2)
+                }
+                while (target1.size > MAX_TRIGRAM_ROW) evictWeakestP1Row(target1)
+            }
+            while (trigrams.size > MAX_TRIGRAMS) {
+                evictWeakestTrigramRow() ?: break
+            }
+            dirty = true
+        }
+    }
+
     // ------------------------------------------------------ persistence
 
     // DRS Phase 2: kotlinx.serialization carries the persisted form —
@@ -267,22 +412,38 @@ object DrsLearningEngine {
         // DRS M1.6 — the lemma table rides the same file; the default keeps
         // older payloads decoding unchanged (backward compatibility).
         val lemmas: Map<String, Long> = emptyMap(),
+        // v2.13.0 «السياق الأعمق» — personal trigrams (p2 → p1 → nexts).
+        // Additive field with an empty default: files written by older
+        // versions decode unchanged, and THIS version's files decode on
+        // older versions (ignoreUnknownKeys = true) with trigrams simply
+        // absent — never a crash, never a migration.
+        val trigrams: Map<String, Map<String, PersistedBigramRow>> = emptyMap(),
     )
 
     private val persistedJson = Json { ignoreUnknownKeys = true }
 
+    /** One parse outcome — the four tables, decoded (not yet aged). */
+    private data class ParsedTables(
+        val words: HashMap<String, Long>,
+        val bigrams: HashMap<String, LinkedHashMap<String, Long>>,
+        val lemmas: HashMap<String, Long>,
+        val trigrams: HashMap<String, LinkedHashMap<String, LinkedHashMap<String, Long>>>,
+    )
+
+    private fun emptyTables(): ParsedTables = ParsedTables(HashMap(), HashMap(), HashMap(), HashMap())
+
     /** Loads (and ages) the tables from [file]. A damaged file is discarded. */
     fun load(file: File) {
-        val parsed: Triple<HashMap<String, Long>, HashMap<String, LinkedHashMap<String, Long>>, HashMap<String, Long>> =
-            try {
-                parse(file)
-            } catch (_: Throwable) {
-                Triple(HashMap(), HashMap(), HashMap())
-            }
+        val parsed: ParsedTables = try {
+            parse(file)
+        } catch (_: Throwable) {
+            emptyTables()
+        }
         synchronized(lock) {
-            words = LinkedHashMap(parsed.first)
-            bigrams = LinkedHashMap(parsed.second)
-            lemmas = LinkedHashMap(parsed.third)
+            words = LinkedHashMap(parsed.words)
+            bigrams = LinkedHashMap(parsed.bigrams)
+            lemmas = LinkedHashMap(parsed.lemmas)
+            trigrams = LinkedHashMap(parsed.trigrams)
             // Aging: fresh usage outranks stale usage. Applied on load so a
             // user who stops using a word watches it fade instead of facing
             // it forever.
@@ -308,9 +469,25 @@ object DrsLearningEngine {
                 val aged = c - (c * DECAY_PERCENT / 100)
                 if (aged >= 1L) agedLemmas[l] = aged
             }
+            // v2.13.0 — trigrams decay exactly like bigrams: what the user
+            // stopped writing fades; the two-word habits age toward the caps.
+            val agedTrigrams = LinkedHashMap<String, LinkedHashMap<String, LinkedHashMap<String, Long>>>()
+            for ((a, row1) in trigrams) {
+                val agedRow1 = LinkedHashMap<String, LinkedHashMap<String, Long>>()
+                for ((b, row2) in row1) {
+                    val agedRow2 = LinkedHashMap<String, Long>()
+                    for ((c, n) in row2) {
+                        val aged = n - (n * DECAY_PERCENT / 100)
+                        if (aged >= 1L) agedRow2[c] = aged
+                    }
+                    if (agedRow2.isNotEmpty()) agedRow1[b] = agedRow2
+                }
+                if (agedRow1.isNotEmpty()) agedTrigrams[a] = agedRow1
+            }
             words = agedWords
             bigrams = agedBigrams
             lemmas = agedLemmas
+            trigrams = agedTrigrams
             dirty = false
         }
     }
@@ -394,15 +571,19 @@ object DrsLearningEngine {
                     p to PersistedBigramRow(HashMap(row))
                 },
                 lemmas = HashMap(lemmas),
+                trigrams = trigrams.entries.associate { (a, row1) ->
+                    a to row1.entries.associate { (b, row2) ->
+                        b to PersistedBigramRow(HashMap(row2))
+                    }
+                },
             )
         }
         return persistedJson.encodeToString(PersistedState.serializer(), state)
     }
 
-    @Suppress("unused")
-    private fun parse(file: File): Triple<HashMap<String, Long>, HashMap<String, LinkedHashMap<String, Long>>, HashMap<String, Long>> {
+    private fun parse(file: File): ParsedTables {
         if (!file.exists() || file.length() > FILE_BYTES_CAP) {
-            return Triple(HashMap(), HashMap(), HashMap())
+            return emptyTables()
         }
         val state = persistedJson.decodeFromString<PersistedState>(file.readText(Charsets.UTF_8))
         val wMap = HashMap<String, Long>(state.words.size * 2)
@@ -415,6 +596,16 @@ object DrsLearningEngine {
         }
         val lMap = HashMap<String, Long>(state.lemmas.size * 2)
         for ((l, c) in state.lemmas) lMap[l] = c
-        return Triple(wMap, bMap, lMap)
+        val tMap = HashMap<String, LinkedHashMap<String, LinkedHashMap<String, Long>>>()
+        for ((a, row1) in state.trigrams) {
+            val linked1 = LinkedHashMap<String, LinkedHashMap<String, Long>>()
+            for ((b, row2) in row1) {
+                val linked2 = LinkedHashMap<String, Long>()
+                for ((c, n) in row2.nexts) linked2[c] = n
+                if (linked2.isNotEmpty()) linked1[b] = linked2
+            }
+            if (linked1.isNotEmpty()) tMap[a] = linked1
+        }
+        return ParsedTables(wMap, bMap, lMap, tMap)
     }
 }

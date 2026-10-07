@@ -26,6 +26,7 @@ import com.drs.smartkeyboard.drs.ai.DrsArabicMorphology
 import com.drs.smartkeyboard.drs.ai.DrsContextRanker
 import com.drs.smartkeyboard.drs.ai.DrsLearningEngine
 import com.drs.smartkeyboard.drs.ai.DrsMorphologyRanker
+import com.drs.smartkeyboard.drs.ai.DrsTrigramChains
 import com.drs.smartkeyboard.drs.ai.DrsNextWordPredictor
 import com.drs.smartkeyboard.drs.ai.DrsSmartReplies
 import com.drs.smartkeyboard.drs.ai.LatinNormBridge
@@ -231,6 +232,9 @@ class LatinLanguageProvider(context: Context) : SpellingProvider, SuggestionProv
     /** Language code -> next-word table (normalized head -> next words sorted by score desc). */
     private val bigramCache = guardedByLock { mutableMapOf<String, Map<String, List<Pair<String, Int>>>>() }
 
+    /** v2.13.0 — language code -> static trigram-chain table (drained lazily like the bigrams). */
+    private val chainsCache = guardedByLock { mutableMapOf<String, DrsTrigramChains.Table>() }
+
     /** DRS: cached personal user dictionary entries with a short TTL. */
     private class UserDataCacheState {
         var loadedAtElapsed: Long = Long.MIN_VALUE
@@ -380,6 +384,37 @@ class LatinLanguageProvider(context: Context) : SpellingProvider, SuggestionProv
             emptyMap()
         }
         bigramCache.withLock { it[lang] = table }
+        return table
+    }
+
+    /** v2.13.0 «السياق الأعمق» — the curated chain asset exists for Arabic only today. */
+    private fun chainsAssetFor(lang: String): String? = when (lang) {
+        ARABIC_LANGUAGE -> "drs/trigram_chains.txt"
+        else -> null
+    }
+
+    /**
+     * v2.13.0 — loads the static trigram-chain table for the given language
+     * lazily, mirroring [bigramsFor] exactly: a missing or invalid asset
+     * degrades to the shared empty table (the trigram layer is an honest
+     * no-op there — never a dishonest lookup in a table that cannot match).
+     * The parse uses the SAME normalizer the bigram keys use ([normalize])
+     * — one normalization serves both layers, per the chains contract.
+     */
+    private suspend fun chainsFor(subtype: Subtype): DrsTrigramChains.Table {
+        val languages = listOf(subtype.primaryLocale.language) +
+            subtype.secondaryLocales.map { it.language }
+        val lang = languages.firstOrNull() ?: return DrsTrigramChains.EMPTY
+        chainsCache.withLock { it[lang] }?.let { return it }
+        val asset = chainsAssetFor(lang) ?: return DrsTrigramChains.EMPTY
+        val table = runCatching {
+            val lines = appContext.assets.readText(asset).lines()
+            DrsTrigramChains.parse(lines, ::normalize).table
+        }.getOrElse { e ->
+            flogError { "Failed to load trigram chains for '$lang': ${e}" }
+            DrsTrigramChains.EMPTY
+        }
+        chainsCache.withLock { it[lang] = table }
         return table
     }
 
@@ -665,11 +700,38 @@ class LatinLanguageProvider(context: Context) : SpellingProvider, SuggestionProv
             emptyList()
         }
         val staticFallback = if (lemmaKey != key) bigramsFor(subtype)[lemmaKey] ?: emptyList() else emptyList()
+        // v2.13.0 «السياق الأعمق» — the trigram layer: when TWO words sit
+        // behind the cursor, the static chain table and the personal chain
+        // table both get asked about (p2, p1). Either row empty = the layer
+        // honestly stays silent (the predictor's pinned no-op contract).
+        val twoWords = lastTwoWordsBefore(before)
+        val staticTrigram: List<Pair<String, Int>>
+        val personalTrigram: List<Pair<String, Int>>
+        if (twoWords != null && twoWords.first.isNotEmpty()) {
+            val triKey = normalize(twoWords.first)
+            if (triKey.isNotEmpty() && triKey != key) {
+                staticTrigram = chainsFor(subtype).rowFor(triKey, key)
+                    .map { it.next to it.strength }
+                personalTrigram = if (caps.learningEnabled) {
+                    DrsLearningEngine.personalTrigramNext(triKey, key, 12)
+                } else {
+                    emptyList()
+                }
+            } else {
+                staticTrigram = emptyList()
+                personalTrigram = emptyList()
+            }
+        } else {
+            staticTrigram = emptyList()
+            personalTrigram = emptyList()
+        }
         val predictions = DrsNextWordPredictor.predict(
             personal = personalNexts,
             static = staticNexts,
             personalFallback = personalFallback,
             staticFallback = staticFallback,
+            personalTrigram = personalTrigram,
+            staticTrigram = staticTrigram,
             limit = maxCandidateCount,
         )
         if (predictions.isEmpty()) return emptyList()
@@ -705,6 +767,32 @@ class LatinLanguageProvider(context: Context) : SpellingProvider, SuggestionProv
         val word = before.substring(start, end)
         if (word.length < 2 || word.length > MAX_WORD_LENGTH || word.any { it.isDigit() }) return null
         return word
+    }
+
+    /**
+     * v2.13.0 «السياق الأعمق» — the TWO words before the cursor, in order
+     * (second-last to last), by the same word-internal scan [lastWordBefore]
+     * uses — the trigram layer's context extraction. Either word failing
+     * the same word contract (length 2..MAX, no digits) returns null: the
+     * caller then runs the pure bigram path, exactly as today.
+     */
+    private fun lastTwoWordsBefore(before: CharSequence): Pair<String, String>? {
+        var end = before.length
+        while (end > 0 && !isWordInternalChar(before[end - 1])) end--
+        var start = end
+        while (start > 0 && isWordInternalChar(before[start - 1])) start--
+        if (start == end) return null
+        val last = before.substring(start, end)
+        if (last.length < 2 || last.length > MAX_WORD_LENGTH || last.any { it.isDigit() }) return null
+        // Second scan: the word that ends before [start]'s whitespace gap.
+        var end2 = start
+        while (end2 > 0 && !isWordInternalChar(before[end2 - 1])) end2--
+        var start2 = end2
+        while (start2 > 0 && isWordInternalChar(before[start2 - 1])) start2--
+        if (start2 == end2) return null
+        val second = before.substring(start2, end2)
+        if (second.length < 2 || second.length > MAX_WORD_LENGTH || second.any { it.isDigit() }) return null
+        return second to last
     }
 
     /**
@@ -791,6 +879,9 @@ class LatinLanguageProvider(context: Context) : SpellingProvider, SuggestionProv
     /** DRS Phase 2 (task 9): the previous learned word, for personal bigrams. */
     private var lastLearnedWord: String? = null
 
+    /** v2.13.0: the word before the previous one, for personal trigrams. */
+    private var secondLastLearnedWord: String? = null
+
     /** DRS Phase 2 (task 9): learned-unit counter, drives the flush cadence. */
     private var learningCounter = 0
 
@@ -802,6 +893,7 @@ class LatinLanguageProvider(context: Context) : SpellingProvider, SuggestionProv
      */
     private fun learnPersonal(word: String) {
         val prev = lastLearnedWord
+        val secondPrev = secondLastLearnedWord
         // DRS M1.6 — the lemma rides along automatically:
         // learnWordWithLemma gives the stem half of the word's bump (floor
         // 1) so the per-load decay can never kill the stem before its
@@ -809,6 +901,10 @@ class LatinLanguageProvider(context: Context) : SpellingProvider, SuggestionProv
         // itself as its own lemma — the reservoir just tracks the word.
         DrsLearningEngine.learnWordWithLemma(word, DrsArabicMorphology.lemmaOf(word))
         if (prev != null) DrsLearningEngine.learnBigram(prev, word)
+        // v2.13.0 «السياق الأعمق» — the two-word habit rides the same
+        // learning unit: p2 → p1 → next, same gates, same caps, same file.
+        if (secondPrev != null && prev != null) DrsLearningEngine.learnTrigram(secondPrev, prev, word)
+        secondLastLearnedWord = prev
         lastLearnedWord = word
         if (++learningCounter % LEARNING_FLUSH_EVERY == 0) {
             runCatching { DrsLearningEngine.persist(learningFile()) }

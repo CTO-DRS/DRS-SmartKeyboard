@@ -34,6 +34,11 @@ object DrsSyncBundle {
         val exportedAt: Long = 0L,
         val words: Map<String, Long> = emptyMap(),
         val bigrams: Map<String, Map<String, Long>> = emptyMap(),
+        // v2.13.0 «السياق الأعمق» — personal trigrams ride the container
+        // additively: older builds ignore the field (ignoreUnknownKeys),
+        // older containers decode here with an empty map — no version bump,
+        // no migration, no breakage in either direction.
+        val trigrams: Map<String, Map<String, Map<String, Long>>> = emptyMap(),
     )
 
     const val FORMAT_VERSION: Int = 1
@@ -43,6 +48,12 @@ object DrsSyncBundle {
 
     /** Mirrors DrsLearningEngine.MAX_BIGRAMS. */
     const val MAX_BIGRAM_ROWS: Int = 1024
+
+    /** Mirrors DrsLearningEngine.MAX_TRIGRAMS. */
+    const val MAX_TRIGRAM_ROWS: Int = 512
+
+    /** Mirrors DrsLearningEngine's per-p1 row width cap. */
+    const val MAX_TRIGRAM_ROW: Int = 8
 
     /** 2× the 128 KB learning-file cap — JSON overhead headroom. */
     const val MAX_PAYLOAD_BYTES: Int = 256 * 1024
@@ -113,6 +124,9 @@ object DrsSyncBundle {
         if (payload.words.size > MAX_WORDS || payload.bigrams.size > MAX_BIGRAM_ROWS) {
             throw BundleError.TooManyEntries
         }
+        if (payload.trigrams.size > MAX_TRIGRAM_ROWS) {
+            throw BundleError.TooManyEntries
+        }
         if (payload.words.keys.any { it.isEmpty() || it.length > MAX_WORD_CHARS || it != it.trim().lowercase() }) {
             throw BundleError.MalformedEntry
         }
@@ -125,7 +139,27 @@ object DrsSyncBundle {
             }
             if (payload.words.size.toLong() + row.size > Int.MAX_VALUE) throw BundleError.TooManyEntries
         }
+        // v2.13.0 — trigram rows follow the same shape law: p2 keys are
+        // words, each p2 row holds at most MAX_TRIGRAM_ROWS p1 rows, each
+        // p1 row holds at most MAX_TRIGRAM_ROW continuations, counts ≥ 0.
+        payload.trigrams.forEach { (p2, row1) ->
+            if (p2.isEmpty() || p2.length > MAX_WORD_CHARS || p2 != p2.trim().lowercase()) {
+                throw BundleError.MalformedEntry
+            }
+            if (row1.size > MAX_TRIGRAM_ROWS) throw BundleError.TooManyEntries
+            row1.forEach { (p1, row2) ->
+                if (p1.isEmpty() || p1.length > MAX_WORD_CHARS || p1 != p1.trim().lowercase()) {
+                    throw BundleError.MalformedEntry
+                }
+                if (row2.size > MAX_TRIGRAM_ROW || row2.keys.any { it.isEmpty() || it.length > MAX_WORD_CHARS }) {
+                    throw BundleError.MalformedEntry
+                }
+            }
+        }
         payload.words.values.forEach { if (it < 0) throw BundleError.MalformedEntry }
         payload.bigrams.values.forEach { row -> row.values.forEach { if (it < 0) throw BundleError.MalformedEntry } }
+        payload.trigrams.values.forEach { row1 ->
+            row1.values.forEach { row2 -> row2.values.forEach { if (it < 0) throw BundleError.MalformedEntry } }
+        }
     }
 }
