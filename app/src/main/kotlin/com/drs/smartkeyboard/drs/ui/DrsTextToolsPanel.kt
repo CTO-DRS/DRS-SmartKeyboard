@@ -281,6 +281,17 @@ private val PANEL_SECTIONS: List<DrsTextToolsPanelSection> = listOf(
                 R.string.drs__text_tools__desc_tabs_to_spaces,
                 Icons.Default.KeyboardTab,
             ),
+            // DRS v2.16.0: the writing assistant's spacing normalizer —
+            // runs collapse to one space, spaces before closing
+            // punctuation vanish, punctuation runs collapse to one mark —
+            // all to a bounded fixed point, idempotent by construction:
+            // applying it twice equals applying it once.
+            toolItem(
+                DrsTextTool.NORMALIZE_SPACING,
+                R.string.drs__text_tools__tool_normalize_spacing,
+                R.string.drs__text_tools__desc_normalize_spacing,
+                Icons.Default.FormatLineSpacing,
+            ),
             // DRS v1.6.0: the inverse mapping — runs of 4 spaces -> tab.
             toolItem(
                 DrsTextTool.SPACES_TO_TABS,
@@ -437,6 +448,18 @@ private val PANEL_SECTIONS: List<DrsTextToolsPanelSection> = listOf(
                 R.string.drs__text_tools__tool_tashkeel_text,
                 R.string.drs__text_tools__desc_tashkeel_text,
                 Icons.Default.Spellcheck,
+            ),
+            // DRS v2.16.0: the writing assistant speaks — sixteen
+            // deterministic Arabic phrase rewrites that fire ONLY on the
+            // FULL normalized tail of the text (never a containment hit):
+            // «انشاء الله» becomes «إن شاء الله» only when it ends the
+            // text; everything else stays byte-identical. The orphaned
+            // M1.5 engine joins the tool surface through its own contract.
+            toolItem(
+                DrsTextTool.IMPROVE_PHRASES,
+                R.string.drs__text_tools__tool_improve_phrases,
+                R.string.drs__text_tools__desc_improve_phrases,
+                Icons.Default.AutoFixHigh,
             ),
             // DRS v1.6.0: the number-to-words rendering — a clean integer
             // field speaks its Arabic words, prose stays untouched.
@@ -834,6 +857,8 @@ fun textToolTitleRes(tool: DrsTextTool): Int = when (tool) {
     DrsTextTool.SLUGIFY -> R.string.drs__text_tools__tool_slugify
     DrsTextTool.TO_SNAKE_CASE -> R.string.drs__text_tools__tool_to_snake_case
     DrsTextTool.TO_CAMEL_CASE -> R.string.drs__text_tools__tool_to_camel_case
+    DrsTextTool.IMPROVE_PHRASES -> R.string.drs__text_tools__tool_improve_phrases
+    DrsTextTool.NORMALIZE_SPACING -> R.string.drs__text_tools__tool_normalize_spacing
     DrsTextTool.REMOVE_TATWEEL -> R.string.drs__text_tools__tool_remove_tatweel
     DrsTextTool.TO_ARABIC_DIGITS -> R.string.drs__text_tools__tool_to_arabic_digits
     DrsTextTool.TO_WESTERN_DIGITS -> R.string.drs__text_tools__tool_to_western_digits
@@ -917,6 +942,8 @@ fun textToolDescRes(tool: DrsTextTool): Int = when (tool) {
     DrsTextTool.SLUGIFY -> R.string.drs__text_tools__desc_slugify
     DrsTextTool.TO_SNAKE_CASE -> R.string.drs__text_tools__desc_to_snake_case
     DrsTextTool.TO_CAMEL_CASE -> R.string.drs__text_tools__desc_to_camel_case
+    DrsTextTool.IMPROVE_PHRASES -> R.string.drs__text_tools__desc_improve_phrases
+    DrsTextTool.NORMALIZE_SPACING -> R.string.drs__text_tools__desc_normalize_spacing
     DrsTextTool.REMOVE_TATWEEL -> R.string.drs__text_tools__desc_remove_tatweel
     DrsTextTool.TO_ARABIC_DIGITS -> R.string.drs__text_tools__desc_to_arabic_digits
     DrsTextTool.TO_WESTERN_DIGITS -> R.string.drs__text_tools__desc_to_western_digits

@@ -5,6 +5,7 @@
 
 package com.drs.smartkeyboard.drs
 
+import com.drs.smartkeyboard.drs.ai.DrsWritingAssistant
 import java.text.Collator
 import java.util.Locale
 
@@ -352,11 +353,31 @@ enum class DrsTextTool(
     // the whole transform byte-identically (camelCase is a Latin code
     // convention; inventing letter shapes for Arabic is a guess). The
     // same closed honesty: no change returns byte-identical.
-    TO_CAMEL_CASE(-673);
+    TO_CAMEL_CASE(-673),
+
+    // DRS v2.16.0: the writing assistant speaks — the orphaned M1.5
+    // engine (DrsWritingAssistant) joins the tool surface through its
+    // OWN firing contract, verbatim: sixteen deterministic Arabic
+    // phrase rewrites that fire ONLY when the FULL normalized TAIL of
+    // the text equals the rule's normalized trigger — never a
+    // containment hit (the M1.5 corruption case: «انشاء اللهية» stays
+    // byte-identical). No firing returns the text unchanged — never a
+    // partial rewrite, never a guess. See [DrsWritingAssistant.improveTail].
+    IMPROVE_PHRASES(-674),
+
+    // DRS v2.16.0: the spacing normalizer — the assistant's second
+    // public function, wired verbatim: whitespace runs collapse to one
+    // space, edges trim, spaces BEFORE closing punctuation (؟ ! ، ؛ . :)
+    // and after opening ones vanish, punctuation runs collapse to a
+    // single mark — all to a bounded FIXED POINT, so the tool is
+    // idempotent by construction: applying it twice equals applying it
+    // once, and a redisplayed result can never grow extra edits. See
+    // [DrsWritingAssistant.normalizeSpacing].
+    NORMALIZE_SPACING(-675);
 
     companion object {
         /** Inclusive range covering every tool code, for fast dispatch. */
-        val CODE_RANGE = -673..-601
+        val CODE_RANGE = -675..-601
 
         fun fromCode(code: Int): DrsTextTool? = entries.firstOrNull { it.code == code }
     }
@@ -523,6 +544,13 @@ object DrsTextTools {
                 // byte-identically, the honest sibling).
                 DrsTextTool.TO_SNAKE_CASE -> toSnakeCase(text)
                 DrsTextTool.TO_CAMEL_CASE -> toCamelCase(text)
+                // DRS v2.16.0: the writing assistant speaks — both tools
+                // delegate VERBATIM to the M1.5 engine's public functions
+                // (see [DrsWritingAssistant]): the tail-only phrase
+                // rewrites and the fixed-point spacing normalizer. No
+                // firing / no change returns the text byte-identical.
+                DrsTextTool.IMPROVE_PHRASES -> DrsWritingAssistant.improveTail(text)
+                DrsTextTool.NORMALIZE_SPACING -> DrsWritingAssistant.normalizeSpacing(text)
                 // DRS v1.3.0: strip tatweel (kashida) elongation and
                 // convert digits between Western and Arabic-Indic forms.
                 // Both are per-character, lossless-for-everything-else

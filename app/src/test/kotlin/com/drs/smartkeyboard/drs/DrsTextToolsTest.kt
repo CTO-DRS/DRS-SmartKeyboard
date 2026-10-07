@@ -352,6 +352,17 @@ class DrsTextToolsTest : FunSpec({
             // text byte-identically, the honest sibling.
             DrsTextTool.TO_CAMEL_CASE -> result shouldBe input
 
+            // DRS v2.16.0: the hostile tail is Latin («most») — no
+            // Arabic trigger equals the normalized tail, so no rule
+            // fires and the text returns byte-identical.
+            DrsTextTool.IMPROVE_PHRASES -> result shouldBe input
+
+            // DRS v2.16.0: the hostile input carries single spaces only
+            // (no whitespace runs), no space-before-closing-punctuation
+            // shapes and no edge whitespace — the bounded fixed-point
+            // normalizer returns it byte-identically.
+            DrsTextTool.NORMALIZE_SPACING -> result shouldBe input
+
             else -> error("DRS p9 (Q3): tool ${tool.name} has no pinned hostile-input invariant")
         }
     }

@@ -1789,6 +1789,10 @@
     <string name="drs__text_tools__desc_to_snake_case">وصل الكلمات بشرطة سفلية واحدة وأحرف صغيرة (my variable تصير my_variable، وحدود camel الكبيرة تنقسم) — والكلمات العربية تتصل بلا اختراع حالة، وما لا يتغير يبقى كما هو</string>
     <string name="drs__text_tools__tool_to_camel_case">camelCase</string>
     <string name="drs__text_tools__desc_to_camel_case">وصل الكلمات بلا فاصل مع تكبير أول حرف من كل كلمة بعد الأولى (my variable تصير myVariable) — وكل كلمة تحمل حرفًا غير لاتيني ترفض التحويل كليًا صادقًا: camelCase اصطلاح كود لاتيني</string>
+    <string name="drs__text_tools__tool_improve_phrases">تصحيح العبارات الشائعة</string>
+    <string name="drs__text_tools__desc_improve_phrases">ست عشرة عبارة عربية شائعة تُصحّح حتميًا (انشاء الله ← إن شاء الله، انا بخير ← أنا بخير) — الإطلاق على ذيل النص كامل التطابق بعد التطبيع فقط، وما لا يطابق يبقى حرفيًا: بلا احتواء وبلا تخمين</string>
+    <string name="drs__text_tools__tool_normalize_spacing">تهذيب المسافات والترقيم</string>
+    <string name="drs__text_tools__desc_normalize_spacing">تشغّل المسافات المتراكمة إلى واحدة، تزيل المسافة قبل علامات الإغلاق (؟ ! ، ؛ . :)، وتدمج تكرار العلامات — كلها إلى نقطة ثابتة محدودة: تطبيقها مرتين يساوي تطبيقها مرة</string>
     <string name="drs__text_tools__tool_normalize_punctuation">معالجة علامات الترقيم</string>
     <string name="drs__text_tools__desc_normalize_punctuation">إزالة المسافة قبل الفاصلة والنقطة ووضع مسافة بعد المهما كان اتجاه النص</string>
     <string name="drs__text_tools__tool_clean_text">تنظيف شامل للنص</string>

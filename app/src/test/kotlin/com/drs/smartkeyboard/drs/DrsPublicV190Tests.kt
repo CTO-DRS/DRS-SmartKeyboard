@@ -175,11 +175,11 @@ class DrsPublicV190Tests : FunSpec({
         val tool = DrsTextTool.TIME_WORDS
         tool.code shouldBe -662
         DrsTextTool.fromCode(-662) shouldBe tool
-        DrsTextTool.CODE_RANGE.first shouldBe -673
+        DrsTextTool.CODE_RANGE.first shouldBe -675
         (tool.code in DrsTextTool.CODE_RANGE) shouldBe true
         // 55 tools through v1.8.0 + the clock-time-in-words tool +
         // the v1.10.0 fraction, weekday and ordinal tools.
-        DrsTextTool.entries.size shouldBe 67
+        DrsTextTool.entries.size shouldBe 69
         (tool.isInfoOnly) shouldBe false
         (tool.isEditorOp) shouldBe false
         (tool.isInsertMark) shouldBe false

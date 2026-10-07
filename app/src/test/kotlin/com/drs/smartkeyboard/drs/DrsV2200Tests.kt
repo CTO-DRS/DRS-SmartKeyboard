@@ -173,8 +173,8 @@ class DrsV2200Tests : FunSpec({
     // 6) الأختام بعد إضافات الدفعة C
     // ------------------------------------------------------------
     test("v2.2.0 seals — the catalogue is 67 tools over -673") {
-        DrsTextTool.entries.size shouldBe 67
-        DrsTextTool.CODE_RANGE.first shouldBe -673
+        DrsTextTool.entries.size shouldBe 69
+        DrsTextTool.CODE_RANGE.first shouldBe -675
         DrsTextTool.CODE_RANGE.last shouldBe -601
         // round-trip من الكود إلى الأداة ومعهRegistration للأربعة الجدد.
         DrsTextTool.fromCode(-670) shouldBe DrsTextTool.SORT_LINES_NATURAL

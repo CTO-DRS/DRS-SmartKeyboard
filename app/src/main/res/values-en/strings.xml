@@ -1871,6 +1871,10 @@
     <string name="drs__text_tools__desc_to_snake_case">Join words with one underscore, lowercased (my variable becomes my_variable, lower-to-upper camel boundaries split) — Arabic words join with no case invented, and anything that would not change stays untouched</string>
     <string name="drs__text_tools__tool_to_camel_case">camelCase</string>
     <string name="drs__text_tools__desc_to_camel_case">Join words with no separator, capitalizing every word after the first (my variable becomes myVariable) — any token carrying a non-ASCII letter refuses the whole transform honestly: camelCase is a Latin code convention</string>
+    <string name="drs__text_tools__tool_improve_phrases">Fix common phrases</string>
+    <string name="drs__text_tools__desc_improve_phrases">Sixteen common Arabic phrases corrected deterministically (انشاء الله ← إن شاء الله, انا بخير ← أنا بخير) — firing only on a FULL normalized-tail match of the text; anything else stays byte-identical: no containment, no guessing</string>
+    <string name="drs__text_tools__tool_normalize_spacing">Tidy spaces &amp; punctuation</string>
+    <string name="drs__text_tools__desc_normalize_spacing">Collapses whitespace runs to one space, removes spaces before closing punctuation (؟ ! ، ؛ . :), and merges repeated marks — all to a bounded fixed point: applying it twice equals applying it once</string>
     <string name="drs__text_tools__tool_normalize_punctuation">Normalize punctuation</string>
     <string name="drs__text_tools__desc_normalize_punctuation">Remove spaces before punctuation and ensure one space after</string>
     <string name="drs__text_tools__tool_clean_text">Full text clean-up</string>

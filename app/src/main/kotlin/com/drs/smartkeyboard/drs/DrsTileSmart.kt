@@ -4,6 +4,7 @@
 
 package com.drs.smartkeyboard.drs
 
+import com.drs.smartkeyboard.drs.ai.DrsWritingAssistant
 import java.util.Locale
 
 /**
@@ -168,6 +169,11 @@ object DrsTileContextAdvisor {
         val hasEasternDigit = t.any { it in '\u0660'..'\u0669' || it in '\u06F0'..'\u06F9' }
         val lastMeaningful = t.trimEnd().lastOrNull()
 
+        // 0) عبارات المساعد الكتابي — المرآة الحرفية لعقد الإطلاق:
+        //    نرشّح IMPROVE_PHRASES فقط عندما تكون الأداة **ستُطلق فعلًا**
+        //    على ذيل النص (تطبيع الذيل يساوي مشغّلًا من الستة عشر) —
+        //    أدق سبب ممكن: توصية بنتيجة مضمونة حتميًا، لا إشارة عامة.
+        if (DrsWritingAssistant.improveTail(t) != t) picks += DrsTextTool.IMPROVE_PHRASES
         // 1) عناوين مرمّزة (%XX) تفكّ ترميزها أولًا — السبب الأدق يتصدر.
         if (PERCENT_ESCAPE.containsMatchIn(t)) picks += DrsTextTool.URL_DECODE
         // 2) العلامات الصفرية والتطويل نفاية لصق لا تصلح فقرة — انزعها.
