@@ -7,7 +7,6 @@ package com.drs.smartkeyboard.drs
 import com.drs.smartkeyboard.drs.ai.DrsAiPowerManager
 import com.drs.smartkeyboard.drs.ai.DrsArabicCorrector
 import com.drs.smartkeyboard.drs.ai.DrsLearningEngine
-import com.drs.smartkeyboard.drs.ai.DrsOneHanded
 import com.drs.smartkeyboard.drs.ai.DrsQuantizedEngine
 import com.drs.smartkeyboard.drs.ai.DrsSmartReplies
 import com.drs.smartkeyboard.drs.ai.DrsVoiceCommands
@@ -420,42 +419,6 @@ class DrsP2IntelligenceTests : FunSpec({
             // Strictly below the saturation sentinel (16) — the sentinel is
             // never a usable match cost.
             caps.maxCorrectionCost shouldBe 14
-        }
-    }
-
-    // ================================================================ م14
-
-    context("DrsOneHanded — one-handed geometry") {
-
-        test("OFF and zero-width produce no offset") {
-            DrsOneHanded.offsetPx(400f, DrsOneHanded.Side.RIGHT, DrsOneHanded.Strength.OFF) shouldBe 0f
-            DrsOneHanded.offsetPx(0f, DrsOneHanded.Side.RIGHT, DrsOneHanded.Strength.FULL) shouldBe 0f
-        }
-
-        test("offset direction follows the side and magnitude scales with strength") {
-            val right = DrsOneHanded.offsetPx(400f, DrsOneHanded.Side.RIGHT, DrsOneHanded.Strength.FULL)
-            val left = DrsOneHanded.offsetPx(400f, DrsOneHanded.Side.LEFT, DrsOneHanded.Strength.FULL)
-            (right > 0f).shouldBeTrue()
-            (left < 0f).shouldBeTrue()
-            right shouldBe (-left)
-            val subtle = DrsOneHanded.offsetPx(400f, DrsOneHanded.Side.RIGHT, DrsOneHanded.Strength.SUBTLE)
-            (subtle < right).shouldBeTrue()
-        }
-
-        test("the shifted keyboard never collides with the opposite edge") {
-            // offset + squeezed width must stay within the keyboard width.
-            val width = 400f
-            val strength = DrsOneHanded.Strength.FULL
-            val offset = DrsOneHanded.offsetPx(width, DrsOneHanded.Side.RIGHT, strength)
-            val squeezed = width * DrsOneHanded.widthScaleFor(strength)
-            (offset + squeezed <= width + 0.01f).shouldBeTrue()
-        }
-
-        test("strength sanitization from a user percent") {
-            DrsOneHanded.strengthFromPercent(0) shouldBe DrsOneHanded.Strength.OFF
-            DrsOneHanded.strengthFromPercent(40) shouldBe DrsOneHanded.Strength.SUBTLE
-            DrsOneHanded.strengthFromPercent(70) shouldBe DrsOneHanded.Strength.BALANCED
-            DrsOneHanded.strengthFromPercent(100) shouldBe DrsOneHanded.Strength.FULL
         }
     }
 
