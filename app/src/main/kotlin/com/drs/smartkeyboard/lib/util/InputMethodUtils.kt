@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.provider.Settings
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,10 +21,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import com.drs.smartkeyboard.BuildConfig
+import com.drs.smartkeyboard.R
 import com.drs.smartkeyboard.lib.devtools.flogDebug
+import com.drs.smartkeyboard.lib.devtools.flogError
 import kotlinx.coroutines.delay
 import org.drs.lib.android.AndroidSettings
 import org.drs.lib.android.AndroidVersion
+import org.drs.lib.android.stringRes
 import org.drs.lib.android.systemServiceOrNull
 import org.drs.lib.compose.observeAsState
 
@@ -105,11 +109,36 @@ object InputMethodUtils {
         return component?.packageName == context.packageName && component.className == IME_SERVICE_CLASS_NAME
     }
 
+    // DRS v2.9.1 — the enable button must never kill the process. Some ROMs
+    // ship without any activity resolving ACTION_INPUT_METHOD_SETTINGS, so
+    // the bare startActivity below used to throw ActivityNotFoundException
+    // and the app closed instantly the moment the user pressed "enable"
+    // (reported on the owner's device: press enable -> app closes at once).
+    // The chain degrades honestly: the dedicated IME settings screen first,
+    // then the generic system settings, then a localized toast with the
+    // manual path — mirroring LaunchUtils' crash-free launch pattern.
+    val imeSettingsActionChain: List<String> = listOf(
+        Settings.ACTION_INPUT_METHOD_SETTINGS,
+        Settings.ACTION_SETTINGS,
+    )
+
     fun showImeEnablerActivity(context: Context) {
-        val intent = Intent()
-        intent.action = Settings.ACTION_INPUT_METHOD_SETTINGS
-        intent.addCategory(Intent.CATEGORY_DEFAULT)
-        context.startActivity(intent)
+        for (action in imeSettingsActionChain) {
+            try {
+                val intent = Intent(action)
+                intent.addCategory(Intent.CATEGORY_DEFAULT)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+                return
+            } catch (e: Exception) {
+                flogError { "showImeEnablerActivity: action=$action failed: $e" }
+            }
+        }
+        Toast.makeText(
+            context,
+            context.stringRes(R.string.general__no_ime_settings_screen_found),
+            Toast.LENGTH_LONG,
+        ).show()
     }
 
     fun showImePicker(context: Context): Boolean {

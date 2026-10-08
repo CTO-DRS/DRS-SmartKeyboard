@@ -1086,6 +1086,7 @@
     <!-- General strings -->
     <string name="general__example_given" comment="This string is used where an example will be inserted in the {example} block. When translating, use the abbreviation used in your language for 'example given'.">e.g. {example}</string>
     <string name="general__no_browser_app_found_for_url">No browser app found for handling URL {url}</string>
+    <string name="general__no_ime_settings_screen_found" comment="Shown as a toast when this ROM has no dedicated keyboard-settings screen at all. Guides the user to the manual path.">No keyboard-enrollment screen exists on this device — open system settings, then System, then keyboards, manually</string>
     <string name="general__select_dropdown_value_placeholder">&#45; select &#45;</string>
     <string name="general__unlimited">Unlimited</string>
     <string name="general__file_name">File name</string>

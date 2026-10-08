@@ -1023,6 +1023,7 @@
     <!--General strings-->
     <string name="general__example_given" comment="This string is used where an example will be inserted in the {example} block. When translating, use the abbreviation used in your language for 'example given'.">مثلا. {example}</string>
     <string name="general__no_browser_app_found_for_url">لم يتم العثور على تطبيق متصفح للتعامل مع عنوان URL {url}</string>
+    <string name="general__no_ime_settings_screen_found" comment="Shown as a toast when this ROM has no dedicated keyboard-settings screen at all. Guides the user to the manual path.">لا توجد شاشة تفعيل لوحات المفاتيح على هذا الجهاز — افتح إعدادات النظام ← النظام ← لوحات المفاتيح يدويًا</string>
     <string name="general__select_dropdown_value_placeholder">- اختيار -</string>
     <string name="general__unlimited">غير محدود</string>
     <string name="general__file_name">اسم الملف</string>
