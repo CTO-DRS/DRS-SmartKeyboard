@@ -1277,6 +1277,7 @@
     <string name="panel__harakat__advice_mru">más usados</string>
     <string name="panel__harakat__alef_note">Una alef nunca lleva haraka — marca la letra anterior</string>
     <string name="panel__harakat__tashkeel_word">Vocalizar la palabra</string>
+    <string name="panel__harakat__majesty_word">La shadda de Allah</string>
     <string name="panel__harakat__strip_word">Quitar diacríticos</string>
     <string name="panel__harakat__no_safe_word">No hay sugerencia segura para esta palabra</string>
     <string name="panel__harakat__space_bar">Harakat inteligentes</string>

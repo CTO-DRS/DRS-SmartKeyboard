@@ -945,6 +945,18 @@ object DrsTextTools {
      * dictionary knowledge, the guessing territory the creed forbids.
      * See [DrsArabicLetters.gluedShaddaForm].
      *
+     * DRS v2.20.0 — شهادة الجلالة (the majesty certification): the
+     * CLOSED hand-pinned family of لفظ الجلالة tokens (لله والله
+     * بالله فالله كالله تالله ولله وبالله فلله) joins the law layer —
+     * each member is an exact enumerated string whose only reading is
+     * the majesty name, so its lam takes the same partial-style shadda
+     * (والله ← واللَّه) — a table like the fourteen sun letters, never
+     * a pattern over an open class. The open [حرف + ال + شمسية] shape
+     * (والد، بالش، بالطو) stays byte-identical per v2.19.0's proof —
+     * none of its members ends in لله. The seed lexicon still wins for
+     * the members it hand-reviews (لله والله بالله). See
+     * [DrsArabicLetters.majestyShaddaForm].
+     *
      * Every non-Arabic character — spaces, newlines, punctuation,
      * digits, Latin — passes through verbatim, so punctuation and line
      * structure are preserved exactly. Idempotent by construction:
@@ -963,6 +975,7 @@ object DrsTextTools {
                     append(
                         DrsWordTashkeel.vocalize(word)
                             ?: DrsArabicLetters.gluedShaddaForm(word)
+                            ?: DrsArabicLetters.majestyShaddaForm(word)
                             ?: DrsArabicLetters.shaddaForm(word)
                             ?: word,
                     )

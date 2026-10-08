@@ -68,6 +68,7 @@ import com.drs.smartkeyboard.drs.DrsMotion
 import com.drs.smartkeyboard.drs.DrsPanelOrder
 import com.drs.smartkeyboard.drs.DrsStore
 import com.drs.smartkeyboard.drs.DrsWordTashkeel
+import com.drs.smartkeyboard.drs.ai.DrsArabicLetters
 import com.drs.smartkeyboard.drs.HarakaInsertMode
 import com.drs.smartkeyboard.drs.HarakatSmartInsert
 import com.drs.smartkeyboard.drs.PanelUsageTracker
@@ -448,6 +449,25 @@ fun DrsDiacriticsPanel(modifier: Modifier = Modifier) {
         }
     }
 
+    /**
+     * DRS v2.20.0 — شهادة الجلالة (the majesty certification): replaces
+     * the cursor word with its majesty-shadda form when the word is
+     * exactly one of the nine closed لفظ الجلالة tokens (والله ← واللَّه).
+     * The seed lexicon wins (seeded members keep their fuller
+     * hand-reviewed harakat), the shadda lands mid-word — which is why
+     * this is a word-replacement chip and not a cursor-insert advice
+     * pick — and the engine refuses already-marked tokens by itself.
+     */
+    fun majestyCurrentWord() {
+        val before = editorInstance.run { activeContent.getTextBeforeCursor(48) }
+        val word = DrsHarakatWordOps.currentWordBefore(before)
+        val majesty = DrsArabicLetters.majestyShaddaForm(word) ?: return
+        if (editorInstance.replaceWordBeforeCursor(majesty, word.length)) {
+            recordUse(majesty)
+            commitStamp++
+        }
+    }
+
     fun stripCurrentWord() {
         val before = editorInstance.run { activeContent.getTextBeforeCursor(48) }
         val word = DrsHarakatWordOps.currentWordBefore(before)
@@ -597,6 +617,27 @@ fun DrsDiacriticsPanel(modifier: Modifier = Modifier) {
                         onClick = {
                             feedback.keyPress()
                             tashkeelCurrentWord()
+                        },
+                    )
+                }
+                // DRS v2.20.0 — رقاقة شهادة الجلالة: العائلة المغلقة التي
+                // لا تملكها البذرة تُعرض هنا — استبدال الكلمة بالشدة
+                // الجزئية (والله ← واللَّه) لأن الشدة وسط الكلمة لا عند
+                // المؤشر. البذرة تفوز: رقاقة التشكيل الكامل تغيب عن
+                // هذه الرقاقة حين تعرف البذرة الكلمة.
+                val majestyVocalized = if (knownVocalized == null) {
+                    DrsArabicLetters.majestyShaddaForm(cursorWord)
+                } else {
+                    null
+                }
+                if (majestyVocalized != null) {
+                    AdviceChip(
+                        label = "${stringRes(R.string.panel__harakat__majesty_word)}: $majestyVocalized",
+                        accent = accent,
+                        leading = true,
+                        onClick = {
+                            feedback.keyPress()
+                            majestyCurrentWord()
                         },
                     )
                 }

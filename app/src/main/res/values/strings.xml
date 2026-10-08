@@ -2586,6 +2586,7 @@
     <string name="panel__harakat__advice_mru">الأكثر استخدامًا</string>
     <string name="panel__harakat__alef_note">الألف لا تُشكَّل — ضع الحركة على الحرف السابق</string>
     <string name="panel__harakat__tashkeel_word">تشكيل الكلمة</string>
+    <string name="panel__harakat__majesty_word">شدة الجلالة</string>
     <string name="panel__harakat__strip_word">نزع التشكيل</string>
     <string name="panel__harakat__no_safe_word">لا اقتراح آمن لهذه الكلمة</string>
     <string name="panel__harakat__space_bar">الحركات الذكية</string>

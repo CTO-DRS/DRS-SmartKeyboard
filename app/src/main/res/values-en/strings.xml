@@ -2640,6 +2640,7 @@
     <string name="panel__harakat__advice_mru">most used</string>
     <string name="panel__harakat__alef_note">An alef never takes a haraka — mark the previous letter instead</string>
     <string name="panel__harakat__tashkeel_word">Vocalize the word</string>
+    <string name="panel__harakat__majesty_word">The majesty shadda</string>
     <string name="panel__harakat__strip_word">Strip diacritics</string>
     <string name="panel__harakat__no_safe_word">No safe suggestion for this word</string>
     <string name="panel__harakat__space_bar">Smart harakat</string>

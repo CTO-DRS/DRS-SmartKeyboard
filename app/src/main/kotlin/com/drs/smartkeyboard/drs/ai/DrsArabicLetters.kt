@@ -188,4 +188,62 @@ object DrsArabicLetters {
         if (word.any { isMark(it) }) return null
         return word.substring(0, 3) + SHADDA + word.substring(3)
     }
+
+    /**
+     * DRS v2.20.0 — the majesty certification (شهادة الجلالة): the CLOSED
+     * hand-pinned family of tokens whose ONLY reading is لفظ الجلالة —
+     * the name الله preceded by a single functional letter (و العطف،
+     * ب والف والك الجر، ف العطف، ت القسم) or the bare jar ل itself:
+     *
+     *     لله والله بالله فالله كالله تالله ولله وبالله فلله
+     *
+     * The lam of the majesty name is doubled by the SAME assimilation
+     * law the bare article speaks (الله = al + lāh, the lam is a sun
+     * letter assimilating into itself) — the bare layer (v2.17.0)
+     * already owns الله and اللهم, and the seed lexicon owns لله
+     * والله بالله with fuller hand-reviewed harakat («البذرة تفوز»).
+     * What nobody owned is this closed prefixed family — six members
+     * (تالله فالله كالله ولله وبالله فلله) had no certification at all.
+     *
+     * WHY this shape is law and not the guessing territory R27 proved
+     * silent: the ambiguous shape [حرف + ال + شمسية] has an OPEN stem
+     * slot — والد/والدين (والدِين = و + الدِّين) and بالطو share its
+     * exact token shape, so separating readings needs dictionary
+     * knowledge. The majesty family has NO open slot: its tail is the
+     * FIXED لله, and each of the nine members is an exact enumerated
+     * string with provably a single reading — واللسان (و + اللسان)
+     * does NOT share والله's shape because the stem له is fixed. This
+     * is a table like the fourteen sun letters: closed, hand-pinned,
+     * each member justified — never a pattern rule over an open class.
+     * Every member R27 pinned silent (والد، بالش، بالطو) stays silent —
+     * none of them ends in لله.
+     *
+     * Returns the token with U+0651 inserted after the SECOND lam of
+     * the majesty tail (والله ← واللَّه) when — and only when — [word]
+     * is exactly one of the nine members and carries NO mark anywhere
+     * (a partially-marked token is not the engine's to touch — the
+     * same honest rule the bare and glued layers speak). Null
+     * otherwise: not a family member, already marked, or too short.
+     * Idempotent by construction — the output carries a mark, so a
+     * second call returns null.
+     */
+    fun majestyShaddaForm(word: String): String? {
+        if (word.length < 3) return null
+        if (word !in MAJESTY) return null
+        if (word.any { isMark(it) }) return null
+        // every member ends in the fixed tail له — inserting before the
+        // final ha lands the shadda exactly after the SECOND lam, the
+        // same position the seed lexicon writes (اللَّه = ا ل ل ّ ه):
+        return word.substring(0, word.length - 1) + SHADDA + word.substring(word.length - 1)
+    }
+
+    /**
+     * The nine majesty tokens (لفظ الجلالة with its functional
+     * prefixes) — the closed hand-pinned family of
+     * [majestyShaddaForm]. EXACT strings, never a pattern: adding a
+     * member is a documented legal decision, not a shape match.
+     */
+    private val MAJESTY: Set<String> = setOf(
+        "لله", "والله", "بالله", "فالله", "كالله", "تالله", "ولله", "وبالله", "فلله",
+    )
 }
