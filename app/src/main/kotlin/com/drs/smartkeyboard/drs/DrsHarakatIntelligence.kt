@@ -336,8 +336,9 @@ object DrsHarakatAdvisor {
         // جمالي: «الش» تطلب شدة على الشين (الْشّ — اللام ساكنة والحرف
         // مشدود). الحكم من محرك الشمس والقمر النقي (DrsArabicLetters)
         // لا من قائمة يدوية. الحدود موثقة: أل المجردة في موقع الأداة
-        // فقط — حرس ما قبل الليم نفسه الذي يحرس R3؛ والملتصقة بحروف
-        // الجر (بالش وللش) صامتة حتى يأتي قرارها بعقد خاص. القمرية
+        // فقط — حرس ما قبل الليم نفسه الذي يحرس R3؛ والملتصقة قررتها
+        // الجولة 27: للّ حيّة في R3c بعده مباشرة، وباقي الأشكال صمتها
+        // معلَّل بالدليل (والد/بالطو) موثقًا في R3c. القمرية
         // وأحمال الهمزة (الق، الأ) لا تطلب شيئًا — الصمت الصادق.
         if (textBeforeCursor.length >= 3 &&
             DrsArabicLetters.isSun(textBeforeCursor.last())
@@ -346,6 +347,29 @@ object DrsHarakatAdvisor {
             if (beforeLast.endsWith("ال")) {
                 val beforeAl = beforeLast.dropLast(2).lastOrNull()
                 if (beforeAl == null || !SymbolSmartSuggestor.isArabicLetter(beforeAl)) {
+                    return listOf(Pick(DrsHarakat.SHADDA.toString(), AdviceReason.DEFINITE_SUN))
+                }
+            }
+        }
+
+        // R3c — DRS v2.19.0: العقد الخاص المعلن في v2.17.0 — للّ الملتصقة.
+        // ل + ال تُكتب لل بالقطر الإملائي (انحلال الألف)، وكل توكن يفتتح
+        // بل + ل + حرف هو ل + أل + حرف بلا قراءة ثانية — فالشمسية بعدها
+        // تطلب شدتها بالقانون نفسه الذي تطلبه بعد أل المجردة (للش ← للشَّ).
+        // الحكم من المحرك النقي لا من قائمة. الحدود موثقة: حرس الموقع
+        // نفسه — حرف عربي قبل للّ يعني توكنًا أطول لا يملكه القانون
+        // (خلالش، وللس)؛ والقمرية وأحمال الهمزة (للق، للأ) صمت صادق.
+        // أمّا أشكال [حرف + ال + شمسية] الأخرى (بالش فالش كالش والش)
+        // فصمتها معلَّل بالدليل لا مؤجل: والد/والدين وبالطو توكنات
+        // حقيقية بلا أل داخلها تتشارك الشكل نفسه — والفصل بينها معرفة
+        // قاموسية، وهي أرض التخمين المحرَّمة. الدبوسان في DrsV21900Tests.
+        if (textBeforeCursor.length >= 3 &&
+            DrsArabicLetters.isSun(textBeforeCursor.last())
+        ) {
+            val beforeLast = textBeforeCursor.dropLast(1)
+            if (beforeLast.endsWith("لل")) {
+                val beforeLamLam = beforeLast.dropLast(2).lastOrNull()
+                if (beforeLamLam == null || !SymbolSmartSuggestor.isArabicLetter(beforeLamLam)) {
                     return listOf(Pick(DrsHarakat.SHADDA.toString(), AdviceReason.DEFINITE_SUN))
                 }
             }

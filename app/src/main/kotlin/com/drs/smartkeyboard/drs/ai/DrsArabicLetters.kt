@@ -147,4 +147,45 @@ object DrsArabicLetters {
         if (word.any { isMark(it) }) return null
         return word.substring(0, 3) + SHADDA + word.substring(3)
     }
+
+    /**
+     * DRS v2.19.0 — the glued-particle contract (العقد الخاص المعلن في
+     * v2.17.0): the COLLAPSED preposition-article form لِلْ — ل + ال written
+     * as لل with the alif dropped by orthographic law (ل + الشمس = للشمس).
+     *
+     * This is the ONE glued shape the law can fire on at token level with
+     * zero dictionary knowledge, because every Arabic token that opens
+     * with لل + letter IS the preposition + the article (للناس، للشمس،
+     * للدار) — the collapse leaves no other reading. The sun/moon law
+     * belongs to the article's lam wherever it stands, glued or bare, so
+     * a sun follower after لل takes the same partial-style shadda the
+     * bare-article layer applies: للناس ← للنَّاس.
+     *
+     * The OTHER glued shapes — [particle + ال + sun] like بالش فالش كالش
+     * والش — stay silent BY DOCUMENTED PROOF, not by omission: real
+     * non-article words share the exact same token shape (والد/والدين is
+     * simultaneously و + الدِّين and the noun والدِين; بالطو is a single
+     * loanword) — deciding between them needs dictionary knowledge, and
+     * dictionary knowledge is the guessing territory the creed forbids.
+     * The DRS v2.17.0 deferral «حتى يأتي قرارها بعقد خاص» is hereby
+     * resolved: revived where determinism holds (لل), reasoned silence
+     * where it cannot (the rest), and the pins in DrsV21900Tests guard
+     * both verdicts.
+     *
+     * Returns the token with U+0651 inserted after the follower when —
+     * and only when — [word] opens with the double-lam collapse, its
+     * third letter is one of the fourteen sun letters, and the token
+     * carries NO mark anywhere. Null otherwise: not a لل token, a moon
+     * follower or hamza carrier, already marked, or too short. Idempotent
+     * by construction — the output carries a mark, so a second call
+     * returns null.
+     */
+    fun gluedShaddaForm(word: String): String? {
+        if (word.length < 3) return null
+        if (word[0] != LAM || word[1] != LAM) return null
+        val follower = word[2]
+        if (isMark(follower) || follower !in SUN) return null
+        if (word.any { isMark(it) }) return null
+        return word.substring(0, 3) + SHADDA + word.substring(3)
+    }
 }

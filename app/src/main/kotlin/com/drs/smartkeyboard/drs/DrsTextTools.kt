@@ -935,6 +935,16 @@ object DrsTextTools {
      * non-article words — is emitted BYTE-IDENTICAL (the honest rule:
      * the tool never invents what the law does not fix).
      *
+     * DRS v2.19.0 — العقد الخاص المعلن في v2.17.0: the COLLAPSED glued
+     * form لل (ل + ال، الألف المنحلة) joins the law layer — every token
+     * opening with لل + letter IS the preposition + the article, so a
+     * sun follower takes the same partial-style shadda (للناس ← للنَّاس).
+     * The other glued shapes (بالش فالش كالش والش) stay byte-identical
+     * BY DOCUMENTED PROOF: والد/والدين and بالطو share the exact token
+     * shape without containing an article — separating them is
+     * dictionary knowledge, the guessing territory the creed forbids.
+     * See [DrsArabicLetters.gluedShaddaForm].
+     *
      * Every non-Arabic character — spaces, newlines, punctuation,
      * digits, Latin — passes through verbatim, so punctuation and line
      * structure are preserved exactly. Idempotent by construction:
@@ -950,7 +960,12 @@ object DrsTextTools {
                     var j = i + 1
                     while (j < text.length && DrsHarakatWordOps.isArabicWordChar(text[j])) j++
                     val word = text.substring(i, j)
-                    append(DrsWordTashkeel.vocalize(word) ?: DrsArabicLetters.shaddaForm(word) ?: word)
+                    append(
+                        DrsWordTashkeel.vocalize(word)
+                            ?: DrsArabicLetters.gluedShaddaForm(word)
+                            ?: DrsArabicLetters.shaddaForm(word)
+                            ?: word,
+                    )
                     i = j
                 } else {
                     append(c)
