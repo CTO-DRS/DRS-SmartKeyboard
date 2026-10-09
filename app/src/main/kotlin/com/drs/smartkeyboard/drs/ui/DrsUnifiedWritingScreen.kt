@@ -183,6 +183,17 @@ fun DrsUnifiedWritingScreen() = DrsScreen {
                 TextButton(onClick = { navController.navigate(Routes.Settings.DrsMyTexts) }) {
                     Text(stringRes(R.string.drs__mytexts__title))
                 }
+                // DRS v2.22.0: قاموسي التشكيلي — the harakat system's
+                // personal lexicon manager, a sibling of the saved-texts
+                // system: teach words, and the board vocalizes them first.
+                Text(
+                    text = stringRes(R.string.drs__unified__writing_mylexicon_body),
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                TextButton(onClick = { navController.navigate(Routes.Settings.DrsMyLexicon) }) {
+                    Text(stringRes(R.string.drs__mylexicon__title))
+                }
             }
         }
     }

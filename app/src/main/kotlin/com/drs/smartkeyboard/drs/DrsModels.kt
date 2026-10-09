@@ -106,6 +106,14 @@ data class DrsUsageStats(
     // DRS v2.21.0: anonymous count of saved-text insertions (نصوصي).
     // Counts only — never WHICH text was inserted.
     val myTextsUses: Long = 0,
+    // DRS v2.22.0: anonymous per-feature counters completing the
+    // per-feature integration fabric (counts only — never WHAT was
+    // inserted, never WHICH word was vocalized).
+    val myLexiconUses: Long = 0,
+    val harakatUses: Long = 0,
+    val symbolUses: Long = 0,
+    val letterUses: Long = 0,
+    val numberUses: Long = 0,
     val techToolUses: Long = 0,
     val gestureUses: Long = 0,
     // DRS v1.6.0: how many times a suggestion/candidate row entry was
@@ -148,6 +156,12 @@ data class DrsDayStats(
     val shortcutUses: Long = 0,
     /** DRS v2.21.0: saved-text insertions (counts only). */
     val myTextsUses: Long = 0,
+    /** DRS v2.22.0: the per-feature counters of the smart surfaces. */
+    val myLexiconUses: Long = 0,
+    val harakatUses: Long = 0,
+    val symbolUses: Long = 0,
+    val letterUses: Long = 0,
+    val numberUses: Long = 0,
     /** DRS v1.6.0: committed suggestion-row entries (accepts). */
     val suggestionAccepts: Long = 0,
     /** DRS v1.7.0: input starts per context mode (counts only). */
@@ -175,6 +189,31 @@ data class DrsMyText(
     /** Optional free category tag; empty = the general (عام) bucket. */
     val category: String = "",
     /** Pinned texts float to the head of the panel and the manager. */
+    val pinned: Boolean = false,
+    val createdAtMs: Long = 0,
+    val updatedAtMs: Long = 0,
+)
+
+/**
+ * DRS v2.22.0: one USER-TAUGHT word of «قاموسي التشكيلي» (the personal
+ * tashkeel lexicon) — the harakat system's own curated store. The 3000-word
+ * asset lexicon and the seed are READ-ONLY references; this entry is the
+ * user's explicit teaching: a stripped word mapped to its full vocalization.
+ *
+ * The lookup doctrine is «المستخدم تفوز» (the user wins): the personal
+ * entry is consulted BEFORE the seed and the asset — an honest override,
+ * never a guess. The word field is stored STRIPPED (the lexicon key
+ * contract), and strip(vocalized) must equal word — the same closed
+ * contract the seed and the asset obey, pinned by the engine.
+ */
+@Serializable
+data class DrsMyLexiconEntry(
+    val id: Long,
+    /** The STRIPPED word — the lexicon key, never carrying marks. */
+    val word: String,
+    /** The taught vocalization — strip(vocalized) == word, enforced. */
+    val vocalized: String,
+    /** Pinned entries float to the head of the manager. */
     val pinned: Boolean = false,
     val createdAtMs: Long = 0,
     val updatedAtMs: Long = 0,
@@ -249,6 +288,17 @@ data class DrsState(
     val nextMyTextId: Long = 1,
     /** DRS v2.21.0: master switch — gates the panel + insertion, not management. */
     val myTextsEnabled: Boolean = true,
+    /**
+     * DRS v2.22.0: the user's taught tashkeel words (قاموسي التشكيلي) —
+     * the harakat system's personal lexicon. Bounded by
+     * [DrsMyLexicon.MAX_ITEMS]; local only, covered structurally by the
+     * backup like every other [DrsState] field.
+     */
+    val myLexicon: List<DrsMyLexiconEntry> = emptyList(),
+    /** DRS v2.22.0: id allocator of the personal lexicon. */
+    val nextMyLexiconId: Long = 1,
+    /** DRS v2.22.0: master switch — gates the override lookup, not management. */
+    val myLexiconEnabled: Boolean = true,
     val usage: DrsUsageStats = DrsUsageStats(),
     val dismissedSuggestionIds: List<String> = emptyList(),
     val adaptationEnabled: Boolean = true,

@@ -36,6 +36,18 @@ object DrsAdaptationEngine {
     private val shortcutUses = AtomicLong()
     private val techToolUses = AtomicLong()
     private val gestureUses = AtomicLong()
+    // DRS v2.22.0: the per-feature counters (نصوصي، قاموسي التشكيلي،
+    // الحركات، الرموز، الحروف، الأرقام) — completing the single-drain
+    // doctrine for every feature: v2.21.0's saved-texts counter wrote the
+    // lifetime stat directly, bypassing the one drain point and silently
+    // dropping from the day buckets. Every feature counter now flows
+    // through the same drain the rest of the counters obey.
+    private val myTextsUses = AtomicLong()
+    private val myLexiconUses = AtomicLong()
+    private val harakatUses = AtomicLong()
+    private val symbolUses = AtomicLong()
+    private val letterUses = AtomicLong()
+    private val numberUses = AtomicLong()
     // DRS v1.6.0: committed suggestion-row entries (the engine already
     // routes every accept through KeyboardManager.commitCandidate —
     // this counts the event, never the word itself).
@@ -127,6 +139,55 @@ object DrsAdaptationEngine {
     }
 
     /**
+     * DRS v2.22.0: records one use of a smart FEATURE (panel insertion,
+     * saved-text insertion, personal-lexicon hit) — the closed set the
+     * per-feature surfaces report. Anonymous count only; never WHAT was
+     * inserted, never WHICH word was vocalized. The call sites gate
+     * incognito before calling (same contract as recordClipboardUse).
+     */
+    fun recordMyTextsUse() {
+        if (DrsStore.state.value.adaptationEnabled) {
+            myTextsUses.incrementAndGet()
+            maybeFlush(myTextsUses)
+        }
+    }
+
+    fun recordMyLexiconUse() {
+        if (DrsStore.state.value.adaptationEnabled) {
+            myLexiconUses.incrementAndGet()
+            maybeFlush(myLexiconUses)
+        }
+    }
+
+    fun recordHarakatUse() {
+        if (DrsStore.state.value.adaptationEnabled) {
+            harakatUses.incrementAndGet()
+            maybeFlush(harakatUses)
+        }
+    }
+
+    fun recordSymbolUse() {
+        if (DrsStore.state.value.adaptationEnabled) {
+            symbolUses.incrementAndGet()
+            maybeFlush(symbolUses)
+        }
+    }
+
+    fun recordLetterUse() {
+        if (DrsStore.state.value.adaptationEnabled) {
+            letterUses.incrementAndGet()
+            maybeFlush(letterUses)
+        }
+    }
+
+    fun recordNumberUse() {
+        if (DrsStore.state.value.adaptationEnabled) {
+            numberUses.incrementAndGet()
+            maybeFlush(numberUses)
+        }
+    }
+
+    /**
      * DRS v1.7.0: records one input session start in a context mode (the
      * mode name only — a detected field attribute, never content). Cheap,
      * never throws.
@@ -188,6 +249,12 @@ object DrsAdaptationEngine {
             shortcutUses = shortcutUses.getAndSet(0),
             techToolUses = techToolUses.getAndSet(0),
             gestureUses = gestureUses.getAndSet(0),
+            myTextsUses = myTextsUses.getAndSet(0),
+            myLexiconUses = myLexiconUses.getAndSet(0),
+            harakatUses = harakatUses.getAndSet(0),
+            symbolUses = symbolUses.getAndSet(0),
+            letterUses = letterUses.getAndSet(0),
+            numberUses = numberUses.getAndSet(0),
             suggestionAccepts = suggestionAccepts.getAndSet(0),
             toolUses = drainedTools,
             contextStarts = drainedContexts,
@@ -231,6 +298,12 @@ object DrsAdaptationEngine {
             shortcutUses = shortcutUses + delta.shortcutUses,
             techToolUses = techToolUses + delta.techToolUses,
             gestureUses = gestureUses + delta.gestureUses,
+            myTextsUses = myTextsUses + delta.myTextsUses,
+            myLexiconUses = myLexiconUses + delta.myLexiconUses,
+            harakatUses = harakatUses + delta.harakatUses,
+            symbolUses = symbolUses + delta.symbolUses,
+            letterUses = letterUses + delta.letterUses,
+            numberUses = numberUses + delta.numberUses,
             suggestionAccepts = suggestionAccepts + delta.suggestionAccepts,
             toolUses = mergedTools,
             contextStarts = mergedContexts,

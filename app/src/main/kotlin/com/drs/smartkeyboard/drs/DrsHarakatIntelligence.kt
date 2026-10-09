@@ -244,15 +244,23 @@ object DrsWordTashkeel {
      * asset lexicon ([DrsTashkeelLexicon]) — an atomic read, no locks;
      * before the asset lands (or if it never does) the seed serves
      * alone and unknown words still return null honestly.
+     *
+     * DRS v2.22.0: the user's personal lexicon ([DrsMyLexicon]) answers
+     * BEFORE both references — «المستخدم تفوز» — an explicit teaching
+     * overrides the canonical references by the user's own hand. The
+     * default empty map keeps the pure reference behavior byte-identical
+     * for every existing caller and test; the UI layers pass the live
+     * overrides from [DrsMyLexicon.overridesOf].
      */
-    fun vocalize(word: String): String? {
+    fun vocalize(word: String, userOverrides: Map<String, String> = emptyMap()): String? {
         val stripped = DrsHarakatWordOps.stripDiacritics(word)
         if (stripped.isEmpty()) return null
-        return LEXICON[stripped] ?: DrsTashkeelLexicon.vocalize(stripped)
+        return userOverrides[stripped] ?: LEXICON[stripped] ?: DrsTashkeelLexicon.vocalize(stripped)
     }
 
-    /** True when [word] (stripped) is in the lexicon. */
-    fun isKnown(word: String): Boolean = vocalize(word) != null
+    /** True when [word] (stripped) is in the lexicon (personal overrides included). */
+    fun isKnown(word: String, userOverrides: Map<String, String> = emptyMap()): Boolean =
+        vocalize(word, userOverrides) != null
 
     /** The seed lexicon size — surfaced in tests and diagnostics. */
     val size: Int get() = LEXICON.size

@@ -30,8 +30,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.drs.smartkeyboard.R
 import com.drs.smartkeyboard.app.DrsPreferenceStore
+import com.drs.smartkeyboard.drs.DrsAdaptationEngine
 import com.drs.smartkeyboard.drs.DrsKeyboardHarakat
 import com.drs.smartkeyboard.drs.DrsKeyboardHarakatKey
+import com.drs.smartkeyboard.drs.DrsMyTexts
 import com.drs.smartkeyboard.drs.DrsNumberFieldClass
 import com.drs.smartkeyboard.drs.DrsNumberPanelSmart
 import com.drs.smartkeyboard.drs.DrsPanelOrder
@@ -53,6 +55,7 @@ import java.time.LocalDate
 import java.time.chrono.HijrahDate
 import org.drs.lib.compose.stringRes
 import org.drs.jetpref.datastore.model.collectAsState
+import org.drs.lib.android.showShortToastSync
 import org.drs.lib.snygg.ui.SnyggBox
 import org.drs.lib.snygg.ui.SnyggColumn
 
@@ -122,8 +125,26 @@ fun DrsSmartNumberPanel(modifier: Modifier = Modifier) {
         if (!keyboardManager.activeState.isIncognitoMode) {
             DrsPanelUsageStore.record(context, USAGE_PANEL_NUMBERS, text)
             recents = DrsPanelUsageStore.load(context, USAGE_PANEL_NUMBERS)
+            // DRS v2.22.0: the numbers board's own feature counter.
+            DrsAdaptationEngine.recordNumberUse()
         }
         commitStamp++
+    }
+
+    // DRS v2.22.0 — تكامل الأرقام مع نصوصي: a ready format (phone,
+    // currency, date) becomes a permanent saved text with a long-press —
+    // the numbers feature no longer stops at the field's edge. The save
+    // is user-explicit (a hold, never a slip), lands in the localized
+    // numbers category, and the honest dedup of the saved-texts engine
+    // makes a double save a no-op. Incognito never saves.
+    val numbersCategory = stringRes(R.string.drs__mytexts__numbers_category)
+    fun saveFormatToMyTexts(format: String) {
+        if (keyboardManager.activeState.isIncognitoMode) return
+        if (DrsMyTexts.add(format, "", numbersCategory)) {
+            context.showShortToastSync(context.getString(R.string.panel__numbers__saved_to_mytexts))
+        } else {
+            context.showShortToastSync(context.getString(R.string.drs__mytexts__err_full))
+        }
     }
 
     fun applyKey(key: DrsKeyboardHarakatKey) {
@@ -226,6 +247,14 @@ fun DrsSmartNumberPanel(modifier: Modifier = Modifier) {
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
+                // DRS v2.22.0: the hold-to-save gesture, announced where
+                // the formats live — the same honest note-chip pattern
+                // the harakat board established (non-clickable).
+                AdviceChip(
+                    label = stringRes(R.string.panel__numbers__hold_to_save_hint),
+                    accent = accent,
+                    leading = false,
+                )
                 formats.forEachIndexed { formatIndex, format ->
                     AdviceChip(
                         label = format,
@@ -235,6 +264,10 @@ fun DrsSmartNumberPanel(modifier: Modifier = Modifier) {
                             feedback.keyPress()
                             commitText(format)
                         },
+                        // DRS v2.22.0: hold a format to keep it — the
+                        // numbers-to-نصوصي bridge, announced by the panel
+                        // header hint.
+                        onLongClick = { saveFormatToMyTexts(format) },
                         // DRS v2.3.0: one capped wave per new formats set —
                         // never a pop-in.
                         entranceIndex = formatIndex,

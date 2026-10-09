@@ -163,6 +163,14 @@ fun DrsUnifiedStatsScreen() = DrsScreen {
             StatsRow(stringRes(R.string.drs__unified__stats_shortcuts), todayStats.shortcutUses)
             // DRS v1.6.0: committed suggestion-row entries.
             StatsRow(stringRes(R.string.drs__unified__stats_suggestion_accepts), todayStats.suggestionAccepts)
+            // DRS v2.22.0: the per-feature counters — every smart surface
+            // reports its own honest count in the same table.
+            StatsRow(stringRes(R.string.drs__unified__stats_mytexts), todayStats.myTextsUses)
+            StatsRow(stringRes(R.string.drs__unified__stats_mylexicon), todayStats.myLexiconUses)
+            StatsRow(stringRes(R.string.drs__unified__stats_harakat), todayStats.harakatUses)
+            StatsRow(stringRes(R.string.drs__unified__stats_symbols_panel), todayStats.symbolUses)
+            StatsRow(stringRes(R.string.drs__unified__stats_letters), todayStats.letterUses)
+            StatsRow(stringRes(R.string.drs__unified__stats_numbers_panel), todayStats.numberUses)
             if (!dayHasActivity(todayStats)) {
                 Text(
                     text = stringRes(R.string.drs__unified__stats_empty),
@@ -180,6 +188,13 @@ fun DrsUnifiedStatsScreen() = DrsScreen {
             StatsRow(stringRes(R.string.drs__unified__stats_gestures), last7.gestureUses)
             StatsRow(stringRes(R.string.drs__unified__stats_emoji), last7.emojiUses)
             StatsRow(stringRes(R.string.drs__unified__stats_clipboard), last7.clipboardUses)
+            // DRS v2.22.0: the per-feature counters in the weekly view.
+            StatsRow(stringRes(R.string.drs__unified__stats_mytexts), last7.myTextsUses)
+            StatsRow(stringRes(R.string.drs__unified__stats_mylexicon), last7.myLexiconUses)
+            StatsRow(stringRes(R.string.drs__unified__stats_harakat), last7.harakatUses)
+            StatsRow(stringRes(R.string.drs__unified__stats_symbols_panel), last7.symbolUses)
+            StatsRow(stringRes(R.string.drs__unified__stats_letters), last7.letterUses)
+            StatsRow(stringRes(R.string.drs__unified__stats_numbers_panel), last7.numberUses)
         }
 
         // ---------------- all-time totals (DRS v1.2.0) ----------------
@@ -220,6 +235,13 @@ fun DrsUnifiedStatsScreen() = DrsScreen {
             StatsRow(stringRes(R.string.drs__unified__stats_shortcuts), totalAll.shortcutUses)
             // DRS v1.6.0: committed suggestion-row entries.
             StatsRow(stringRes(R.string.drs__unified__stats_suggestion_accepts), totalAll.suggestionAccepts)
+            // DRS v2.22.0: the per-feature counters in the all-time view.
+            StatsRow(stringRes(R.string.drs__unified__stats_mytexts), totalAll.myTextsUses)
+            StatsRow(stringRes(R.string.drs__unified__stats_mylexicon), totalAll.myLexiconUses)
+            StatsRow(stringRes(R.string.drs__unified__stats_harakat), totalAll.harakatUses)
+            StatsRow(stringRes(R.string.drs__unified__stats_symbols_panel), totalAll.symbolUses)
+            StatsRow(stringRes(R.string.drs__unified__stats_letters), totalAll.letterUses)
+            StatsRow(stringRes(R.string.drs__unified__stats_numbers_panel), totalAll.numberUses)
             // DRS v1.4.0: recorded active days and the mean presses of
             // those days — both pure aggregations of the same buckets.
             StatsRow(stringRes(R.string.drs__unified__stats_active_days), activeDays.toLong())
@@ -520,7 +542,7 @@ private fun contextModeDisplayName(modeName: String): String = when (modeName) {
  * (ascending). Counts only — the file can never contain typed text.
  */
 private fun buildStatsCsv(buckets: List<DrsDayStats>): String {
-    val header = "day,key_presses,number_presses,symbol_presses,tool_uses,tech_tool_uses,gesture_uses,emoji_uses,clipboard_uses,shortcut_uses,suggestion_accepts,context_starts"
+    val header = "day,key_presses,number_presses,symbol_presses,tool_uses,tech_tool_uses,gesture_uses,emoji_uses,clipboard_uses,shortcut_uses,my_texts_uses,my_lexicon_uses,harakat_uses,symbol_uses,letter_uses,number_uses,suggestion_accepts,context_starts"
     return header + "\n" + buckets.joinToString("\n") { b ->
         listOf(
             b.day,
@@ -533,6 +555,13 @@ private fun buildStatsCsv(buckets: List<DrsDayStats>): String {
             b.emojiUses,
             b.clipboardUses,
             b.shortcutUses,
+            // DRS v2.22.0: the per-feature counters export with the rest.
+            b.myTextsUses,
+            b.myLexiconUses,
+            b.harakatUses,
+            b.symbolUses,
+            b.letterUses,
+            b.numberUses,
             b.suggestionAccepts,
             // DRS v1.7.0: the day's full context-start map, compact
             // 'mode:count;mode:count' — empty cell when nothing recorded.

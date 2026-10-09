@@ -38,7 +38,11 @@ object DrsDailyStats {
         keyPresses == 0L && numberPresses == 0L && symbolPresses == 0L &&
             emojiUses == 0L && clipboardUses == 0L &&
             shortcutUses == 0L && techToolUses == 0L && gestureUses == 0L &&
-            suggestionAccepts == 0L && toolUses.isEmpty() && contextStarts.isEmpty()
+            suggestionAccepts == 0L && toolUses.isEmpty() && contextStarts.isEmpty() &&
+            // DRS v2.22.0: the per-feature counters count too — a flush
+            // carrying only a panel press is still a real delta.
+            myTextsUses == 0L && myLexiconUses == 0L && harakatUses == 0L &&
+            symbolUses == 0L && letterUses == 0L && numberUses == 0L
 
     /**
      * Merges [delta] (the drained adaptation counters) into the TODAY
@@ -70,6 +74,16 @@ object DrsDailyStats {
             emojiUses = existing.emojiUses + delta.emojiUses,
             clipboardUses = existing.clipboardUses + delta.clipboardUses,
             shortcutUses = existing.shortcutUses + delta.shortcutUses,
+            // DRS v2.22.0: the per-feature counters persist too — v2.21.0
+            // added myTextsUses to the model but this merge silently
+            // dropped it (the day buckets never saw a saved-text
+            // insertion). The whole closed set now merges.
+            myTextsUses = existing.myTextsUses + delta.myTextsUses,
+            myLexiconUses = existing.myLexiconUses + delta.myLexiconUses,
+            harakatUses = existing.harakatUses + delta.harakatUses,
+            symbolUses = existing.symbolUses + delta.symbolUses,
+            letterUses = existing.letterUses + delta.letterUses,
+            numberUses = existing.numberUses + delta.numberUses,
             // DRS v1.6.0: committed suggestion-row entries persist too.
             suggestionAccepts = existing.suggestionAccepts + delta.suggestionAccepts,
             // DRS v1.7.0: context-mode starts persist as a summed map —
@@ -174,6 +188,14 @@ object DrsDailyStats {
                 emojiUses = acc.emojiUses + bucket.emojiUses,
                 clipboardUses = acc.clipboardUses + bucket.clipboardUses,
                 shortcutUses = acc.shortcutUses + bucket.shortcutUses,
+                // DRS v2.22.0: the per-feature counters aggregate like
+                // their siblings — the totals view never drops a feature.
+                myTextsUses = acc.myTextsUses + bucket.myTextsUses,
+                myLexiconUses = acc.myLexiconUses + bucket.myLexiconUses,
+                harakatUses = acc.harakatUses + bucket.harakatUses,
+                symbolUses = acc.symbolUses + bucket.symbolUses,
+                letterUses = acc.letterUses + bucket.letterUses,
+                numberUses = acc.numberUses + bucket.numberUses,
                 suggestionAccepts = acc.suggestionAccepts + bucket.suggestionAccepts,
                 // DRS v1.7.0: the lifetime context view aggregates too.
                 contextStarts = mergeContextMap(acc.contextStarts, bucket.contextStarts),
@@ -378,6 +400,10 @@ object DrsDailyStats {
             techToolUses > 0L || gestureUses > 0L ||
             emojiUses > 0L || clipboardUses > 0L || shortcutUses > 0L ||
             suggestionAccepts > 0L ||
+            // DRS v2.22.0: the per-feature counters count as activity —
+            // a day of panel work is a real usage day.
+            myTextsUses > 0L || myLexiconUses > 0L || harakatUses > 0L ||
+            symbolUses > 0L || letterUses > 0L || numberUses > 0L ||
             // DRS v1.7.0: input starts alone count as activity — a day
             // spent opening password/number fields is a real usage day.
             contextStarts.values.any { it > 0L }

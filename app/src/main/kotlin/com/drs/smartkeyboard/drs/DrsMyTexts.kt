@@ -296,11 +296,12 @@ object DrsMyTexts {
 
     /**
      * One anonymous insertion counter bump (counts only — never WHICH
-     * text). Mirrors recordShortcutUse's coalesced path.
+     * text). DRS v2.22.0: routed through the adaptation engine's single
+     * drain point — v2.21.0 wrote the lifetime stat directly, which
+     * bypassed the day buckets entirely (the daily stats never saw a
+     * saved-text insertion). Same contract as recordShortcutUse.
      */
     fun recordUse() {
-        DrsStore.update { state ->
-            state.copy(usage = state.usage.copy(myTextsUses = state.usage.myTextsUses + 1))
-        }
+        DrsAdaptationEngine.recordMyTextsUse()
     }
 }

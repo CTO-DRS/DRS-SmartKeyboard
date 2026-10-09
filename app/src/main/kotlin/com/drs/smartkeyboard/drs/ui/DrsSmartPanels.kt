@@ -38,6 +38,10 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardReturn
 import androidx.compose.material.icons.automirrored.outlined.Backspace
 import androidx.compose.material.icons.filled.FormatClear
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -57,6 +61,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.drs.smartkeyboard.R
 import com.drs.smartkeyboard.app.DrsPreferenceStore
 import com.drs.smartkeyboard.drs.DrsHarakat
@@ -65,6 +70,8 @@ import com.drs.smartkeyboard.drs.DrsHarakatWordOps
 import com.drs.smartkeyboard.drs.DrsKeyboardHarakat
 import com.drs.smartkeyboard.drs.DrsKeyboardHarakatKey
 import com.drs.smartkeyboard.drs.DrsMotion
+import com.drs.smartkeyboard.drs.DrsAdaptationEngine
+import com.drs.smartkeyboard.drs.DrsMyLexicon
 import com.drs.smartkeyboard.drs.DrsPanelOrder
 import com.drs.smartkeyboard.drs.DrsStore
 import com.drs.smartkeyboard.drs.DrsWordTashkeel
@@ -411,10 +418,22 @@ fun DrsDiacriticsPanel(modifier: Modifier = Modifier) {
 
     RecordPanelOpen(ImeUiMode.DIACRITICS)
 
+    // DRS v2.22.0 — «المستخدم تفوز»: the personal tashkeel lexicon
+    // (قاموسي التشكيلي) feeds the word-vocalization chain; disabled or
+    // empty it degrades to the exact pre-v2.22.0 references-only chain.
+    // Declared BEFORE the local closures so they capture it.
+    val drsState by DrsStore.state.collectAsState()
+    val userOverrides = remember(drsState.myLexicon, drsState.myLexiconEnabled) {
+        DrsMyLexicon.overridesOf(drsState)
+    }
+
     fun recordUse(key: String) {
         if (keyboardManager.activeState.isIncognitoMode) return
         DrsPanelUsageStore.record(context, USAGE_PANEL_HARAKAT, key)
         recents = DrsPanelUsageStore.load(context, USAGE_PANEL_HARAKAT)
+        // DRS v2.22.0: the harakat board's own feature counter — the same
+        // single-drain doctrine every surface obeys.
+        DrsAdaptationEngine.recordHarakatUse()
     }
 
     fun insertHaraka(haraka: Char) {
@@ -442,8 +461,13 @@ fun DrsDiacriticsPanel(modifier: Modifier = Modifier) {
     fun tashkeelCurrentWord() {
         val before = editorInstance.run { activeContent.getTextBeforeCursor(48) }
         val word = DrsHarakatWordOps.currentWordBefore(before)
-        val vocalized = DrsWordTashkeel.vocalize(word) ?: return
+        val vocalized = DrsWordTashkeel.vocalize(word, userOverrides) ?: return
         if (editorInstance.replaceWordBeforeCursor(vocalized, word.length)) {
+            // DRS v2.22.0: a hit served by the PERSONAL lexicon counts as
+            // its own feature use — the references' hits stay anonymous.
+            if (vocalized == userOverrides[DrsHarakatWordOps.stripDiacritics(word)]) {
+                DrsMyLexicon.recordUse()
+            }
             recordUse(vocalized)
             commitStamp++
         }
@@ -533,8 +557,8 @@ fun DrsDiacriticsPanel(modifier: Modifier = Modifier) {
     val cursorWord = remember(adviceEnabled, beforeText) {
         if (adviceEnabled) DrsHarakatWordOps.currentWordBefore(beforeText) else ""
     }
-    val knownVocalized = remember(adviceEnabled, cursorWord) {
-        if (adviceEnabled) DrsWordTashkeel.vocalize(cursorWord) else null
+    val knownVocalized = remember(adviceEnabled, cursorWord, userOverrides) {
+        if (adviceEnabled) DrsWordTashkeel.vocalize(cursorWord, userOverrides) else null
     }
     val wordHasMarks = remember(adviceEnabled, cursorWord) {
         adviceEnabled && DrsHarakatWordOps.containsDiacritics(cursorWord)
@@ -546,6 +570,16 @@ fun DrsDiacriticsPanel(modifier: Modifier = Modifier) {
     val windowController = LocalWindowController.current
     val windowSpec by windowController.activeWindowSpec.collectAsState()
     val rowHeight = DrsImeSizing.keyboardRowBaseHeight
+
+    // DRS v2.22.0 — رقاقة «علّم القاموس»: the honest unknown state of the
+    // tashkeel chip becomes a teachable moment — the word the references
+    // don't know can be taught to the personal lexicon from the panel
+    // itself (incognito never teaches, the lexicon switch gates the
+    // lookup AND the teaching).
+    var showTeachDialog by remember { mutableStateOf(false) }
+    var teachWord by remember { mutableStateOf("") }
+    var teachVocalized by remember { mutableStateOf("") }
+    var teachError by remember { mutableStateOf<DrsMyLexicon.Error?>(null) }
 
     SnyggColumn(
         modifier = modifier.fillMaxWidth(),
@@ -641,6 +675,30 @@ fun DrsDiacriticsPanel(modifier: Modifier = Modifier) {
                         },
                     )
                 }
+                // DRS v2.22.0 — رقاقة التعليم: the word neither the
+                // references nor the majesty family know gets a teach
+                // chip — the personal lexicon learns it in one dialog,
+                // and the tashkeel chip lights up right after.
+                val teachable = drsState.myLexiconEnabled &&
+                    !keyboardManager.activeState.isIncognitoMode &&
+                    cursorWord.length >= 2 &&
+                    cursorWord.length <= DrsMyLexicon.MAX_WORD_LEN &&
+                    knownVocalized == null &&
+                    majestyVocalized == null &&
+                    !wordHasMarks
+                if (teachable) {
+                    AdviceChip(
+                        label = stringRes(R.string.panel__harakat__teach_word),
+                        accent = accent,
+                        leading = false,
+                        onClick = {
+                            teachError = null
+                            teachWord = DrsHarakatWordOps.stripDiacritics(cursorWord)
+                            teachVocalized = ""
+                            showTeachDialog = true
+                        },
+                    )
+                }
                 if (wordHasMarks) {
                     AdviceChip(
                         label = stringRes(R.string.panel__harakat__strip_word),
@@ -699,6 +757,69 @@ fun DrsDiacriticsPanel(modifier: Modifier = Modifier) {
         }
         Spacer(Modifier.height(4.dp))
     }
+
+    // DRS v2.22.0 — حوار التعليم: word (prefilled, editable) + the full
+    // vocalization; the engine's closed contract answers honestly and
+    // a successful teach lights the tashkeel chip up in place.
+    if (showTeachDialog) {
+        AlertDialog(
+            onDismissRequest = { showTeachDialog = false },
+            title = { Text(stringRes(R.string.panel__harakat__teach_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = stringRes(R.string.panel__harakat__teach_hint),
+                        fontSize = 12.sp,
+                    )
+                    OutlinedTextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = teachWord,
+                        onValueChange = {
+                            teachError = null
+                            teachWord = it
+                        },
+                        singleLine = true,
+                        label = { Text(stringRes(R.string.drs__mylexicon__word_label)) },
+                    )
+                    OutlinedTextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = teachVocalized,
+                        onValueChange = {
+                            teachError = null
+                            teachVocalized = it
+                        },
+                        singleLine = true,
+                        label = { Text(stringRes(R.string.drs__mylexicon__vocalized_label)) },
+                    )
+                    teachError?.let { error ->
+                        Text(
+                            text = stringRes(myLexiconErrorLabel(error)),
+                            fontSize = 12.sp,
+                            color = androidx.compose.material3.MaterialTheme.colorScheme.error,
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val ok = DrsMyLexicon.add(teachWord, teachVocalized)
+                    if (ok) {
+                        showTeachDialog = false
+                    } else {
+                        teachError = DrsMyLexicon.validate(teachWord, teachVocalized)
+                            ?: DrsMyLexicon.Error.FULL
+                    }
+                }) {
+                    Text(stringRes(R.string.action__save))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTeachDialog = false }) {
+                    Text(stringRes(R.string.action__cancel))
+                }
+            },
+        )
+    }
 }
 
 /** The localized label of an advisor reason (the smart strip chips). */
@@ -731,6 +852,10 @@ internal fun AdviceChip(
     accent: androidx.compose.ui.graphics.Color,
     leading: Boolean,
     onClick: (() -> Unit)? = null,
+    // DRS v2.22.0: the optional secondary action (hold) — the numbers
+    // panel's formats save to نصوصي with a long-press; null keeps the
+    // chip tap-only. Same pulse/entrance contract, zero visual change.
+    onLongClick: (() -> Unit)? = null,
     entranceIndex: Int = -1,
     entranceKey: Any? = null,
 ) {
@@ -765,6 +890,12 @@ internal fun AdviceChip(
                 onClick = {
                     feedback.keyPress()
                     onClick()
+                },
+                onLongClick = onLongClick?.let { action ->
+                    {
+                        feedback.keyPress()
+                        action()
+                    }
                 },
             )
     } else {
@@ -945,6 +1076,8 @@ fun DrsSmartSymbolsPanel(modifier: Modifier = Modifier) {
         if (!keyboardManager.activeState.isIncognitoMode) {
             DrsPanelUsageStore.record(context, USAGE_PANEL_SYMBOLS, text)
             recents = DrsPanelUsageStore.load(context, USAGE_PANEL_SYMBOLS)
+            // DRS v2.22.0: the symbols board's own feature counter.
+            DrsAdaptationEngine.recordSymbolUse()
         }
         commitStamp++
     }
@@ -1065,6 +1198,8 @@ fun DrsArabicLettersPanel(modifier: Modifier = Modifier) {
         if (!keyboardManager.activeState.isIncognitoMode) {
             DrsPanelUsageStore.record(context, USAGE_PANEL_LETTERS, text)
             recents = DrsPanelUsageStore.load(context, USAGE_PANEL_LETTERS)
+            // DRS v2.22.0: the letters board's own feature counter.
+            DrsAdaptationEngine.recordLetterUse()
         }
     }
 
