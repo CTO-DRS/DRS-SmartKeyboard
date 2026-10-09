@@ -2842,4 +2842,37 @@
     <string name="privacy__delete__summary" comment="Delete-all explanation: wipes learning, crash registry, downloads, clipboard media immediately">Wipe learning, the crash registry, update files, and clipboard media immediately and irreversibly</string>
     <string name="privacy__delete__confirm" comment="Delete-all confirmation dialog title">Delete all data?</string>
     <string name="privacy__delete__confirm_message" comment="Delete-all confirmation body">Permanently wiped from the device: personal learning, the crash registry, update files, and clipboard media. This cannot be undone.</string>
+    <string name="panel__switcher_mytexts">My texts</string>
+    <string name="panel__mytexts__title">My saved texts panel</string>
+    <string name="panel__mytexts__empty">No saved texts yet — save one from the clipboard or add it in the My texts screen</string>
+    <string name="panel__mytexts__hidden">In a password field your texts stay hidden — absolute privacy</string>
+    <string name="panel__mytexts__disabled">My texts is disabled — enable it in its screen</string>
+    <string name="panel__mytexts__save_clip">Save clipboard text</string>
+    <string name="panel__mytexts__all">All</string>
+    <string name="drs__unified__tool_my_texts_panel">My saved texts panel</string>
+    <string name="drs__unified__tool_my_texts_panel_desc">Opens your saved texts: addresses, replies and ready phrases inserted with one tap, supporting the same template variables ({date}, {time}, {clipboard}) — all purely local, no network</string>
+    <string name="drs__mytexts__title">My saved texts</string>
+    <string name="drs__mytexts__enable">Enable my texts</string>
+    <string name="drs__mytexts__enable_summary">Your saved texts appear in the My texts panel and insert with one tap</string>
+    <string name="drs__mytexts__add_new">Add a saved text</string>
+    <string name="drs__mytexts__edit">Edit</string>
+    <string name="drs__mytexts__delete">Delete</string>
+    <string name="drs__mytexts__delete_confirm">This saved text will be deleted permanently. Continue?</string>
+    <string name="drs__mytexts__remove_all">Remove all</string>
+    <string name="drs__mytexts__remove_all_confirm">All your saved texts will be deleted permanently. Continue?</string>
+    <string name="drs__mytexts__empty">No saved texts yet — add the first one</string>
+    <string name="drs__mytexts__search_hint">Search your texts</string>
+    <string name="drs__mytexts__search_empty">No matching results</string>
+    <string name="drs__mytexts__list_section">Saved texts</string>
+    <string name="drs__mytexts__text_label">Text</string>
+    <string name="drs__mytexts__label_label">Optional label</string>
+    <string name="drs__mytexts__category_label">Optional category</string>
+    <string name="drs__mytexts__template_badge">Supports template variables</string>
+    <string name="drs__mytexts__pin_toggle">Pin or unpin</string>
+    <string name="drs__mytexts__err_empty">The text is empty — write something first</string>
+    <string name="drs__mytexts__err_text_long">The text exceeds the 500-character limit</string>
+    <string name="drs__mytexts__err_label_long">The label exceeds the 40-character limit</string>
+    <string name="drs__mytexts__err_category_long">The category exceeds the 24-character limit</string>
+    <string name="drs__mytexts__err_full">The 100-text limit is reached — delete one to add another</string>
+    <string name="drs__unified__writing_mytexts_body">Your saved texts: addresses, replies and phrases inserted with one tap from the My texts panel, supporting the same template variables</string>
 </resources>

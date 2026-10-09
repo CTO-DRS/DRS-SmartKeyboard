@@ -54,6 +54,7 @@ import com.drs.smartkeyboard.drs.ui.DrsSmartSymbolsPanel
 import com.drs.smartkeyboard.drs.ui.DrsArabicLettersPanel
 import com.drs.smartkeyboard.drs.ui.DrsSmartNumberPanel
 import com.drs.smartkeyboard.drs.ui.DrsSmartClipboardPanel
+import com.drs.smartkeyboard.drs.ui.DrsMyTextsPanel
 import com.drs.smartkeyboard.ime.input.LocalInputFeedbackController
 import com.drs.smartkeyboard.ime.keyboard.ProvideKeyboardRowBaseHeight
 import com.drs.smartkeyboard.ime.media.MediaInputLayout
@@ -241,6 +242,8 @@ private fun ImeInnerWindow() {
                 ImeUiMode.SMART_NUMBER -> ProvideActualLayoutDirection { DrsSmartNumberPanel() }
                 // DRS v1.3.0: the fifth smart panel.
                 ImeUiMode.SMART_CLIPBOARD -> ProvideActualLayoutDirection { DrsSmartClipboardPanel() }
+                // DRS v2.21.0: the sixth smart panel (لوحة نصوصي المحفوظة).
+                ImeUiMode.MY_TEXTS -> ProvideActualLayoutDirection { DrsMyTextsPanel() }
             }
             ImeSystemUiFloating()
         }

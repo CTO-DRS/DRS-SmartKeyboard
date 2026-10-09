@@ -103,6 +103,9 @@ data class DrsUsageStats(
     val emojiUses: Long = 0,
     val clipboardUses: Long = 0,
     val shortcutUses: Long = 0,
+    // DRS v2.21.0: anonymous count of saved-text insertions (نصوصي).
+    // Counts only — never WHICH text was inserted.
+    val myTextsUses: Long = 0,
     val techToolUses: Long = 0,
     val gestureUses: Long = 0,
     // DRS v1.6.0: how many times a suggestion/candidate row entry was
@@ -143,10 +146,38 @@ data class DrsDayStats(
     val emojiUses: Long = 0,
     val clipboardUses: Long = 0,
     val shortcutUses: Long = 0,
+    /** DRS v2.21.0: saved-text insertions (counts only). */
+    val myTextsUses: Long = 0,
     /** DRS v1.6.0: committed suggestion-row entries (accepts). */
     val suggestionAccepts: Long = 0,
     /** DRS v1.7.0: input starts per context mode (counts only). */
     val contextStarts: Map<String, Long> = emptyMap(),
+)
+
+/**
+ * DRS v2.21.0: one SAVED text of the «نصوصي» system (نص محفوظ واحد).
+ * Unlike the clipboard history (auto-captured, auto-cleaned, transient),
+ * a saved text is USER-CURATED permanent content: an address, a greeting,
+ * a bank IBAN, a reply template — browsable from the sixth smart panel
+ * and insertable with one tap. Templates share the shortcuts engine's
+ * variables ({date}, {time}, {hijri}, {clipboard}, {newline}, {cursor})
+ * and are expanded at INSERT time, never at store time.
+ *
+ * Only what the user explicitly typed/saved is stored — nothing is ever
+ * captured implicitly, nothing leaves the device.
+ */
+@Serializable
+data class DrsMyText(
+    val id: Long,
+    val text: String,
+    /** Optional short display label; empty = derive an honest text preview. */
+    val label: String = "",
+    /** Optional free category tag; empty = the general (عام) bucket. */
+    val category: String = "",
+    /** Pinned texts float to the head of the panel and the manager. */
+    val pinned: Boolean = false,
+    val createdAtMs: Long = 0,
+    val updatedAtMs: Long = 0,
 )
 
 /**
@@ -207,6 +238,17 @@ data class DrsState(
     val activeProfileId: String = "",
     val profiles: List<DrsProfile> = emptyList(),
     val shortcuts: List<DrsShortcut> = emptyList(),
+    /**
+     * DRS v2.21.0: the user's saved texts (نصوصي) — curated permanent
+     * content for the sixth smart panel. Bounded by [DrsMyTexts.MAX_ITEMS];
+     * local only, covered structurally by the backup like every other
+     * [DrsState] field.
+     */
+    val myTexts: List<DrsMyText> = emptyList(),
+    /** DRS v2.21.0: id allocator of the saved texts. */
+    val nextMyTextId: Long = 1,
+    /** DRS v2.21.0: master switch — gates the panel + insertion, not management. */
+    val myTextsEnabled: Boolean = true,
     val usage: DrsUsageStats = DrsUsageStats(),
     val dismissedSuggestionIds: List<String> = emptyList(),
     val adaptationEnabled: Boolean = true,

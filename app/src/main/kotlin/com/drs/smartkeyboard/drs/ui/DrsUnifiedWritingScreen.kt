@@ -173,6 +173,16 @@ fun DrsUnifiedWritingScreen() = DrsScreen {
                 TextButton(onClick = { navController.navigate(Routes.Settings.DrsShortcuts) }) {
                     Text(stringRes(R.string.drs__shortcuts__title))
                 }
+                // DRS v2.21.0: نصوصي المحفوظة — the manager of the
+                // sixth smart panel, a sibling of the shortcuts system.
+                Text(
+                    text = stringRes(R.string.drs__unified__writing_mytexts_body),
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                TextButton(onClick = { navController.navigate(Routes.Settings.DrsMyTexts) }) {
+                    Text(stringRes(R.string.drs__mytexts__title))
+                }
             }
         }
     }

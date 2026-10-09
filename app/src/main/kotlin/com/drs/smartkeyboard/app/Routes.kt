@@ -80,6 +80,7 @@ import com.drs.smartkeyboard.drs.ui.DrsGesturesScreen
 import com.drs.smartkeyboard.drs.ui.DrsProfilesScreen
 import com.drs.smartkeyboard.drs.ui.DrsPerformanceScreen
 import com.drs.smartkeyboard.drs.ui.DrsShortcutsScreen
+import com.drs.smartkeyboard.drs.ui.DrsMyTextsScreen
 import com.drs.smartkeyboard.drs.ui.DrsTechToolbarScreen
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -220,6 +221,10 @@ object Routes {
         @Serializable
         @Deeplink("settings/drs/shortcuts")
         object DrsShortcuts
+
+        @Serializable
+        @Deeplink("settings/drs/my-texts")
+        object DrsMyTexts
 
         @Serializable
         @Deeplink("settings/drs/profiles")
@@ -401,6 +406,7 @@ object Routes {
             composableWithDeepLink(Settings.DrsControlCenter::class) { DrsControlCenterScreen() }
             composableWithDeepLink(Settings.DrsDiagnostics::class) { DrsDiagnosticsScreen() }
             composableWithDeepLink(Settings.DrsShortcuts::class) { DrsShortcutsScreen() }
+            composableWithDeepLink(Settings.DrsMyTexts::class) { DrsMyTextsScreen() }
             composableWithDeepLink(Settings.DrsProfiles::class) { DrsProfilesScreen() }
             composableWithDeepLink(Settings.DrsGestures::class) { DrsGesturesScreen() }
             composableWithDeepLink(Settings.DrsRewards::class) { DrsRewardsScreen() }

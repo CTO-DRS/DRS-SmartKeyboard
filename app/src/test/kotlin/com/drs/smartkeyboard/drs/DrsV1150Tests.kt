@@ -278,11 +278,13 @@ class DrsV1150Tests : FunSpec({
         ImeUiMode.fromInt(5) shouldBe ImeUiMode.SMART_SYMBOLS
         ImeUiMode.fromInt(6) shouldBe ImeUiMode.ARABIC_LETTERS
         // DRS v1.2.0: mode 7 joined as the smart numbers panel, and
-        // DRS v1.3.0: mode 8 joined as the smart clipboard panel — the
-        // defensive fallback moved to 9.
+        // DRS v1.3.0: mode 8 joined as the smart clipboard panel, and
+        // DRS v2.21.0: mode 9 joined as the saved-texts panel — the
+        // defensive fallback moved to 10.
         ImeUiMode.fromInt(7) shouldBe ImeUiMode.SMART_NUMBER
         ImeUiMode.fromInt(8) shouldBe ImeUiMode.SMART_CLIPBOARD
-        ImeUiMode.fromInt(9) shouldBe ImeUiMode.TEXT // defensive fallback
+        ImeUiMode.fromInt(9) shouldBe ImeUiMode.MY_TEXTS
+        ImeUiMode.fromInt(10) shouldBe ImeUiMode.TEXT // defensive fallback
         ImeUiMode.fromInt(99) shouldBe ImeUiMode.TEXT
     }
 })

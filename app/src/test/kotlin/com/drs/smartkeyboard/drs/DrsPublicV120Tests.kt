@@ -228,11 +228,13 @@ class DrsPublicV120Tests : FunSpec({
 
     test("the panel joins the catalogue tail with the same append contract") {
         // DRS v1.3.0 appended the smart clipboard panel after the numbers
-        // panel — the append contract keeps every persisted arrangement.
-        DrsUnifiedTools.ALL.last().id shouldBe "smart_clipboard_panel"
-        DrsUnifiedTools.ALL.size shouldBe 51
-        DrsUnifiedTools.ALL[DrsUnifiedTools.ALL.size - 2].id shouldBe "smart_number_panel"
-        DrsUnifiedTools.ALL[DrsUnifiedTools.ALL.size - 3].id shouldBe "merge_keyboard"
+        // panel, and DRS v2.21.0 the saved-texts panel after that — the
+        // append contract keeps every persisted arrangement.
+        DrsUnifiedTools.ALL.last().id shouldBe "my_texts_panel"
+        DrsUnifiedTools.ALL.size shouldBe 52
+        DrsUnifiedTools.ALL[DrsUnifiedTools.ALL.size - 2].id shouldBe "smart_clipboard_panel"
+        DrsUnifiedTools.ALL[DrsUnifiedTools.ALL.size - 3].id shouldBe "smart_number_panel"
+        DrsUnifiedTools.ALL[DrsUnifiedTools.ALL.size - 4].id shouldBe "merge_keyboard"
     }
 
     test("the context bar keeps the selected context first, then usage") {

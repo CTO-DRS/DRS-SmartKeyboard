@@ -68,9 +68,10 @@ class DrsV170Tests : FunSpec({
         // DRS v1.8.0 appended the quick-actions pair after this tail, and
         // DRS v1.15.0 the three smart panels after that, DRS v1.19.0
         // the split/merge pair after those, the DRS v1.2.0 release
-        // the smart numbers panel after that and the DRS v1.3.0 release
-        // the smart clipboard panel after that.
-        DrsUnifiedTools.ALL.dropLast(9).last().id shouldBe "clipboard_pin"
+        // the smart numbers panel after that, the DRS v1.3.0 release
+        // the smart clipboard panel after that and the DRS v2.21.0
+        // release the saved-texts panel after those.
+        DrsUnifiedTools.ALL.dropLast(10).last().id shouldBe "clipboard_pin"
         DrsUnifiedTools.ALL.first().id shouldBe "emoji"
     }
 

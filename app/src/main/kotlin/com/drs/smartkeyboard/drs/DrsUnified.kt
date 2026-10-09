@@ -758,6 +758,21 @@ object DrsUnifiedTools {
         group = DrsToolGroup.TOOLS,
     )
 
+    /**
+     * DRS v2.21.0: opens the saved-texts panel (لوحة نصوصي المحفوظة)
+     * through the REAL engine action (KeyCode.IME_UI_MODE_MY_TEXTS) —
+     * the user's curated permanent texts, browsable and insertable with
+     * one tap, templates expanded at insert time, all local.
+     */
+    val MY_TEXTS_PANEL = DrsUnifiedTool(
+        id = "my_texts_panel",
+        code = KeyCode.IME_UI_MODE_MY_TEXTS,
+        type = KeyType.SYSTEM_GUI,
+        scope = DrsSettingScope.BASIC,
+        defaultView = DrsToolView.BOTH,
+        group = DrsToolGroup.TOOLS,
+    )
+
     /** The full basic/shared catalogue in default display order. */
     val ALL: List<DrsUnifiedTool> = listOf(
         EMOJI, CLIPBOARD, TEXT_TOOLS, NUMBERS, SYMBOLS, LANGUAGE,
@@ -796,6 +811,10 @@ object DrsUnifiedTools {
         // DRS v1.3.0: لوحة الحافظة الذكية joins the tail with the same
         // append contract — every persisted arrangement stays intact.
         SMART_CLIPBOARD_PANEL,
+
+        // DRS v2.21.0: لوحة نصوصي المحفوظة joins the tail with the same
+        // append contract — every persisted arrangement stays intact.
+        MY_TEXTS_PANEL,
     )
 
     private val BY_ID = ALL.associateBy { it.id }

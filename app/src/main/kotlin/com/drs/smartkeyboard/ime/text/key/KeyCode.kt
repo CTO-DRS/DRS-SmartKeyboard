@@ -137,6 +137,11 @@ object KeyCode {
     const val IME_HIDE_UI =                 -232
     const val VOICE_INPUT =                 -233
 
+    // DRS v2.21.0: the sixth smart panel (لوحة نصوصي المحفوظة) — a real
+    // ImeUiMode handled in KeyboardManager + hosted in ImeWindow, joined
+    // the unified tool catalogue with the same tail-append contract.
+    const val IME_UI_MODE_MY_TEXTS =        -234
+
     const val TOGGLE_SMARTBAR_VISIBILITY =  -241
     const val TOGGLE_ACTIONS_OVERFLOW =     -242
     const val TOGGLE_ACTIONS_EDITOR =       -243

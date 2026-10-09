@@ -445,6 +445,8 @@ fun toolTitle(id: String): String = when (id) {
     "smart_number_panel" -> stringRes(R.string.drs__unified__tool_smart_number_panel)
     // DRS v1.3.0 (الإصدار العام): لوحة الحافظة الذكية
     "smart_clipboard_panel" -> stringRes(R.string.drs__unified__tool_smart_clipboard_panel)
+    // DRS v2.21.0: لوحة نصوصي المحفوظة
+    "my_texts_panel" -> stringRes(R.string.drs__unified__tool_my_texts_panel)
     else -> id
 }
 
@@ -515,5 +517,7 @@ fun toolDesc(id: String): String = when (id) {
     "smart_number_panel" -> stringRes(R.string.drs__unified__tool_smart_number_panel_desc)
     // DRS v1.3.0 (الإصدار العام): لوحة الحافظة الذكية
     "smart_clipboard_panel" -> stringRes(R.string.drs__unified__tool_smart_clipboard_panel_desc)
+    // DRS v2.21.0: لوحة نصوصي المحفوظة
+    "my_texts_panel" -> stringRes(R.string.drs__unified__tool_my_texts_panel_desc)
     else -> ""
 }

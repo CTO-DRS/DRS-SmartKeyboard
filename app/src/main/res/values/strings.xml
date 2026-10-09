@@ -2788,4 +2788,37 @@
     <string name="privacy__delete__summary" comment="Delete-all explanation: wipes learning, crash registry, downloads, clipboard media immediately">مسح التعلم وسجل الأعطال وملفات التحديث ووسائط الحافظة فورًا وبلا رجعة</string>
     <string name="privacy__delete__confirm" comment="Delete-all confirmation dialog title">حذف جميع البيانات؟</string>
     <string name="privacy__delete__confirm_message" comment="Delete-all confirmation body">سيُمحى من الجهاز نهائيًا: التعلم الشخصي، سجل الأعطال، ملفات التحديث، ووسائط الحافظة. لا يمكن التراجع.</string>
+    <string name="panel__switcher_mytexts">نصوصي</string>
+    <string name="panel__mytexts__title">لوحة نصوصي المحفوظة</string>
+    <string name="panel__mytexts__empty">لا نصوص محفوظة بعد — احفظ نصًا من الحافظة أو أضفه من شاشة نصوصي</string>
+    <string name="panel__mytexts__hidden">في حقل كلمة سر لا تُعرض نصوصك — خصوصية مطلقة</string>
+    <string name="panel__mytexts__disabled">نصوصي معطّلة — فعّلها من شاشة نصوصي</string>
+    <string name="panel__mytexts__save_clip">+ احفظ ما في الحافظة</string>
+    <string name="panel__mytexts__all">الكل</string>
+    <string name="drs__unified__tool_my_texts_panel">لوحة نصوصي المحفوظة</string>
+    <string name="drs__unified__tool_my_texts_panel_desc">تفتح لوحة نصوصك المحفوظة: عناوين وردود وعبارات جاهزة تُدرج بلمسة واحدة، وتدعم متغيرات القوالب نفسها ({date} و{time} و{clipboard}) — كلها حساب محلي خالص بلا شبكة</string>
+    <string name="drs__mytexts__title">نصوصي المحفوظة</string>
+    <string name="drs__mytexts__enable">تفعيل نصوصي</string>
+    <string name="drs__mytexts__enable_summary">تظهر نصوصك المحفوظة في لوحة نصوصي داخل الكيبورد وتُدرج بلمسة واحدة</string>
+    <string name="drs__mytexts__add_new">إضافة نص محفوظ</string>
+    <string name="drs__mytexts__edit">تعديل</string>
+    <string name="drs__mytexts__delete">حذف</string>
+    <string name="drs__mytexts__delete_confirm">سيُحذف هذا النص المحفوظ نهائيًا. هل تريد المتابعة؟</string>
+    <string name="drs__mytexts__remove_all">حذف الكل</string>
+    <string name="drs__mytexts__remove_all_confirm">ستُحذف كل نصوصك المحفوظة نهائيًا. هل تريد المتابعة؟</string>
+    <string name="drs__mytexts__empty">لا نصوص محفوظة بعد — أضف أول نص</string>
+    <string name="drs__mytexts__search_hint">ابحث في نصوصك</string>
+    <string name="drs__mytexts__search_empty">لا نتائج مطابقة لبحثك</string>
+    <string name="drs__mytexts__list_section">النصوص المحفوظة</string>
+    <string name="drs__mytexts__text_label">النص</string>
+    <string name="drs__mytexts__label_label">تسمية اختيارية</string>
+    <string name="drs__mytexts__category_label">فئة اختيارية</string>
+    <string name="drs__mytexts__template_badge">يدعم متغيرات القوالب</string>
+    <string name="drs__mytexts__pin_toggle">تثبيت أو إلغاء التثبيت</string>
+    <string name="drs__mytexts__err_empty">النص فارغ — اكتب شيئًا أولًا</string>
+    <string name="drs__mytexts__err_text_long">النص أطول من الحد المسموح (500 حرفًا)</string>
+    <string name="drs__mytexts__err_label_long">التسمية أطول من الحد المسموح (40 حرفًا)</string>
+    <string name="drs__mytexts__err_category_long">الفئة أطول من الحد المسموح (24 حرفًا)</string>
+    <string name="drs__mytexts__err_full">وصلت إلى الحد الأقصى (100 نص) — احذف شيئًا لإضافة غيره</string>
+    <string name="drs__unified__writing_mytexts_body">نصوصك المحفوظة: عناوين وردود وعبارات تُدرج بلمسة من لوحة نصوصي، وتدعم متغيرات القوالب نفسها</string>
 </resources>

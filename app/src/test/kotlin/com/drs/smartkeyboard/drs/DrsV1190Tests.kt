@@ -138,11 +138,13 @@ class DrsV1190Tests : FunSpec({
         merge.code shouldBe KeyCode.MERGE_LAYOUT
         // Appended at the tail, keeping every persisted arrangement.
         // DRS v1.2.0 (الإصدار العام) appended the smart numbers panel
-        // after the pair, and DRS v1.3.0 the smart clipboard panel.
-        DrsUnifiedTools.ALL.last().id shouldBe "smart_clipboard_panel"
-        DrsUnifiedTools.ALL[DrsUnifiedTools.ALL.size - 2].id shouldBe "smart_number_panel"
-        DrsUnifiedTools.ALL[DrsUnifiedTools.ALL.size - 3].id shouldBe "merge_keyboard"
-        DrsUnifiedTools.ALL[DrsUnifiedTools.ALL.size - 4].id shouldBe "split_keyboard"
+        // after the pair, DRS v1.3.0 the smart clipboard panel, and
+        // DRS v2.21.0 the saved-texts panel after those.
+        DrsUnifiedTools.ALL.last().id shouldBe "my_texts_panel"
+        DrsUnifiedTools.ALL[DrsUnifiedTools.ALL.size - 2].id shouldBe "smart_clipboard_panel"
+        DrsUnifiedTools.ALL[DrsUnifiedTools.ALL.size - 3].id shouldBe "smart_number_panel"
+        DrsUnifiedTools.ALL[DrsUnifiedTools.ALL.size - 4].id shouldBe "merge_keyboard"
+        DrsUnifiedTools.ALL[DrsUnifiedTools.ALL.size - 5].id shouldBe "split_keyboard"
     }
 
     // -------------------------------------------------------------

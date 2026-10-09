@@ -25,7 +25,10 @@ enum class ImeUiMode(val value: Int) {
     SMART_NUMBER(7),
 
     /** DRS v1.3.0: the deterministic smart clipboard panel (لوحة الحافظة الذكية). */
-    SMART_CLIPBOARD(8);
+    SMART_CLIPBOARD(8),
+
+    /** DRS v2.21.0: the saved-texts panel (لوحة نصوصي المحفوظة) — the sixth smart panel. */
+    MY_TEXTS(9);
 
     companion object {
         fun fromInt(int: Int) = entries.firstOrNull { it.value == int } ?: TEXT

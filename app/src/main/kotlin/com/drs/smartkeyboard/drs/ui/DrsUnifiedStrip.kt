@@ -21,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Redo
 import androidx.compose.material.icons.automirrored.filled.Undo
+import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.automirrored.outlined.Backspace
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Abc
@@ -208,6 +209,8 @@ internal fun iconForTool(id: String) = when (id) {
     // DRS v1.19.0: the split/merge keyboard toggles.
     "split_keyboard" -> Icons.Default.Splitscreen
     "merge_keyboard" -> Icons.Default.MergeType
+    // DRS v2.21.0: the saved-texts panel (لوحة نصوصي المحفوظة).
+    "my_texts_panel" -> Icons.AutoMirrored.Filled.Notes
     else -> Icons.Default.Build
 }
 

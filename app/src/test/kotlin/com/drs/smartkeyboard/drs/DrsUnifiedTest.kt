@@ -282,14 +282,15 @@ class DrsUnifiedTest : FunSpec({
         // DRS v1.6.0: the two v1.4.0 tools sit before the v1.5.0 tail (3)
         // and the v1.6.0 tail (5); v1.7.0 appended one, v1.8.0 two more,
         // v1.15.0 three (the smart panels), v1.19.0 two (split/merge),
-        // the v1.2.0 release one (the smart numbers panel) and the
-        // v1.3.0 release one (the smart clipboard panel)
-        // — combined tail after them is now 18 — same relative order.
-        DrsUnifiedTools.ALL.dropLast(18).takeLast(2).map { it.id } shouldBe
+        // the v1.2.0 release one (the smart numbers panel), the
+        // v1.3.0 release one (the smart clipboard panel) and the
+        // v2.21.0 release one (the saved-texts panel)
+        // — combined tail after them is now 19 — same relative order.
+        DrsUnifiedTools.ALL.dropLast(19).takeLast(2).map { it.id } shouldBe
             listOf("floating_mode", "smartbar_toggle")
         // The head and the previous tails are untouched.
         DrsUnifiedTools.ALL.first().id shouldBe "emoji"
-        DrsUnifiedTools.ALL[DrsUnifiedTools.ALL.size - 21].id shouldBe "voice_input"
+        DrsUnifiedTools.ALL[DrsUnifiedTools.ALL.size - 22].id shouldBe "voice_input"
     }
 
     test("v1.5.0 tools exist and dispatch real engine codes") {
@@ -305,9 +306,10 @@ class DrsUnifiedTest : FunSpec({
         // DRS v1.6.0: the v1.5.0 tail of three is now followed by the
         // v1.6.0 tail of five, the v1.7.0 tool, the two v1.8.0 tools,
         // the three v1.15.0 smart panels, the two v1.19.0 tools, the
-        // v1.2.0 smart numbers panel and the v1.3.0 smart clipboard
-        // panel — same relative order, longer catalogue.
-        DrsUnifiedTools.ALL.dropLast(15).takeLast(3).map { it.id } shouldBe
+        // v1.2.0 smart numbers panel, the v1.3.0 smart clipboard
+        // panel and the v2.21.0 saved-texts panel — same relative
+        // order, longer catalogue.
+        DrsUnifiedTools.ALL.dropLast(16).takeLast(3).map { it.id } shouldBe
             listOf("clipboard_history_clear", "next_language", "resize_mode")
         DrsUnifiedTools.ALL.first().id shouldBe "emoji"
     }
